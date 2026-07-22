@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
 import InstagramGallery from '@/components/InstagramGallery';
-import { Phone, Truck, CalendarDays, Building2, UtensilsCrossed, ChefHat, Instagram, Star, ArrowRight } from 'lucide-react';
+import { Phone, Truck, CalendarDays, Building2, UtensilsCrossed, ChefHat, Instagram, Star, ArrowRight, Sparkles, HeartHandshake } from 'lucide-react';
 import './home.css';
 
 export const revalidate = 0;
@@ -17,28 +17,32 @@ export default function Home() {
 
     const services = [
         {
-            icon: <UtensilsCrossed size={32} />,
-            title: 'Plat du Jour',
-            description: 'Chaque jour, un nouveau plat mijoté avec des produits frais et de saison. Commandez avant 10h !',
-            color: '#E8A87C',
+            icon: <UtensilsCrossed size={30} />,
+            badge: "AU QUOTIDIEN",
+            title: "Plat du Jour",
+            description: "Chaque jour, un nouveau plat mijoté avec des ingrédients frais du marché. Une cuisine généreuse comme à la maison.",
+            color: "#D97736",
         },
         {
-            icon: <CalendarDays size={32} />,
-            title: 'Événements Privés',
-            description: 'Anniversaires, mariages, baptêmes… On s\'occupe de régaler vos invités avec un menu sur mesure.',
-            color: '#7FB3D3',
+            icon: <HeartHandshake size={30} />,
+            badge: "FÊTES & COCKTAILS",
+            title: "Buffets Dînatoires",
+            description: "Bouchées raffinées, verrines provençales et douceurs sucrées présentées en buffets gourmands pour vos soirées.",
+            color: "#E76F51",
         },
         {
-            icon: <Building2 size={32} />,
-            title: 'Repas d\'Entreprise',
-            description: 'Plateaux repas, déjeuners d\'équipe, séminaires — des formules adaptées à vos besoins professionnels.',
-            color: '#9BC4A8',
+            icon: <Sparkles size={30} />,
+            badge: "SUR MESURE",
+            title: "Événements Privés",
+            description: "Anniversaires, baptêmes, réunions de famille. Nous élaborons un menu personnalisé selon vos envies.",
+            color: "#2B4C7E",
         },
         {
-            icon: <ChefHat size={32} />,
-            title: 'Buffet Dînatoire',
-            description: 'Des mets raffinés présentés en buffet pour vos soirées, cocktails et réceptions privées.',
-            color: '#C49AC0',
+            icon: <Building2 size={30} />,
+            title: "Repas d'Entreprise",
+            badge: "PROFESSIONNELS",
+            description: "Plateaux repas complets, déjeuners d'équipe et séminaires livrés directement dans vos locaux.",
+            color: "#4A6FA5",
         },
     ];
 
@@ -80,17 +84,17 @@ export default function Home() {
                 <div className="container delivery-banner-inner">
                     <div className="delivery-item">
                         <Truck size={20} />
-                        <span>Livraison à domicile</span>
+                        <span>Livraison à domicile & entreprises</span>
                     </div>
                     <div className="delivery-divider"></div>
                     <div className="delivery-item">
                         <UtensilsCrossed size={20} />
-                        <span>Retrait au labo</span>
+                        <span>Retrait au labo à Eyguières</span>
                     </div>
                     <div className="delivery-divider"></div>
                     <div className="delivery-item">
                         <ChefHat size={20} />
-                        <span>Fait maison à Eyguières</span>
+                        <span>100% Fait Maison avec Amour</span>
                     </div>
                 </div>
             </section>
@@ -102,7 +106,7 @@ export default function Home() {
                         <span className="section-subtitle">DU MARDI AU SAMEDI</span>
                         <h2 className="section-title">Le Menu de la Semaine</h2>
                         <p style={{ maxWidth: '600px', margin: '0.5rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-                            Découvrez nos plats frais de la semaine. Commandez par téléphone au 07 43 64 64 11 !
+                            Découvrez nos plats frais de la semaine. Commandes par téléphone au 07 43 64 64 11 !
                         </p>
                     </div>
 
@@ -129,20 +133,21 @@ export default function Home() {
                 <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
             )}
 
-            {/* ===== NOS PRESTATIONS ===== */}
+            {/* ===== NOS PRESTATIONS (SANS EMOJIS, ATTRAYANTES & SOLAIRES) ===== */}
             <section className="section-padding services-section">
                 <div className="container">
                     <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
-                        <span className="section-subtitle">NOTRE SAVOIR-FAIRE</span>
-                        <h2 className="section-title">Nos Prestations</h2>
-                        <p style={{ maxWidth: '600px', margin: '0.5rem auto 0', color: 'var(--text-secondary)' }}>
-                            {siteInfo.services_text || 'Pour vos repas quotidiens ou vos événements festifs, Mamé Fricoto prépare vos mets sur mesure.'}
+                        <span className="section-subtitle">VOTRE TRAITEUR À EYGUIÈRES</span>
+                        <h2 className="section-title">Nos Prestations Gourmandes</h2>
+                        <p style={{ maxWidth: '620px', margin: '0.5rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
+                            Du repas du quotidien aux grandes réceptions, Mamé Fricoto cuisine pour vous avec passion.
                         </p>
                     </div>
 
                     <div className="services-grid">
                         {services.map((service, i) => (
                             <div key={service.title} className={`service-card animate-fade-up delay-${(i + 1) * 100}`}>
+                                <div className="service-badge-tag">{service.badge}</div>
                                 <div className="service-icon" style={{ backgroundColor: `${service.color}15`, color: service.color }}>
                                     {service.icon}
                                 </div>
@@ -169,7 +174,7 @@ export default function Home() {
                             />
                         </div>
                         <div className="about-text animate-fade-up delay-200">
-                            <span className="section-subtitle">CUISINE FAMILIALE</span>
+                            <span className="section-subtitle">CUISINE FAMILIALE & PASSIONNÉE</span>
                             <h2 className="section-title">L&apos;Esprit Mamé Fricoto</h2>
                             <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', lineHeight: '1.8' }}>
                                 {siteInfo.about_text}
@@ -193,13 +198,13 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ===== AVIS GOOGLE ===== */}
+            {/* ===== AVIS GOOGLE (LINK MIS À JOUR) ===== */}
             {siteInfo.google_reviews && (
                 <section className="reviews-banner">
                     <div className="container reviews-banner-inner">
                         <div className="reviews-stars">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} size={22} fill="#F4A261" color="#F4A261" />
+                                <Star key={i} size={22} fill="#D97736" color="#D97736" />
                             ))}
                         </div>
                         <p>Consultez les avis de nos clients sur Google</p>

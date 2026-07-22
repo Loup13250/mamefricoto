@@ -195,6 +195,20 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.service-badge-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #D97736;
+    background: #FFF0E0;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
 }
 
 .service-card:hover {
@@ -211,7 +225,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
+    margin-bottom: 1.25rem;
     transition: transform 0.4s ease;
 }
 

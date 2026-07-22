@@ -1,10 +1,10 @@
 'use client';
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Phone, Instagram, Heart, Share2, MessageCircle, CheckCircle2, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone, Instagram, Heart, Share2, MessageCircle, CheckCircle2, MapPin, Play } from 'lucide-react';
 import './WeeklyMenuCarousel.css';
 
-// Helper to extract Instagram post shortcode from any URL (e.g., https://www.instagram.com/p/DX69JWSDAim/?img_index=1)
+// Helper to extract Instagram post/reel shortcode from any URL
 function getInstagramEmbedUrl(url) {
     if (!url) return null;
     const match = url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
@@ -12,6 +12,12 @@ function getInstagramEmbedUrl(url) {
         return `https://www.instagram.com/p/${match[1]}/embed/captioned/`;
     }
     return null;
+}
+
+// Helper to detect if a media URL is a video file
+function isVideoUrl(url) {
+    if (!url) return false;
+    return /\.(mp4|mov|webm|ogg)(\?.*)?$/i.test(url);
 }
 
 export default function WeeklyMenuCarousel({ menu, siteInfo }) {
@@ -27,6 +33,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const images = menu.images && menu.images.length > 0 ? menu.images : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : []);
 
     // IF INSTAGRAM EMBED LINK IS PROVIDED (e.g. https://www.instagram.com/p/DX69JWSDAim/?img_index=1)
+    // Instagram's official iframe player supports native video playback, reels, and carousel swiping!
     if (embedUrl && (images.length === 0 || !images[0]?.image_url || menu.embed_url)) {
         return (
             <div className="insta-embed-card animate-fade-up">
@@ -50,7 +57,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         );
     }
 
-    // FALLBACK / LOCAL IMAGES CAROUSEL
+    // CUSTOM MULTI-MEDIA CAROUSEL WITH INFINITE LOOP & VIDEO SUPPORT
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
@@ -70,8 +77,8 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const handleTouchEnd = () => {
         if (!touchStartX.current || !touchEndX.current) return;
         const diff = touchStartX.current - touchEndX.current;
-        if (diff > 50) handleNext();
-        else if (diff < -50) handlePrev();
+        if (diff > 40) handleNext(); // Swipe left -> next (loops to 0 at end)
+        else if (diff < -40) handlePrev(); // Swipe right -> prev (loops to last at 0)
         touchStartX.current = 0;
         touchEndX.current = 0;
     };
@@ -81,26 +88,41 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
     };
 
+    const currentMedia = images[currentIndex]?.image_url || menu.image_url;
+    const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
+
     return (
         <div className="insta-post-card animate-fade-up">
-            {/* Left Column: Image Media Box */}
+            {/* Left Column: Image / Video Media Box */}
             <div
                 className="insta-post-media"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
-                {images.length > 0 && (images[currentIndex]?.image_url || menu.image_url) ? (
+                {currentMedia ? (
                     <div className="insta-media-wrapper">
-                        <Image
-                            src={images[currentIndex]?.image_url || menu.image_url}
-                            alt={`${menu.title} - Photo ${currentIndex + 1}`}
-                            width={900}
-                            height={1125}
-                            className="insta-post-img"
-                            priority
-                            unoptimized
-                        />
+                        {isVideo ? (
+                            <video
+                                src={currentMedia}
+                                controls
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="insta-post-img"
+                            />
+                        ) : (
+                            <Image
+                                src={currentMedia}
+                                alt={`${menu.title} - Photo ${currentIndex + 1}`}
+                                width={900}
+                                height={1125}
+                                className="insta-post-img"
+                                priority
+                                unoptimized
+                            />
+                        )}
                     </div>
                 ) : (
                     <div className="insta-media-placeholder">
@@ -109,23 +131,26 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
+                {/* Photo / Page Counter */}
                 {images.length > 1 && (
                     <div className="insta-post-counter">
                         {currentIndex + 1}/{images.length}
                     </div>
                 )}
 
+                {/* Arrow Controls (Loops infinitely between first and last page) */}
                 {images.length > 1 && (
                     <>
-                        <button type="button" onClick={handlePrev} className="insta-post-arrow arrow-left" aria-label="Photo précédente">
+                        <button type="button" onClick={handlePrev} className="insta-post-arrow arrow-left" aria-label="Précédent (boucle infinie)">
                             <ChevronLeft size={20} />
                         </button>
-                        <button type="button" onClick={handleNext} className="insta-post-arrow arrow-right" aria-label="Photo suivante">
+                        <button type="button" onClick={handleNext} className="insta-post-arrow arrow-right" aria-label="Suivant (boucle infinie)">
                             <ChevronRight size={20} />
                         </button>
                     </>
                 )}
 
+                {/* Dots indicator */}
                 {images.length > 1 && (
                     <div className="insta-post-dots">
                         {images.map((img, idx) => (
@@ -134,7 +159,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                                 type="button"
                                 onClick={() => setCurrentIndex(idx)}
                                 className={`insta-post-dot ${idx === currentIndex ? 'active' : ''}`}
-                                aria-label={`Photo ${idx + 1}`}
+                                aria-label={`Media ${idx + 1}`}
                             />
                         ))}
                     </div>

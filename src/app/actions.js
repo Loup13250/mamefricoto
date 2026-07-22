@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import fs from 'fs/promises';
 import path from 'path';
+import nodemailer from 'nodemailer';
 
 // --- AUTH ---
 export async function adminLogin(formData) {
@@ -39,10 +40,9 @@ export async function adminLogout() {
 async function saveUploadedFile(file) {
     if (!file || file.size === 0) return null;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const filename = Date.now() + '-' + Math.random().toString(36).substring(2, 7) + '-' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 
-    // Ensure uploads directory exists
     try {
         await fs.access(uploadsDir);
     } catch {
@@ -54,13 +54,120 @@ async function saveUploadedFile(file) {
     return '/uploads/' + filename;
 }
 
+// --- CONTACT FORM SUBMISSION ---
+export async function submitContactForm(formData) {
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const phone = formData.get('phone');
+    const event_type = formData.get('event_type') || 'Demande d\'information';
+    const event_date = formData.get('event_date') || '';
+    const guests = formData.get('guests') || '';
+    const message = formData.get('message');
+
+    if (!name || !email || !phone || !message) {
+        return { error: 'Veuillez remplir tous les champs obligatoires.' };
+    }
+
+    const db = getDb();
+    db.prepare(`
+        INSERT INTO contact_messages (name, email, phone, event_type, event_date, guests, message)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(name, email, phone, event_type, event_date, guests, message);
+
+    // Try sending email if SMTP settings are provided in site_info or env
+    try {
+        const rows = db.prepare('SELECT * FROM site_info').all();
+        const info = {};
+        for (const row of rows) info[row.key] = row.value;
+
+        const host = info.smtp_host || process.env.SMTP_HOST;
+        const port = info.smtp_port || process.env.SMTP_PORT || 587;
+        const user = info.smtp_user || process.env.SMTP_USER;
+        const pass = info.smtp_pass || process.env.SMTP_PASS;
+        const recipient = info.contact_email || 'mamefricoto@gmail.com';
+
+        if (host && user && pass) {
+            const transporter = nodemailer.createTransport({
+                host,
+                port: Number(port),
+                secure: Number(port) === 465,
+                auth: { user, pass },
+            });
+
+            await transporter.sendMail({
+                from: `"Mamé Fricoto Web" <${user}>`,
+                to: recipient,
+                replyTo: email,
+                subject: `🍽️ Nouvelle demande : ${event_type} - ${name}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; color: #2C1810; max-width: 600px; border: 1px solid #E8A87C; border-radius: 12px;">
+                        <h2 style="color: #3D5A80;">Nouveau message de contact — Mamé Fricoto</h2>
+                        <p><strong>Nom :</strong> ${name}</p>
+                        <p><strong>Email :</strong> ${email}</p>
+                        <p><strong>Téléphone :</strong> ${phone}</p>
+                        <p><strong>Type de prestation :</strong> ${event_type}</p>
+                        ${event_date ? `<p><strong>Date souhaitée :</strong> ${event_date}</p>` : ''}
+                        ${guests ? `<p><strong>Nombre d'invités :</strong> ${guests}</p>` : ''}
+                        <hr style="border-top: 1px solid #f2e8e4; margin: 20px 0;" />
+                        <p><strong>Message :</strong></p>
+                        <blockquote style="background: #FFF8F0; padding: 15px; border-left: 4px solid #E8A87C; margin: 0;">
+                            ${message.replace(/\n/g, '<br/>')}
+                        </blockquote>
+                    </div>
+                `,
+            });
+        }
+    } catch (err) {
+        console.warn("SMTP email notification ignored or not configured:", err.message);
+    }
+
+    revalidatePath('/contact');
+    revalidatePath('/admin/dashboard/messages');
+    return { success: true };
+}
+
+export async function markMessageRead(formData) {
+    const id = formData.get('id');
+    const db = getDb();
+    db.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').run(id);
+    revalidatePath('/admin/dashboard/messages');
+    return { success: true };
+}
+
+export async function deleteMessage(formData) {
+    const id = formData.get('id');
+    const db = getDb();
+    db.prepare('DELETE FROM contact_messages WHERE id = ?').run(id);
+    revalidatePath('/admin/dashboard/messages');
+    return { success: true };
+}
+
 // --- SETTINGS ---
 export async function updateSiteInfo(formData) {
     const db = getDb();
 
+    // Check if new custom logo uploaded
+    const logo_file = formData.get('logo_file');
+    if (logo_file && logo_file.size > 0) {
+        const logoUrl = await saveUploadedFile(logo_file);
+        if (logoUrl) {
+            // Save to public/logo.png or save in site_info
+            db.prepare('INSERT INTO site_info (key, value) VALUES (\'site_logo\', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(logoUrl);
+        }
+    }
+
+    // Check if new About image uploaded
+    const about_file = formData.get('about_file');
+    if (about_file && about_file.size > 0) {
+        const aboutUrl = await saveUploadedFile(about_file);
+        if (aboutUrl) {
+            db.prepare('INSERT INTO site_info (key, value) VALUES (\'about_image\', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(aboutUrl);
+        }
+    }
+
     const entries = Array.from(formData.entries());
     for (const [key, value] of entries) {
-        if (key.startsWith('$ACTION')) continue;
+        if (key.startsWith('$ACTION') || key === 'logo_file' || key === 'about_file') continue;
         db.prepare('INSERT INTO site_info (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
     }
 
@@ -71,27 +178,40 @@ export async function updateSiteInfo(formData) {
     return { success: true };
 }
 
-// --- WEEKLY MENU ---
+// --- WEEKLY MENU (WITH MULTI-IMAGE CAROUSEL SUPPORT) ---
 export async function addWeeklyMenu(formData) {
     const title = formData.get('title');
     const description = formData.get('description');
-    const image_file = formData.get('image_file');
-    let image_url = formData.get('image_url');
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
 
-    const uploadedUrl = await saveUploadedFile(image_file);
-    if (uploadedUrl) {
-        image_url = uploadedUrl;
+    const files = formData.getAll('image_files');
+    const uploadedUrls = [];
+
+    for (const file of files) {
+        if (file && file.size > 0) {
+            const url = await saveUploadedFile(file);
+            if (url) uploadedUrls.push(url);
+        }
     }
+
+    const mainImageUrl = uploadedUrls.length > 0 ? uploadedUrls[0] : (formData.get('image_url') || '');
 
     const db = getDb();
 
-    // If this menu is current, unset all others
     if (is_current) {
         db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    db.prepare('INSERT INTO weekly_menus (title, description, image_url, is_current) VALUES (?, ?, ?, ?)').run(title, description || '', image_url || '', is_current);
+    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, is_current) VALUES (?, ?, ?, ?)').run(title, description || '', mainImageUrl, is_current);
+    const menuId = result.lastInsertRowid;
+
+    // Save all uploaded image pages into weekly_menu_images
+    if (uploadedUrls.length > 0) {
+        const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
+        uploadedUrls.forEach((url, idx) => {
+            stmt.run(menuId, url, idx + 1);
+        });
+    }
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
@@ -102,24 +222,33 @@ export async function editWeeklyMenu(formData) {
     const id = formData.get('id');
     const title = formData.get('title');
     const description = formData.get('description');
-    const image_file = formData.get('image_file');
-    let image_url = formData.get('image_url');
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
 
-    const uploadedUrl = await saveUploadedFile(image_file);
-    if (uploadedUrl) {
-        image_url = uploadedUrl;
+    const files = formData.getAll('image_files');
+    const uploadedUrls = [];
+
+    for (const file of files) {
+        if (file && file.size > 0) {
+            const url = await saveUploadedFile(file);
+            if (url) uploadedUrls.push(url);
+        }
     }
 
     const db = getDb();
 
-    // If setting as current, unset all others
     if (is_current) {
         db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    if (image_url) {
-        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description || '', image_url, is_current, id);
+    if (uploadedUrls.length > 0) {
+        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description || '', uploadedUrls[0], is_current, id);
+
+        // Replace menu images
+        db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
+        const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
+        uploadedUrls.forEach((url, idx) => {
+            stmt.run(id, url, idx + 1);
+        });
     } else {
         db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description || '', is_current, id);
     }
@@ -132,10 +261,45 @@ export async function editWeeklyMenu(formData) {
 export async function deleteWeeklyMenu(formData) {
     const id = formData.get('id');
     const db = getDb();
+    db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
     db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(id);
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
+    return { success: true };
+}
+
+// --- GALLERY POSTS (INSTAGRAM STORIES / DISHES) ---
+export async function addGalleryPost(formData) {
+    const title = formData.get('title');
+    const caption = formData.get('caption');
+    const image_file = formData.get('image_file');
+    let image_url = formData.get('image_url');
+
+    const uploadedUrl = await saveUploadedFile(image_file);
+    if (uploadedUrl) {
+        image_url = uploadedUrl;
+    }
+
+    if (!image_url) {
+        return { error: 'Une image est obligatoire pour publier une story.' };
+    }
+
+    const db = getDb();
+    db.prepare('INSERT INTO gallery_posts (title, caption, image_url) VALUES (?, ?, ?)').run(title || '', caption || '', image_url);
+
+    revalidatePath('/');
+    revalidatePath('/admin/dashboard/galerie');
+    return { success: true };
+}
+
+export async function deleteGalleryPost(formData) {
+    const id = formData.get('id');
+    const db = getDb();
+    db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
+
+    revalidatePath('/');
+    revalidatePath('/admin/dashboard/galerie');
     return { success: true };
 }
 

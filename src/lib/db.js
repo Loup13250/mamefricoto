@@ -10,7 +10,7 @@ export function getDb() {
     let dbPath = path.join(process.cwd(), 'database', 'mamefricoto.db');
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');
 
-    // On Vercel (or production), copy the DB to /tmp so that it is writable
+    // On Vercel (or production), copy DB to /tmp so that it is writable
     if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
         const tempDbPath = path.join('/tmp', 'mamefricoto.db');
         if (!fs.existsSync(tempDbPath)) {
@@ -23,8 +23,6 @@ export function getDb() {
                 if (fs.existsSync(dbPath)) {
                     fs.copyFileSync(dbPath, tempDbPath);
                     console.log("Database successfully copied to /tmp");
-                } else {
-                    console.warn("Source database not found at:", dbPath);
                 }
             } catch (err) {
                 console.error("Failed to copy database to /tmp:", err);
@@ -32,18 +30,14 @@ export function getDb() {
         }
         dbPath = tempDbPath;
     } else {
-        // Local environment: ensure target directory exists
         const targetDir = path.dirname(dbPath);
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
         }
     }
 
-    const isDbNew = !fs.existsSync(dbPath);
-
     try {
         db = new Database(dbPath);
-
         try {
             db.pragma('journal_mode = WAL');
         } catch (pragmaErr) {
@@ -54,13 +48,13 @@ export function getDb() {
         throw dbErr;
     }
 
-    if (isDbNew && fs.existsSync(schemaPath)) {
+    // Auto-create missing tables if schema exists
+    if (fs.existsSync(schemaPath)) {
         try {
             const schema = fs.readFileSync(schemaPath, 'utf-8');
             db.exec(schema);
-            console.log("Database initialized with schema.");
         } catch (schemaErr) {
-            console.error("Failed to run schema on new database:", schemaErr);
+            console.error("Failed to run schema check:", schemaErr);
         }
     }
 

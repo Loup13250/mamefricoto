@@ -1,0 +1,13 @@
+import { getGalleryPosts } from '@/lib/data';
+import GalleryClient from './GalleryClient';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+    title: 'Galerie Instagram | Admin Mamé Fricoto',
+};
+
+export default function GaleriePage() {
+    const posts = getGalleryPosts();
+    return <GalleryClient posts={posts} />;
+}

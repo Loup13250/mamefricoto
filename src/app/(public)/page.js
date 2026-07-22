@@ -1,7 +1,9 @@
 import React from 'react';
-import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getArticles } from '@/lib/data';
+import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getArticles, getGalleryPosts } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
+import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
+import InstagramGallery from '@/components/InstagramGallery';
 import { Phone, Truck, CalendarDays, Building2, UtensilsCrossed, ChefHat, Instagram, Star, ArrowRight } from 'lucide-react';
 import './home.css';
 
@@ -12,6 +14,7 @@ export default function Home() {
     const carousel = getCarouselImages();
     const weeklyMenu = getCurrentWeeklyMenu();
     const articles = getArticles();
+    const galleryPosts = getGalleryPosts();
 
     const services = [
         {
@@ -98,59 +101,19 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ===== MENU DE LA SEMAINE ===== */}
+            {/* ===== MENU DE LA SEMAINE (INSTAGRAM CAROUSEL FORMAT) ===== */}
             <section id="menu-semaine" className="section-padding weekly-menu-section">
                 <div className="container">
-                    <div className="text-center animate-fade-up" style={{ marginBottom: '3rem' }}>
+                    <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
                         <span className="section-subtitle" style={{ justifyContent: 'center' }}>CHAQUE SEMAINE, UN NOUVEAU MENU</span>
                         <h2 className="section-title">Le Menu de la Semaine</h2>
                         <p style={{ maxWidth: '600px', margin: '1rem auto 0', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                            Découvrez les plats préparés par Mamé cette semaine. Commandez par téléphone avant 10h !
+                            Feuilletez le post de la semaine ci-dessous : menus, tarifs & allergènes. Commandez avant 10h par téléphone !
                         </p>
                     </div>
 
                     {weeklyMenu ? (
-                        <div className="weekly-menu-card animate-fade-up delay-200">
-                            <div className="weekly-menu-image-wrapper">
-                                {weeklyMenu.image_url ? (
-                                    <Image
-                                        src={weeklyMenu.image_url}
-                                        alt={weeklyMenu.title}
-                                        width={800}
-                                        height={800}
-                                        className="weekly-menu-image"
-                                        unoptimized
-                                    />
-                                ) : (
-                                    <div className="weekly-menu-placeholder">
-                                        <ChefHat size={64} />
-                                        <p>Image du menu à venir</p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="weekly-menu-info">
-                                <span className="weekly-menu-badge">
-                                    <CalendarDays size={16} />
-                                    Menu en cours
-                                </span>
-                                <h3 className="weekly-menu-title">{weeklyMenu.title}</h3>
-                                {weeklyMenu.description && (
-                                    <p className="weekly-menu-desc">{weeklyMenu.description}</p>
-                                )}
-                                <div className="weekly-menu-actions">
-                                    <a href="tel:0743646411" className="btn-peach">
-                                        <Phone size={18} />
-                                        Commander — 07 43 64 64 11
-                                    </a>
-                                    {siteInfo.instagram && (
-                                        <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" className="btn-secondary">
-                                            <Instagram size={18} />
-                                            Voir sur Instagram
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <WeeklyMenuCarousel menu={weeklyMenu} siteInfo={siteInfo} />
                     ) : (
                         <div className="weekly-menu-empty animate-fade-up delay-200">
                             <ChefHat size={48} />
@@ -166,6 +129,11 @@ export default function Home() {
                     )}
                 </div>
             </section>
+
+            {/* ===== INSTAGRAM STORIES / DISHES GALLERY ===== */}
+            {galleryPosts && galleryPosts.length > 0 && (
+                <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
+            )}
 
             {/* ===== NOS PRESTATIONS ===== */}
             <section className="section-padding services-section">
@@ -198,11 +166,12 @@ export default function Home() {
                     <div className="about-grid">
                         <div className="about-image-wrapper animate-fade-up">
                             <Image
-                                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"
+                                src={siteInfo.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
                                 alt="Cuisine maison Mamé Fricoto"
                                 width={800}
                                 height={600}
                                 className="about-image"
+                                unoptimized
                             />
                             <div className="about-image-accent"></div>
                         </div>
@@ -300,12 +269,9 @@ export default function Home() {
                                 <Phone size={20} />
                                 07 43 64 64 11
                             </a>
-                            {siteInfo.instagram && (
-                                <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ borderColor: 'rgba(255,255,255,0.4)', color: 'white' }}>
-                                    <Instagram size={18} />
-                                    @mamefricoto
-                                </a>
-                            )}
+                            <Link href="/contact" className="btn-secondary" style={{ borderColor: 'rgba(255,255,255,0.4)', color: 'white' }}>
+                                Demander un Devis Événement
+                            </Link>
                         </div>
                     </div>
                 </div>

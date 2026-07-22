@@ -50,6 +50,8 @@
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     overflow: hidden;
+    position: relative;
+    z-index: 10;
 }
 
 /* Left Column: Image Media Box */
@@ -63,6 +65,7 @@
     min-height: 520px;
     cursor: pointer;
     touch-action: pan-y;
+    overflow: hidden;
 }
 
 .insta-media-wrapper {
@@ -90,12 +93,12 @@
     display: block;
 }
 
-/* Click Hotspots (Desktop) */
+/* Click Hotspots (Desktop only - strictly scoped inside media box) */
 .click-hotspot {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 30%;
+    width: 25%;
     z-index: 5;
     cursor: pointer;
 }
@@ -218,6 +221,9 @@
     flex-direction: column;
     background: #ffffff;
     border-left: 1px solid #F2E8E4;
+    position: relative;
+    z-index: 50;
+    pointer-events: auto;
 }
 
 /* Header */
@@ -227,6 +233,14 @@
     gap: 0.85rem;
     padding: 1.25rem;
     border-bottom: 1px solid #F2E8E4;
+    position: relative;
+    z-index: 50;
+}
+
+.insta-post-avatar-link {
+    display: block;
+    cursor: pointer;
+    z-index: 50;
 }
 
 .insta-post-avatar-box {
@@ -263,6 +277,12 @@
     font-weight: 700;
     font-size: 0.95rem;
     color: var(--text-primary);
+    cursor: pointer;
+    z-index: 50;
+}
+
+.insta-post-username:hover {
+    text-decoration: underline;
 }
 
 .verified-badge {
@@ -279,10 +299,13 @@
     font-weight: 700;
     font-size: 0.85rem;
     transition: opacity 0.2s;
+    cursor: pointer;
+    z-index: 50;
 }
 
 .follow-btn:hover {
     opacity: 0.8;
+    text-decoration: underline;
 }
 
 .insta-post-location {
@@ -297,6 +320,8 @@
     flex: 1;
     overflow-y: auto;
     max-height: 320px;
+    position: relative;
+    z-index: 50;
 }
 
 .caption-entry {
@@ -309,6 +334,12 @@
     color: var(--text-primary);
     margin-right: 0.5rem;
     float: left;
+    cursor: pointer;
+    z-index: 50;
+}
+
+.caption-user:hover {
+    text-decoration: underline;
 }
 
 .caption-body p {
@@ -320,6 +351,8 @@
     border-top: 1px solid #F2E8E4;
     padding: 1.25rem;
     background: #FAF8F5;
+    position: relative;
+    z-index: 50;
 }
 
 .insta-post-actions {
@@ -344,6 +377,7 @@
     justify-content: center;
     border: none;
     background: none;
+    z-index: 50;
 }
 
 .action-icon-btn:hover {
@@ -362,6 +396,8 @@
     font-size: 0.85rem;
     font-weight: 700;
     transition: color 0.2s ease;
+    cursor: pointer;
+    z-index: 50;
 }
 
 .insta-direct-link:hover {
@@ -393,6 +429,8 @@
     justify-content: center;
     padding: 15px 20px;
     font-size: 0.95rem;
+    cursor: pointer;
+    z-index: 50;
 }
 
 /* Mobile Responsive */
@@ -406,7 +444,7 @@
         touch-action: pan-y;
     }
     .click-hotspot {
-        display: none; /* Hide click hotspots on mobile so touch swipe operates with zero interference */
+        display: none;
     }
     .insta-post-arrow {
         width: 38px;

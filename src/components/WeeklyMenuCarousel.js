@@ -50,7 +50,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev]);
 
-    // Ultra-reliable Mobile Touch Swipe Handler (iOS & Android compatible)
+    // Mobile Touch Swipe Handler
     const handleTouchStart = (e) => {
         if (e.touches && e.touches.length > 0) {
             touchStartX.current = e.touches[0].clientX;
@@ -63,12 +63,11 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         if (!touchEnd) return;
 
         const diff = touchStartX.current - touchEnd;
-        // Sensitivity threshold: 25px
         if (Math.abs(diff) > 25) {
             if (diff > 0) {
-                handleNext(); // Swipe Left -> Next photo (loops to 0)
+                handleNext();
             } else {
-                handlePrev(); // Swipe Right -> Prev photo (loops to end)
+                handlePrev();
             }
         }
         touchStartX.current = 0;
@@ -88,7 +87,9 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
     };
 
-    // IF EMBED URL ONLY (no local images attached)
+    const targetInstaLink = menu.embed_url || siteInfo?.instagram || "https://www.instagram.com/mamefricoto/";
+
+    // ONLY USE IFRAME EMBED IF NO LOCAL IMAGES ARE PRESENT
     if (embedUrl && images.length === 0) {
         return (
             <div className="insta-embed-card animate-fade-up">
@@ -162,7 +163,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Left / Right Click Hotspots for desktop */}
+                {/* Left / Right Click Hotspots for desktop (scoped only inside media box) */}
                 {images.length > 1 && (
                     <>
                         <div className="click-hotspot hotspot-left" onClick={handlePrev} title="Précédent" />
@@ -177,7 +178,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Arrow Buttons (Always visible and clickable on Mobile & Desktop) */}
+                {/* Arrow Buttons */}
                 {images.length > 1 && (
                     <>
                         <button
@@ -218,15 +219,19 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
             {/* Right Column: Profile Header, Caption, Likes & CTA */}
             <div className="insta-post-sidebar">
                 <div className="insta-post-header">
-                    <div className="insta-post-avatar-box">
-                        <Image src="/logo.png" alt="Mamé Fricoto" width={42} height={42} className="insta-post-avatar" />
-                    </div>
+                    <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="insta-post-avatar-link">
+                        <div className="insta-post-avatar-box">
+                            <Image src="/logo.png" alt="Mamé Fricoto" width={42} height={42} className="insta-post-avatar" />
+                        </div>
+                    </a>
                     <div className="insta-post-user-meta">
                         <div className="insta-post-username-row">
-                            <span className="insta-post-username">mamefricoto</span>
+                            <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="insta-post-username">
+                                mamefricoto
+                            </a>
                             <CheckCircle2 size={15} className="verified-badge" />
                             <span className="dot-separator">•</span>
-                            <a href={siteInfo?.instagram || "https://www.instagram.com/mamefricoto/"} target="_blank" rel="noopener noreferrer" className="follow-btn">
+                            <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="follow-btn">
                                 Suivre
                             </a>
                         </div>
@@ -239,7 +244,9 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
                 <div className="insta-post-caption-box">
                     <div className="caption-entry">
-                        <span className="caption-user">mamefricoto</span>
+                        <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="caption-user">
+                            mamefricoto
+                        </a>
                         <div className="caption-body">
                             <p>{menu.title}</p>
                             {menu.description && <p style={{ marginTop: '0.5rem' }}>{menu.description}</p>}
@@ -259,11 +266,11 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             <a href="tel:0743646411" className="action-icon-btn" title="Appeler pour commander">
                                 <MessageCircle size={24} />
                             </a>
-                            <a href={menu.embed_url || siteInfo?.instagram || "https://www.instagram.com/mamefricoto/"} target="_blank" rel="noopener noreferrer" className="action-icon-btn" title="Ouvrir sur Instagram">
+                            <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="action-icon-btn" title="Ouvrir sur Instagram">
                                 <Share2 size={24} />
                             </a>
                         </div>
-                        <a href={menu.embed_url || siteInfo?.instagram || "https://www.instagram.com/mamefricoto/"} target="_blank" rel="noopener noreferrer" className="insta-direct-link">
+                        <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="insta-direct-link">
                             <Instagram size={18} />
                             Voir sur Instagram
                         </a>

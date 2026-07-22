@@ -24,7 +24,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [likesCount, setLikesCount] = useState(54);
     const [showHeartAnim, setShowHeartAnim] = useState(false);
     const touchStartX = useRef(0);
-    const touchEndX = useRef(0);
 
     if (!menu) return null;
 
@@ -41,41 +40,40 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
     }, [images.length]);
 
-    // Keyboard Arrow Keys listener (Left / Right arrows)
+    // Keyboard Arrow Keys (Left / Right)
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'ArrowRight') {
-                handleNext();
-            } else if (e.key === 'ArrowLeft') {
-                handlePrev();
-            }
+            if (e.key === 'ArrowRight') handleNext();
+            else if (e.key === 'ArrowLeft') handlePrev();
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev]);
 
-    // Touch Swipe handlers for mobile
+    // Ultra-reliable Mobile Touch Swipe Handler (iOS & Android compatible)
     const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
+        if (e.touches && e.touches.length > 0) {
+            touchStartX.current = e.touches[0].clientX;
+        }
     };
 
-    const handleTouchMove = (e) => {
-        touchEndX.current = e.touches[0].clientX;
-    };
+    const handleTouchEnd = (e) => {
+        if (!touchStartX.current) return;
+        const touchEnd = e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0].clientX : 0;
+        if (!touchEnd) return;
 
-    const handleTouchEnd = () => {
-        if (!touchStartX.current || !touchEndX.current) return;
-        const diff = touchStartX.current - touchEndX.current;
-        if (diff > 35) {
-            handleNext();
-        } else if (diff < -35) {
-            handlePrev();
+        const diff = touchStartX.current - touchEnd;
+        // Sensitivity threshold: 25px
+        if (Math.abs(diff) > 25) {
+            if (diff > 0) {
+                handleNext(); // Swipe Left -> Next photo (loops to 0)
+            } else {
+                handlePrev(); // Swipe Right -> Prev photo (loops to end)
+            }
         }
         touchStartX.current = 0;
-        touchEndX.current = 0;
     };
 
-    // Double-click on image to Like (Instagram style)
     const handleImageDoubleClick = () => {
         if (!liked) {
             setLiked(true);
@@ -90,7 +88,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
     };
 
-    // Fallback IF EMBED URL ONLY (no local images attached)
+    // IF EMBED URL ONLY (no local images attached)
     if (embedUrl && images.length === 0) {
         return (
             <div className="insta-embed-card animate-fade-up">
@@ -123,11 +121,10 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
             <div
                 className="insta-post-media"
                 onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 onDoubleClick={handleImageDoubleClick}
             >
-                {/* Double click animated heart pop */}
+                {/* Double click heart animation */}
                 {showHeartAnim && (
                     <div className="heart-pop-anim">
                         <Heart size={80} fill="#ffffff" color="#ffffff" />
@@ -165,22 +162,22 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Left/Right Click Hotspots for easy clicking anywhere on the media */}
+                {/* Left / Right Click Hotspots for desktop */}
                 {images.length > 1 && (
                     <>
-                        <div className="click-hotspot hotspot-left" onClick={handlePrev} title="Image précédente (Flèche Gauche)" />
-                        <div className="click-hotspot hotspot-right" onClick={handleNext} title="Image suivante (Flèche Droite)" />
+                        <div className="click-hotspot hotspot-left" onClick={handlePrev} title="Précédent" />
+                        <div className="click-hotspot hotspot-right" onClick={handleNext} title="Suivant" />
                     </>
                 )}
 
-                {/* Photo / Page Counter */}
+                {/* Photo Counter (1/5) */}
                 {images.length > 1 && (
                     <div className="insta-post-counter">
                         {currentIndex + 1}/{images.length}
                     </div>
                 )}
 
-                {/* Highly Interactive Arrow Buttons */}
+                {/* Arrow Buttons (Always visible and clickable on Mobile & Desktop) */}
                 {images.length > 1 && (
                     <>
                         <button
@@ -188,7 +185,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                             className="insta-post-arrow arrow-left"
                             aria-label="Photo précédente"
-                            title="Précédent (Flèche Gauche Clavier)"
                         >
                             <ChevronLeft size={22} />
                         </button>
@@ -197,7 +193,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
                             className="insta-post-arrow arrow-right"
                             aria-label="Photo suivante"
-                            title="Suivant (Flèche Droite Clavier)"
                         >
                             <ChevronRight size={22} />
                         </button>

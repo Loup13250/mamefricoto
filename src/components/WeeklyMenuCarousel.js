@@ -63,11 +63,12 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         if (!touchEnd) return;
 
         const diff = touchStartX.current - touchEnd;
-        if (Math.abs(diff) > 25) {
+        // Low threshold for quick responsive swiping on mobile (20px)
+        if (Math.abs(diff) > 20) {
             if (diff > 0) {
-                handleNext();
+                handleNext(); // Swipe Left -> Next photo
             } else {
-                handlePrev();
+                handlePrev(); // Swipe Right -> Prev photo
             }
         }
         touchStartX.current = 0;
@@ -153,6 +154,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                                 className="insta-post-img"
                                 priority
                                 unoptimized
+                                draggable={false}
                             />
                         )}
                     </div>
@@ -163,11 +165,19 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Left / Right Click Hotspots for desktop (scoped only inside media box) */}
+                {/* Desktop Click Hotspots */}
                 {images.length > 1 && (
                     <>
-                        <div className="click-hotspot hotspot-left" onClick={handlePrev} title="Précédent" />
-                        <div className="click-hotspot hotspot-right" onClick={handleNext} title="Suivant" />
+                        <div
+                            className="click-hotspot hotspot-left"
+                            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                            title="Précédent"
+                        />
+                        <div
+                            className="click-hotspot hotspot-right"
+                            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                            title="Suivant"
+                        />
                     </>
                 )}
 
@@ -178,11 +188,13 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Arrow Buttons */}
+                {/* Arrow Buttons (Touch event propagation stopped to prevent interference on mobile) */}
                 {images.length > 1 && (
                     <>
                         <button
                             type="button"
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => { e.stopPropagation(); handlePrev(); }}
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                             className="insta-post-arrow arrow-left"
                             aria-label="Photo précédente"
@@ -191,6 +203,8 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                         </button>
                         <button
                             type="button"
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => { e.stopPropagation(); handleNext(); }}
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
                             className="insta-post-arrow arrow-right"
                             aria-label="Photo suivante"
@@ -207,6 +221,8 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             <button
                                 key={img.id || idx}
                                 type="button"
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                                 onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                                 className={`insta-post-dot ${idx === currentIndex ? 'active' : ''}`}
                                 aria-label={`Photo ${idx + 1}`}
@@ -221,7 +237,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                 <div className="insta-post-header">
                     <a href={targetInstaLink} target="_blank" rel="noopener noreferrer" className="insta-post-avatar-link">
                         <div className="insta-post-avatar-box">
-                            <Image src="/logo.png" alt="Mamé Fricoto" width={42} height={42} className="insta-post-avatar" />
+                            <Image src="/logo.png" alt="Mamé Fricoto" width={42} height={42} className="insta-post-avatar" draggable={false} />
                         </div>
                     </a>
                     <div className="insta-post-user-meta">

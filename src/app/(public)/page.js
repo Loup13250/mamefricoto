@@ -2,6 +2,7 @@ import React from 'react';
 import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getGalleryPosts } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
+import HeroCarousel from '@/components/HeroCarousel';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
 import InstagramGallery from '@/components/InstagramGallery';
 import { Phone, Truck, CalendarDays, Building2, UtensilsCrossed, ChefHat, Instagram, Star, ArrowRight, Sparkles, HeartHandshake } from 'lucide-react';
@@ -39,8 +40,8 @@ export default function Home() {
         },
         {
             icon: <Building2 size={30} />,
-            title: "Repas d'Entreprise",
             badge: "PROFESSIONNELS",
+            title: "Repas d'Entreprise",
             description: "Plateaux repas complets, déjeuners d'équipe et séminaires livrés directement dans vos locaux.",
             color: "#4A6FA5",
         },
@@ -48,36 +49,8 @@ export default function Home() {
 
     return (
         <main>
-            {/* ===== HERO SECTION ===== */}
-            <section className="hero">
-                <div className="hero-carousel">
-                    {carousel.map((slide, index) => (
-                        <div
-                            key={slide.id}
-                            className={`hero-slide ${index === 0 ? 'active' : ''}`}
-                            style={{ backgroundImage: `linear-gradient(rgba(30, 45, 68, 0.55), rgba(30, 45, 68, 0.68)), url(${slide.image_url})` }}
-                        >
-                            <div className="hero-content animate-fade-up">
-                                {index === 0 ? (
-                                    <h1 className="hero-title">{slide.title}</h1>
-                                ) : (
-                                    <h2 className="hero-title">{slide.title}</h2>
-                                )}
-                                <p className="hero-subtitle">{slide.subtitle}</p>
-                                <div className="hero-actions delay-200" style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                    <a href="#menu-semaine" className="hero-discover-btn">
-                                        Découvrir le Menu
-                                    </a>
-                                    <a href="tel:0743646411" className="hero-phone-btn">
-                                        <Phone size={18} />
-                                        07 43 64 64 11
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+            {/* ===== HERO CAROUSEL SECTION ===== */}
+            <HeroCarousel slides={carousel} />
 
             {/* ===== BANDEAU LIVRAISON ===== */}
             <section className="delivery-banner">
@@ -133,7 +106,7 @@ export default function Home() {
                 <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
             )}
 
-            {/* ===== NOS PRESTATIONS (SANS EMOJIS, ATTRAYANTES & SOLAIRES) ===== */}
+            {/* ===== NOS PRESTATIONS ===== */}
             <section className="section-padding services-section">
                 <div className="container">
                     <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
@@ -198,7 +171,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ===== AVIS GOOGLE (LINK MIS À JOUR) ===== */}
+            {/* ===== AVIS GOOGLE ===== */}
             {siteInfo.google_reviews && (
                 <section className="reviews-banner">
                     <div className="container reviews-banner-inner">

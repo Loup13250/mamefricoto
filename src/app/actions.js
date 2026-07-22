@@ -171,7 +171,7 @@ export async function updateSiteInfo(formData) {
     revalidatePath('/contact');
     revalidatePath('/a-propos');
     revalidatePath('/admin/dashboard/settings');
-    return { success: true };
+    redirect('/admin/dashboard/settings?saved=1');
 }
 
 // --- WEEKLY MENU ---

@@ -1,5 +1,6 @@
 import { getSiteInfo } from '@/lib/data';
 import { updateSiteInfo } from '@/app/actions';
+import AdminFormWrapper from '@/components/AdminFormWrapper';
 import { Save, Image as ImageIcon, Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="admin-card" style={{ width: '100%', maxWidth: '750px', borderTop: '4px solid var(--admin-primary)' }}>
-                <form action={updateSiteInfo} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                <AdminFormWrapper action={updateSiteInfo} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                     {/* Logos & Images */}
                     <div style={{ borderBottom: '1px solid #f1ede8', paddingBottom: '1.5rem' }}>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -130,7 +131,7 @@ export default function SettingsPage() {
                             <Save size={18} /> Sauvegarder les modifications
                         </button>
                     </div>
-                </form>
+                </AdminFormWrapper>
             </div>
         </div>
     );

@@ -7,15 +7,13 @@ import { Menu as MenuIcon, X as XIcon, Phone } from 'lucide-react';
 import './Header.css';
 
 export default function Header() {
-    const [scrolled, setScrolled] = useState(() => {
-        if (typeof window === 'undefined') return false;
-        return window.scrollY > 60;
-    });
+    const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
     const isHome = pathname === '/';
 
     useEffect(() => {
+        setScrolled(window.scrollY > 60);
         const onScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);

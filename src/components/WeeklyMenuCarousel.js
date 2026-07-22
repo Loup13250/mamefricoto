@@ -1,8 +1,18 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Phone, Instagram, Heart, Share2, MessageCircle, CheckCircle2, MapPin } from 'lucide-react';
 import './WeeklyMenuCarousel.css';
+
+// Helper to extract Instagram post shortcode from any URL (e.g., https://www.instagram.com/p/DX69JWSDAim/?img_index=1)
+function getInstagramEmbedUrl(url) {
+    if (!url) return null;
+    const match = url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
+    if (match && match[1]) {
+        return `https://www.instagram.com/p/${match[1]}/embed/captioned/`;
+    }
+    return null;
+}
 
 export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,8 +23,34 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
     if (!menu) return null;
 
+    const embedUrl = getInstagramEmbedUrl(menu.embed_url);
     const images = menu.images && menu.images.length > 0 ? menu.images : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : []);
 
+    // IF INSTAGRAM EMBED LINK IS PROVIDED (e.g. https://www.instagram.com/p/DX69JWSDAim/?img_index=1)
+    if (embedUrl && (images.length === 0 || !images[0]?.image_url || menu.embed_url)) {
+        return (
+            <div className="insta-embed-card animate-fade-up">
+                <div className="insta-embed-container">
+                    <iframe
+                        src={embedUrl}
+                        className="insta-embed-iframe"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowTransparency={true}
+                        title="Post Instagram Menu de la Semaine"
+                    />
+                </div>
+                <div className="insta-embed-cta-box">
+                    <a href="tel:0743646411" className="btn-peach order-call-btn">
+                        <Phone size={18} />
+                        Commander par téléphone — 07 43 64 64 11
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
+    // FALLBACK / LOCAL IMAGES CAROUSEL
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
@@ -23,7 +59,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
     };
 
-    // Touch Swipe handlers for mobile
     const handleTouchStart = (e) => {
         touchStartX.current = e.touches[0].clientX;
     };
@@ -35,11 +70,8 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const handleTouchEnd = () => {
         if (!touchStartX.current || !touchEndX.current) return;
         const diff = touchStartX.current - touchEndX.current;
-        if (diff > 50) {
-            handleNext(); // Swipe left -> Next image
-        } else if (diff < -50) {
-            handlePrev(); // Swipe right -> Prev image
-        }
+        if (diff > 50) handleNext();
+        else if (diff < -50) handlePrev();
         touchStartX.current = 0;
         touchEndX.current = 0;
     };
@@ -51,24 +83,31 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
     return (
         <div className="insta-post-card animate-fade-up">
-            {/* Left Column: Image Carousel */}
+            {/* Left Column: Image Media Box */}
             <div
                 className="insta-post-media"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
-                <div className="insta-media-wrapper">
-                    <Image
-                        src={images[currentIndex]?.image_url || menu.image_url}
-                        alt={`${menu.title} - Photo ${currentIndex + 1}`}
-                        width={900}
-                        height={1125}
-                        className="insta-post-img"
-                        priority
-                        unoptimized
-                    />
-                </div>
+                {images.length > 0 && (images[currentIndex]?.image_url || menu.image_url) ? (
+                    <div className="insta-media-wrapper">
+                        <Image
+                            src={images[currentIndex]?.image_url || menu.image_url}
+                            alt={`${menu.title} - Photo ${currentIndex + 1}`}
+                            width={900}
+                            height={1125}
+                            className="insta-post-img"
+                            priority
+                            unoptimized
+                        />
+                    </div>
+                ) : (
+                    <div className="insta-media-placeholder">
+                        <Instagram size={48} style={{ color: '#D97736', marginBottom: '1rem' }} />
+                        <p>Menu de la semaine</p>
+                    </div>
+                )}
 
                 {images.length > 1 && (
                     <div className="insta-post-counter">
@@ -104,7 +143,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
             {/* Right Column: Profile Header, Caption, Likes & CTA */}
             <div className="insta-post-sidebar">
-                {/* Profile Header */}
                 <div className="insta-post-header">
                     <div className="insta-post-avatar-box">
                         <Image src="/logo.png" alt="Mamé Fricoto" width={42} height={42} className="insta-post-avatar" />
@@ -125,7 +163,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 </div>
 
-                {/* Caption Text Box */}
                 <div className="insta-post-caption-box">
                     <div className="caption-entry">
                         <span className="caption-user">mamefricoto</span>
@@ -135,12 +172,10 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             <p style={{ marginTop: '0.75rem', color: '#6B5B50', fontSize: '0.9rem' }}>
                                 Commandes au 07 43 64 64 11 · Retrait au labo à Eyguières ou livraison.
                             </p>
-                            <span className="caption-hashtags">#mamefricoto #traiteur #eyguières #cuisinemaison #platdujour</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Actions & Likes Bar */}
                 <div className="insta-post-footer">
                     <div className="insta-post-actions">
                         <div className="actions-left">

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS weekly_menus (
   title TEXT NOT NULL,
   description TEXT,
   image_url TEXT,
+  embed_url TEXT,
   is_current BOOLEAN DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS gallery_posts (
   title TEXT,
   caption TEXT,
   image_url TEXT NOT NULL,
+  media_type TEXT DEFAULT 'image',
   display_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,13 +77,9 @@ INSERT OR IGNORE INTO site_info (key, value) VALUES ('phone', '07 43 64 64 11');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('address', 'Eyguières, Bouches-du-Rhône');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('hours', 'Du Lundi au Vendredi — Commandes avant 10h');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('contact_email', 'mamefricoto@gmail.com');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('smtp_host', '');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('smtp_port', '587');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('smtp_user', '');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('smtp_pass', '');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('instagram', 'https://www.instagram.com/mamefricoto/');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('facebook', 'https://www.facebook.com/profile.php?id=61580170212207');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('google_reviews', 'https://www.google.com/search?q=mame+fricoto+avis');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('about_text', 'Mamé Fricoto, c''est l''histoire d''une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous. Depuis son labo à domicile à Eyguières, elle prépare chaque semaine des plats mijotés avec amour, des recettes de grand-mère revisitées et des saveurs du terroir provençal. Livraison et retrait disponibles.');
+INSERT OR IGNORE INTO site_info (key, value) VALUES ('about_text', 'Mamé Fricoto, c''est une cuisine familiale et généreuse préparée à Eyguières. Chaque semaine, nous proposons des menus frais de saison, des plats du jour mijotés, ainsi que des prestations sur mesure pour vos événements et buffets dînatoires.');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('about_image', 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('tagline', 'Cuisine maison · Livraison · Retrait');

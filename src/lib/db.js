@@ -10,7 +10,6 @@ export function getDb() {
     let dbPath = path.join(process.cwd(), 'database', 'mamefricoto.db');
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');
 
-    // On Vercel (or production), copy DB to /tmp so that it is writable
     if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
         const tempDbPath = path.join('/tmp', 'mamefricoto.db');
         if (!fs.existsSync(tempDbPath)) {
@@ -22,7 +21,6 @@ export function getDb() {
 
                 if (fs.existsSync(dbPath)) {
                     fs.copyFileSync(dbPath, tempDbPath);
-                    console.log("Database successfully copied to /tmp");
                 }
             } catch (err) {
                 console.error("Failed to copy database to /tmp:", err);
@@ -48,11 +46,18 @@ export function getDb() {
         throw dbErr;
     }
 
-    // Auto-create missing tables if schema exists
     if (fs.existsSync(schemaPath)) {
         try {
             const schema = fs.readFileSync(schemaPath, 'utf-8');
             db.exec(schema);
+
+            // Safe column additions for existing DBs
+            try {
+                db.prepare("ALTER TABLE weekly_menus ADD COLUMN embed_url TEXT").run();
+            } catch {}
+            try {
+                db.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run();
+            } catch {}
         } catch (schemaErr) {
             console.error("Failed to run schema check:", schemaErr);
         }

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Instagram, Sparkles, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Instagram, X, Play } from 'lucide-react';
 import './InstagramGallery.css';
 
 export default function InstagramGallery({ posts, siteInfo }) {
@@ -19,7 +19,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                     </div>
                     <h2 className="section-title">Les Coulisses & Plats de Mamé</h2>
                     <p style={{ maxWidth: '600px', margin: '1rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-                        Découvrez en images la cuisine maison, les buffets dînatoires et la passion au quotidien.
+                        Découvrez en photos & vidéos la cuisine maison, les buffets dînatoires et la passion au quotidien.
                     </p>
                 </div>
 
@@ -30,16 +30,25 @@ export default function InstagramGallery({ posts, siteInfo }) {
                             className={`insta-grid-item animate-fade-up delay-${((idx % 4) + 1) * 100}`}
                             onClick={() => setSelectedPost(post)}
                         >
-                            <Image
-                                src={post.image_url}
-                                alt={post.title || 'Story Mamé Fricoto'}
-                                width={500}
-                                height={500}
-                                className="insta-grid-img"
-                                unoptimized
-                            />
+                            {post.media_type === 'video' ? (
+                                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                    <video src={post.image_url} autoPlay loop muted playsInline className="insta-grid-img" />
+                                    <div className="video-badge">
+                                        <Play size={14} fill="#fff" />
+                                    </div>
+                                </div>
+                            ) : (
+                                <Image
+                                    src={post.image_url}
+                                    alt={post.title || 'Story Mamé Fricoto'}
+                                    width={500}
+                                    height={500}
+                                    className="insta-grid-img"
+                                    unoptimized
+                                />
+                            )}
                             <div className="insta-grid-overlay">
-                                <Instagram size={28} className="insta-grid-icon" />
+                                <Instagram size={24} className="insta-grid-icon" />
                                 {post.title && <h3 className="insta-grid-title">{post.title}</h3>}
                                 {post.caption && <p className="insta-grid-caption">{post.caption}</p>}
                             </div>
@@ -56,7 +65,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}
                     >
                         <Instagram size={20} />
-                        Voir toutes nos stories sur Instagram
+                        Suivre @mamefricoto sur Instagram
                     </a>
                 </div>
             </div>
@@ -69,14 +78,18 @@ export default function InstagramGallery({ posts, siteInfo }) {
                             <X size={24} />
                         </button>
                         <div className="insta-modal-img-box">
-                            <Image
-                                src={selectedPost.image_url}
-                                alt={selectedPost.title || ''}
-                                width={800}
-                                height={800}
-                                className="insta-modal-img"
-                                unoptimized
-                            />
+                            {selectedPost.media_type === 'video' ? (
+                                <video src={selectedPost.image_url} controls autoPlay loop style={{ width: '100%', height: '100%', maxHeight: '550px' }} />
+                            ) : (
+                                <Image
+                                    src={selectedPost.image_url}
+                                    alt={selectedPost.title || ''}
+                                    width={800}
+                                    height={800}
+                                    className="insta-modal-img"
+                                    unoptimized
+                                />
+                            )}
                         </div>
                         <div className="insta-modal-info">
                             <div className="insta-modal-user">
@@ -90,7 +103,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                             {selectedPost.caption && <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem' }}>{selectedPost.caption}</p>}
                             <div style={{ marginTop: 'auto', paddingTop: '1.5rem' }}>
                                 <a href="tel:0743646411" className="btn-peach" style={{ width: '100%', justifyContent: 'center' }}>
-                                    Commander ce plat — 07 43 64 64 11
+                                    Commander par téléphone — 07 43 64 64 11
                                 </a>
                             </div>
                         </div>

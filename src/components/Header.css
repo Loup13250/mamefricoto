@@ -3,7 +3,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 80px;
+    height: 84px;
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -20,43 +20,35 @@
     box-shadow: none;
 }
 
-.site-header--top .logo-img {
-    filter: brightness(10);
-}
-
 .site-header--top .site-nav a {
     color: #ffffff !important;
-    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.3);
 }
 
 .site-header--top .site-nav a::after {
-    background-color: #ffffff;
+    background-color: var(--accent-peach);
 }
 
 .site-header--top .header-cta-btn {
-    background: rgba(255,255,255,0.12) !important;
-    border: 1px solid rgba(255,255,255,0.35) !important;
+    background: rgba(255,255,255,0.15) !important;
+    border: 1.5px solid rgba(255,255,255,0.4) !important;
     color: #ffffff !important;
     backdrop-filter: blur(8px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .site-header--top .header-cta-btn:hover {
-    background: rgba(255,255,255,0.25) !important;
-    border-color: rgba(255,255,255,0.6) !important;
+    background: rgba(255,255,255,0.28) !important;
+    border-color: rgba(255,255,255,0.7) !important;
 }
 
 /* === State: scrolled (frosted glass) === */
 .site-header--scrolled {
-    background: rgba(255, 248, 240, 0.7);
-    backdrop-filter: blur(32px) saturate(180%);
-    -webkit-backdrop-filter: blur(32px) saturate(180%);
-    border-bottom-color: rgba(232, 168, 124, 0.15);
-    box-shadow: 0 4px 30px rgba(61, 90, 128, 0.08);
-}
-
-.site-header--scrolled .logo-img {
-    filter: none;
+    background: rgba(251, 248, 243, 0.88);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom-color: rgba(61, 90, 128, 0.08);
+    box-shadow: 0 4px 25px rgba(44, 24, 16, 0.06);
 }
 
 .site-header--scrolled .site-nav a {
@@ -75,18 +67,25 @@
 .logo-link {
     display: flex;
     align-items: center;
-    transition: transform 0.3s ease;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: var(--accent-blue);
+    padding: 2px;
 }
 
 .logo-link:hover {
-    transform: scale(1.03);
+    transform: scale(1.04);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
 }
 
 .logo-img {
-    height: 46px;
+    height: 48px;
     width: auto;
     object-fit: contain;
-    transition: filter 0.4s ease;
+    border-radius: 12px;
+    display: block;
 }
 
 .site-nav {
@@ -96,10 +95,11 @@
 
 .site-nav a {
     font-family: var(--font-primary);
-    font-weight: 500;
+    font-weight: 600;
     position: relative;
-    font-size: 1.05rem;
-    transition: color 0.4s ease;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    transition: color 0.3s ease;
 }
 
 .site-nav a::after {
@@ -118,18 +118,23 @@
 }
 
 .header-cta-btn {
-    padding: 10px 22px !important;
+    padding: 11px 24px !important;
     font-size: 0.9rem !important;
-    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+    transition: all 0.3s ease !important;
 }
 
 /* Active links */
 .site-nav a.active {
     color: var(--accent-blue) !important;
 }
+
+.site-header--top .site-nav a.active {
+    color: var(--accent-peach) !important;
+}
+
 .site-nav a.active::after {
     width: 100% !important;
-    background-color: var(--accent-blue) !important;
+    background-color: var(--accent-peach) !important;
 }
 
 /* Mobile Toggle */
@@ -156,7 +161,7 @@
 .mobile-drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -174,7 +179,7 @@
     right: 0;
     width: 100%;
     height: 100vh;
-    background: rgba(255, 248, 240, 0.98);
+    background: rgba(251, 248, 243, 0.98);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     z-index: 1050;
@@ -238,6 +243,6 @@
     }
 
     .logo-img {
-        height: 38px;
+        height: 40px;
     }
 }

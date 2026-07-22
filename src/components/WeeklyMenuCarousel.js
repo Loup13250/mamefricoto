@@ -1,10 +1,9 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Phone, Instagram, Heart, Share2, MessageCircle, CheckCircle2, MapPin } from 'lucide-react';
 import './WeeklyMenuCarousel.css';
 
-// Helper to extract Instagram post/reel shortcode from any URL
 function getInstagramEmbedUrl(url) {
     if (!url) return null;
     const match = url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
@@ -23,6 +22,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(54);
+    const [showHeartAnim, setShowHeartAnim] = useState(false);
     const touchStartX = useRef(0);
     const touchEndX = useRef(0);
 
@@ -31,7 +31,66 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const embedUrl = getInstagramEmbedUrl(menu.embed_url);
     const images = menu.images && menu.images.length > 0 ? menu.images : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : []);
 
-    // IF EMBED URL ONLY (no local images uploaded at all)
+    const handlePrev = useCallback(() => {
+        if (images.length <= 1) return;
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    }, [images.length]);
+
+    const handleNext = useCallback(() => {
+        if (images.length <= 1) return;
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, [images.length]);
+
+    // Keyboard Arrow Keys listener (Left / Right arrows)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowRight') {
+                handleNext();
+            } else if (e.key === 'ArrowLeft') {
+                handlePrev();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleNext, handlePrev]);
+
+    // Touch Swipe handlers for mobile
+    const handleTouchStart = (e) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e) => {
+        touchEndX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStartX.current || !touchEndX.current) return;
+        const diff = touchStartX.current - touchEndX.current;
+        if (diff > 35) {
+            handleNext();
+        } else if (diff < -35) {
+            handlePrev();
+        }
+        touchStartX.current = 0;
+        touchEndX.current = 0;
+    };
+
+    // Double-click on image to Like (Instagram style)
+    const handleImageDoubleClick = () => {
+        if (!liked) {
+            setLiked(true);
+            setLikesCount((prev) => prev + 1);
+        }
+        setShowHeartAnim(true);
+        setTimeout(() => setShowHeartAnim(false), 800);
+    };
+
+    const toggleLike = () => {
+        setLiked(!liked);
+        setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
+    };
+
+    // Fallback IF EMBED URL ONLY (no local images attached)
     if (embedUrl && images.length === 0) {
         return (
             <div className="insta-embed-card animate-fade-up">
@@ -55,40 +114,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         );
     }
 
-    // CUSTOM MULTI-MEDIA CAROUSEL WITH INFINITE LOOP, DOTS & TOUCH SWIPE
-    const handlePrev = () => {
-        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-    };
-
-    const handleNext = () => {
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    };
-
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchMove = (e) => {
-        touchEndX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = () => {
-        if (!touchStartX.current || !touchEndX.current) return;
-        const diff = touchStartX.current - touchEndX.current;
-        if (diff > 35) {
-            handleNext(); // Swipe left -> next image (loops at end)
-        } else if (diff < -35) {
-            handlePrev(); // Swipe right -> prev image (loops at 0)
-        }
-        touchStartX.current = 0;
-        touchEndX.current = 0;
-    };
-
-    const toggleLike = () => {
-        setLiked(!liked);
-        setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
-    };
-
     const currentMedia = images[currentIndex]?.image_url || menu.image_url;
     const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
 
@@ -100,7 +125,15 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onDoubleClick={handleImageDoubleClick}
             >
+                {/* Double click animated heart pop */}
+                {showHeartAnim && (
+                    <div className="heart-pop-anim">
+                        <Heart size={80} fill="#ffffff" color="#ffffff" />
+                    </div>
+                )}
+
                 {currentMedia ? (
                     <div className="insta-media-wrapper">
                         {isVideo ? (
@@ -132,33 +165,53 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Counter (e.g. 1/5) */}
+                {/* Left/Right Click Hotspots for easy clicking anywhere on the media */}
+                {images.length > 1 && (
+                    <>
+                        <div className="click-hotspot hotspot-left" onClick={handlePrev} title="Image précédente (Flèche Gauche)" />
+                        <div className="click-hotspot hotspot-right" onClick={handleNext} title="Image suivante (Flèche Droite)" />
+                    </>
+                )}
+
+                {/* Photo / Page Counter */}
                 {images.length > 1 && (
                     <div className="insta-post-counter">
                         {currentIndex + 1}/{images.length}
                     </div>
                 )}
 
-                {/* Arrow Controls */}
+                {/* Highly Interactive Arrow Buttons */}
                 {images.length > 1 && (
                     <>
-                        <button type="button" onClick={handlePrev} className="insta-post-arrow arrow-left" aria-label="Photo précédente">
-                            <ChevronLeft size={20} />
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                            className="insta-post-arrow arrow-left"
+                            aria-label="Photo précédente"
+                            title="Précédent (Flèche Gauche Clavier)"
+                        >
+                            <ChevronLeft size={22} />
                         </button>
-                        <button type="button" onClick={handleNext} className="insta-post-arrow arrow-right" aria-label="Photo suivante">
-                            <ChevronRight size={20} />
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                            className="insta-post-arrow arrow-right"
+                            aria-label="Photo suivante"
+                            title="Suivant (Flèche Droite Clavier)"
+                        >
+                            <ChevronRight size={22} />
                         </button>
                     </>
                 )}
 
-                {/* Dots indicator at bottom of image */}
+                {/* Dots indicator */}
                 {images.length > 1 && (
                     <div className="insta-post-dots">
                         {images.map((img, idx) => (
                             <button
                                 key={img.id || idx}
                                 type="button"
-                                onClick={() => setCurrentIndex(idx)}
+                                onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                                 className={`insta-post-dot ${idx === currentIndex ? 'active' : ''}`}
                                 aria-label={`Photo ${idx + 1}`}
                             />

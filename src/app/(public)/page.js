@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getArticles, getGalleryPosts } from '@/lib/data';
+import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getGalleryPosts } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
@@ -13,7 +13,6 @@ export default function Home() {
     const siteInfo = getSiteInfo();
     const carousel = getCarouselImages();
     const weeklyMenu = getCurrentWeeklyMenu();
-    const articles = getArticles();
     const galleryPosts = getGalleryPosts();
 
     const services = [
@@ -52,10 +51,9 @@ export default function Home() {
                         <div
                             key={slide.id}
                             className={`hero-slide ${index === 0 ? 'active' : ''}`}
-                            style={{ backgroundImage: `linear-gradient(rgba(42,62,90,0.55), rgba(42,62,90,0.65)), url(${slide.image_url})` }}
+                            style={{ backgroundImage: `linear-gradient(rgba(30, 45, 68, 0.55), rgba(30, 45, 68, 0.68)), url(${slide.image_url})` }}
                         >
                             <div className="hero-content animate-fade-up">
-                                <div className="hero-decorative-line"></div>
                                 {index === 0 ? (
                                     <h1 className="hero-title">{slide.title}</h1>
                                 ) : (
@@ -64,8 +62,7 @@ export default function Home() {
                                 <p className="hero-subtitle">{slide.subtitle}</p>
                                 <div className="hero-actions delay-200" style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                                     <a href="#menu-semaine" className="hero-discover-btn">
-                                        Voir le Menu de la Semaine
-                                        <span className="btn-arrow">↓</span>
+                                        Découvrir le Menu
                                     </a>
                                     <a href="tel:0743646411" className="hero-phone-btn">
                                         <Phone size={18} />
@@ -76,39 +73,36 @@ export default function Home() {
                         </div>
                     ))}
                 </div>
-                <div className="hero-scroll-indicator">
-                    <span></span>
-                </div>
             </section>
 
             {/* ===== BANDEAU LIVRAISON ===== */}
             <section className="delivery-banner">
                 <div className="container delivery-banner-inner">
                     <div className="delivery-item">
-                        <Truck size={22} />
+                        <Truck size={20} />
                         <span>Livraison à domicile</span>
                     </div>
                     <div className="delivery-divider"></div>
                     <div className="delivery-item">
-                        <UtensilsCrossed size={22} />
+                        <UtensilsCrossed size={20} />
                         <span>Retrait au labo</span>
                     </div>
                     <div className="delivery-divider"></div>
                     <div className="delivery-item">
-                        <ChefHat size={22} />
+                        <ChefHat size={20} />
                         <span>Fait maison à Eyguières</span>
                     </div>
                 </div>
             </section>
 
-            {/* ===== MENU DE LA SEMAINE (INSTAGRAM CAROUSEL FORMAT) ===== */}
+            {/* ===== MENU DE LA SEMAINE ===== */}
             <section id="menu-semaine" className="section-padding weekly-menu-section">
                 <div className="container">
-                    <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
-                        <span className="section-subtitle" style={{ justifyContent: 'center' }}>CHAQUE SEMAINE, UN NOUVEAU MENU</span>
+                    <div className="text-center animate-fade-up" style={{ marginBottom: '3rem' }}>
+                        <span className="section-subtitle">DU MARDI AU SAMEDI</span>
                         <h2 className="section-title">Le Menu de la Semaine</h2>
-                        <p style={{ maxWidth: '600px', margin: '1rem auto 0', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                            Feuilletez le post de la semaine ci-dessous : menus, tarifs & allergènes. Commandez avant 10h par téléphone !
+                        <p style={{ maxWidth: '600px', margin: '0.5rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
+                            Découvrez nos plats frais de la semaine. Commandez par téléphone au 07 43 64 64 11 !
                         </p>
                     </div>
 
@@ -117,8 +111,8 @@ export default function Home() {
                     ) : (
                         <div className="weekly-menu-empty animate-fade-up delay-200">
                             <ChefHat size={48} />
-                            <h3>Le menu de la semaine arrive bientôt !</h3>
-                            <p>Suivez-nous sur Instagram pour être les premiers informés.</p>
+                            <h3>Le menu arrive très bientôt</h3>
+                            <p>Suivez Mamé Fricoto sur Instagram pour découvrir les prochains plats.</p>
                             {siteInfo.instagram && (
                                 <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ marginTop: '1.5rem' }}>
                                     <Instagram size={18} />
@@ -138,11 +132,11 @@ export default function Home() {
             {/* ===== NOS PRESTATIONS ===== */}
             <section className="section-padding services-section">
                 <div className="container">
-                    <div className="text-center animate-fade-up" style={{ marginBottom: '4rem' }}>
-                        <span className="section-subtitle" style={{ justifyContent: 'center' }}>CE QUE NOUS PROPOSONS</span>
+                    <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
+                        <span className="section-subtitle">NOTRE SAVOIR-FAIRE</span>
                         <h2 className="section-title">Nos Prestations</h2>
-                        <p style={{ maxWidth: '600px', margin: '1rem auto 0', color: 'var(--text-secondary)' }}>
-                            {siteInfo.services_text || 'Que ce soit pour vos repas du quotidien ou vos événements spéciaux, Mamé Fricoto s\'adapte à vos envies.'}
+                        <p style={{ maxWidth: '600px', margin: '0.5rem auto 0', color: 'var(--text-secondary)' }}>
+                            {siteInfo.services_text || 'Pour vos repas quotidiens ou vos événements festifs, Mamé Fricoto prépare vos mets sur mesure.'}
                         </p>
                     </div>
 
@@ -173,12 +167,11 @@ export default function Home() {
                                 className="about-image"
                                 unoptimized
                             />
-                            <div className="about-image-accent"></div>
                         </div>
                         <div className="about-text animate-fade-up delay-200">
-                            <span className="section-subtitle">NOTRE HISTOIRE</span>
-                            <h2 className="section-title">Cuisine Maison,<br />Faite avec Amour</h2>
-                            <p style={{ marginBottom: '2rem', fontSize: '1.05rem', lineHeight: '1.8' }}>
+                            <span className="section-subtitle">CUISINE FAMILIALE</span>
+                            <h2 className="section-title">L&apos;Esprit Mamé Fricoto</h2>
+                            <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', lineHeight: '1.8' }}>
                                 {siteInfo.about_text}
                             </p>
                             <div className="about-details">
@@ -206,10 +199,10 @@ export default function Home() {
                     <div className="container reviews-banner-inner">
                         <div className="reviews-stars">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} size={24} fill="#FFD700" color="#FFD700" />
+                                <Star key={i} size={22} fill="#F4A261" color="#F4A261" />
                             ))}
                         </div>
-                        <p>Nos clients nous recommandent !</p>
+                        <p>Consultez les avis de nos clients sur Google</p>
                         <a href={siteInfo.google_reviews} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ marginLeft: '1.5rem' }}>
                             Voir les avis Google
                             <ArrowRight size={16} />
@@ -218,51 +211,13 @@ export default function Home() {
                 </section>
             )}
 
-            {/* ===== ACTUALITÉS ===== */}
-            {articles.length > 0 && (
-                <section className="section-padding articles-section">
-                    <div className="container">
-                        <div className="text-center animate-fade-up" style={{ marginBottom: '4rem' }}>
-                            <span className="section-subtitle" style={{ justifyContent: 'center' }}>LES DERNIÈRES NOUVELLES</span>
-                            <h2 className="section-title">Actualités</h2>
-                        </div>
-
-                        <div className="articles-grid">
-                            {articles.slice(0, 3).map((article, i) => (
-                                <div key={article.id} className={`article-card animate-fade-up delay-${(i + 1) * 100}`}>
-                                    {article.image_url && (
-                                        <div className="article-image-wrapper">
-                                            <Image
-                                                src={article.image_url}
-                                                alt={article.title}
-                                                width={800}
-                                                height={500}
-                                                className="article-image"
-                                                unoptimized
-                                            />
-                                        </div>
-                                    )}
-                                    <div className="article-content">
-                                        <span className="article-date">
-                                            {new Date(article.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </span>
-                                        <h3>{article.title}</h3>
-                                        <p>{article.content}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
             {/* ===== CTA FINAL ===== */}
             <section className="final-cta">
                 <div className="container text-center">
                     <div className="animate-fade-up">
-                        <h2 style={{ fontSize: '2.5rem', color: 'white', marginBottom: '1rem' }}>Envie de bien manger ?</h2>
-                        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
-                            Commandez votre repas maison dès maintenant. Livraison ou retrait à Eyguières.
+                        <h2 style={{ fontSize: '2.5rem', color: 'white', marginBottom: '1rem' }}>Une envie gourmande ?</h2>
+                        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
+                            Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.
                         </p>
                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             <a href="tel:0743646411" className="btn-peach" style={{ fontSize: '1.1rem', padding: '18px 40px' }}>

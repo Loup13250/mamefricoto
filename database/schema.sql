@@ -50,14 +50,6 @@ CREATE TABLE IF NOT EXISTS gallery_posts (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS articles (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  image_url TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS carousel_images (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT,
@@ -79,7 +71,7 @@ INSERT OR IGNORE INTO site_info (key, value) VALUES ('hours', 'Du Lundi au Vendr
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('contact_email', 'mamefricoto@gmail.com');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('instagram', 'https://www.instagram.com/mamefricoto/');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('facebook', 'https://www.facebook.com/profile.php?id=61580170212207');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('google_reviews', 'https://www.google.com/search?q=mame+fricoto+avis');
+INSERT OR IGNORE INTO site_info (key, value) VALUES ('google_reviews', 'https://www.google.com/search?sca_esv=75280e57e4653e14&sxsrf=APpeQnskTs4Q-BjHwFVcRhpy87X3LrM0lw:1784762242148&si=APenkKm7iecQ4G6P-TsbSMFKIQtv3EFIqRAFw-i8uEbk55Z-__cmZA_YJXAM1QWtLJ-URJEQSHho-3NjILZNFLc-8Wkq8P8VEuhf5VCOGV6sxoLACXWMYt6l5OqxmHDPORYF3ZRPFIUf&q=Mam%C3%A9+Fricoto+Avis&sa=X&ved=2ahUKEwi9ls67teeVAxVdkWoFHVscFt4Q0bkNegQIOBAH&biw=1920&bih=945&dpr=1');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('about_text', 'Mamé Fricoto, c''est une cuisine familiale et généreuse préparée à Eyguières. Chaque semaine, nous proposons des menus frais de saison, des plats du jour mijotés, ainsi que des prestations sur mesure pour vos événements et buffets dînatoires.');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('about_image', 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('tagline', 'Cuisine maison · Livraison · Retrait');

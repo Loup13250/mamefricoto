@@ -18,14 +18,6 @@ export function getCurrentWeeklyMenu() {
     if (!menu) return null;
 
     const images = db.prepare('SELECT * FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(menu.id);
-    
-    // If no extra images in relation table, map the main image_url as single image array
-    if (images.length === 0 && menu.image_url) {
-        return {
-            ...menu,
-            images: [{ id: 0, image_url: menu.image_url }]
-        };
-    }
 
     return {
         ...menu,
@@ -67,10 +59,4 @@ export function getGalleryPosts() {
 export function getCarouselImages() {
     const db = getDb();
     return db.prepare('SELECT * FROM carousel_images ORDER BY display_order ASC').all();
-}
-
-// --- Articles ---
-export function getArticles() {
-    const db = getDb();
-    return db.prepare('SELECT * FROM articles ORDER BY created_at DESC').all();
 }

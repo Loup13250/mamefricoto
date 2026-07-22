@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { adminLogout } from '@/app/actions';
-import { LayoutDashboard, Newspaper, CalendarDays, Image as ImageIcon, Settings, LogOut, ChefHat, Mail, Camera } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Image as ImageIcon, Settings, LogOut, ChefHat, Mail, Camera } from 'lucide-react';
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -31,14 +31,11 @@ export default function DashboardLayout({ children }) {
                     <Link href="/admin/dashboard/galerie" className={`admin-nav-link ${pathname === '/admin/dashboard/galerie' ? 'active' : ''}`}>
                         <Camera size={18} /> Galerie Instagram / Stories
                     </Link>
-                    <Link href="/admin/dashboard/articles" className={`admin-nav-link ${pathname === '/admin/dashboard/articles' ? 'active' : ''}`}>
-                        <Newspaper size={18} /> Actualités
-                    </Link>
                     <Link href="/admin/dashboard/carousel" className={`admin-nav-link ${pathname === '/admin/dashboard/carousel' ? 'active' : ''}`}>
                         <ImageIcon size={18} /> Photos Carrousel
                     </Link>
                     <Link href="/admin/dashboard/settings" className={`admin-nav-link ${pathname === '/admin/dashboard/settings' ? 'active' : ''}`}>
-                        <Settings size={18} /> Informations & Images Site
+                        <Settings size={18} /> Informations Site
                     </Link>
                 </nav>
                 <div style={{ padding: '1rem', borderTop: '1px solid var(--admin-border)' }}>

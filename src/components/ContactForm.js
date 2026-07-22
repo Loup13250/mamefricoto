@@ -1,12 +1,21 @@
 'use client';
 import { useState } from 'react';
 import { submitContactForm } from '@/app/actions';
-import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, UtensilsCrossed } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, Utensils, HeartHandshake, PartyPopper, Building } from 'lucide-react';
+import './ContactForm.css';
 
 export default function ContactForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [selectedEventType, setSelectedEventType] = useState("Plat du jour / Repas");
+
+    const eventTypes = [
+        { id: "Plat du jour / Repas", label: "Plat du Jour", icon: <Utensils size={16} /> },
+        { id: "Buffet Dînatoire", label: "Buffet Dînatoire", icon: <HeartHandshake size={16} /> },
+        { id: "Événement Privé", label: "Événement Privé", icon: <PartyPopper size={16} /> },
+        { id: "Repas d'Entreprise", label: "Entreprise / Séminaire", icon: <Building size={16} /> },
+    ];
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -15,6 +24,8 @@ export default function ContactForm() {
         setSuccess(false);
 
         const formData = new FormData(e.target);
+        formData.set('event_type', selectedEventType);
+
         const res = await submitContactForm(formData);
 
         if (res?.error) {
@@ -28,95 +39,107 @@ export default function ContactForm() {
     }
 
     return (
-        <div className="glass-panel animate-fade-up" style={{ padding: '3rem', position: 'relative' }}>
-            <h2 style={{ marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', color: 'var(--text-primary)', fontSize: '1.8rem' }}>
-                Demande de Devis & Réservation
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>
-                Remplissez ce formulaire pour vos repas d&apos;entreprise, buffets ou événements. Mamé vous répondra sous 24h.
-            </p>
+        <div className="solaire-contact-card animate-fade-up">
+            <div className="solaire-form-header">
+                <span className="solaire-badge">DISCUTONS DE VOTRE PROJET</span>
+                <h2>Demande de Devis & Réservation</h2>
+                <p>Remplissez les détails ci-dessous. Mamé Fricoto vous répondra très rapidement !</p>
+            </div>
 
             {success && (
-                <div style={{ padding: '1.25rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--border-radius-md)', color: '#166534', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <CheckCircle2 size={24} style={{ color: '#22c55e', flexShrink: 0 }} />
+                <div className="solaire-alert solaire-alert-success">
+                    <CheckCircle2 size={24} className="solaire-alert-icon" />
                     <div>
-                        <strong style={{ display: 'block', fontSize: '1rem' }}>Message envoyé avec succès !</strong>
-                        <span style={{ fontSize: '0.9rem' }}>Mamé Fricoto vous recontactera rapidement par téléphone ou email.</span>
+                        <strong>Votre message a été transmis à Mamé !</strong>
+                        <p>Merci beaucoup, nous vous recontacterons dans les plus brefs délais.</p>
                     </div>
                 </div>
             )}
 
             {error && (
-                <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 'var(--border-radius-md)', color: '#991b1b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <AlertCircle size={20} style={{ color: '#ef4444' }} />
+                <div className="solaire-alert solaire-alert-error">
+                    <AlertCircle size={20} />
                     <span>{error}</span>
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                    <div>
-                        <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <User size={15} /> Nom complet *
-                        </label>
-                        <input type="text" name="name" required placeholder="Votre nom" className="admin-input" style={{ background: '#faf8f5' }} />
-                    </div>
-                    <div>
-                        <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <Phone size={15} /> Numéro de Téléphone *
-                        </label>
-                        <input type="tel" name="phone" required placeholder="06 00 00 00 00" className="admin-input" style={{ background: '#faf8f5' }} />
+            <form onSubmit={handleSubmit} className="solaire-form">
+                {/* Event Type Pills */}
+                <div className="solaire-field">
+                    <label className="solaire-label">Type de prestation</label>
+                    <div className="solaire-pills-grid">
+                        {eventTypes.map((type) => (
+                            <button
+                                key={type.id}
+                                type="button"
+                                onClick={() => setSelectedEventType(type.id)}
+                                className={`solaire-pill ${selectedEventType === type.id ? 'active' : ''}`}
+                            >
+                                {type.icon}
+                                {type.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <div>
-                    <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                {/* Name & Phone */}
+                <div className="solaire-row">
+                    <div className="solaire-field">
+                        <label className="solaire-label">
+                            <User size={15} /> Nom & Prénom *
+                        </label>
+                        <input type="text" name="name" required placeholder="Ex: Marie Dupont" className="solaire-input" />
+                    </div>
+                    <div className="solaire-field">
+                        <label className="solaire-label">
+                            <Phone size={15} /> Téléphone *
+                        </label>
+                        <input type="tel" name="phone" required placeholder="06 00 00 00 00" className="solaire-input" />
+                    </div>
+                </div>
+
+                {/* Email */}
+                <div className="solaire-field">
+                    <label className="solaire-label">
                         <Mail size={15} /> Adresse Email *
                     </label>
-                    <input type="email" name="email" required placeholder="votre.email@exemple.com" className="admin-input" style={{ background: '#faf8f5' }} />
+                    <input type="email" name="email" required placeholder="marie@exemple.fr" className="solaire-input" />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                    <div>
-                        <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <UtensilsCrossed size={15} /> Type d&apos;événement
+                {/* Date & Guests */}
+                <div className="solaire-row">
+                    <div className="solaire-field">
+                        <label className="solaire-label">
+                            <Calendar size={15} /> Date souhaitée
                         </label>
-                        <select name="event_type" className="admin-input" style={{ background: '#faf8f5' }}>
-                            <option value="Plat du jour / Repas">Plat du jour / Commande classique</option>
-                            <option value="Buffet Dînatoire">Buffet Dînatoire</option>
-                            <option value="Événement Privé (Anniversaire, Fête)">Événement Privé (Anniversaire, Fête)</option>
-                            <option value="Repas d'Entreprise / Séminaire">Repas d&apos;Entreprise / Séminaire</option>
-                            <option value="Autre demande">Autre demande</option>
-                        </select>
+                        <input type="date" name="event_date" className="solaire-input" />
                     </div>
-                    <div>
-                        <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <Users size={15} /> Nombre d&apos;invités (estimé)
+                    <div className="solaire-field">
+                        <label className="solaire-label">
+                            <Users size={15} /> Nombre d&apos;invités
                         </label>
-                        <input type="text" name="guests" placeholder="Ex: 15 personnes" className="admin-input" style={{ background: '#faf8f5' }} />
+                        <input type="text" name="guests" placeholder="Ex: 20 personnes" className="solaire-input" />
                     </div>
                 </div>
 
-                <div>
-                    <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Calendar size={15} /> Date souhaitée
-                    </label>
-                    <input type="date" name="event_date" className="admin-input" style={{ background: '#faf8f5' }} />
+                {/* Message */}
+                <div className="solaire-field">
+                    <label className="solaire-label">Votre message ou précisions *</label>
+                    <textarea
+                        name="message"
+                        required
+                        rows="4"
+                        placeholder="Racontez-nous ce que vous souhaitez (lieu, menu souhaité, allergies ou contraintes)..."
+                        className="solaire-input solaire-textarea"
+                    ></textarea>
                 </div>
 
-                <div>
-                    <label className="admin-label">Détails de votre demande *</label>
-                    <textarea name="message" required rows="5" placeholder="Expliquez-nous vos besoins, vos préférences culinaires, le lieu..." className="admin-input" style={{ background: '#faf8f5', lineHeight: '1.6' }}></textarea>
-                </div>
-
-                <div style={{ paddingTop: '0.5rem' }}>
-                    <button type="submit" className="btn-peach" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-                        {loading ? (
-                            'Envoi en cours...'
-                        ) : (
+                <div className="solaire-submit-wrapper">
+                    <button type="submit" className="solaire-submit-btn" disabled={loading}>
+                        {loading ? 'Envoi en cours...' : (
                             <>
+                                Envoyer ma demande
                                 <Send size={18} />
-                                Envoyer la demande
                             </>
                         )}
                     </button>

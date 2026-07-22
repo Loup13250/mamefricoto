@@ -1,0 +1,195 @@
+/* ==================================
+   SOLAIRE CONTACT FORM STYLES (2026)
+   ================================== */
+
+.solaire-contact-card {
+    background: #FFFDF9;
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 20px 60px rgba(217, 119, 54, 0.08);
+    border: 1.5px solid rgba(232, 168, 124, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.solaire-form-header {
+    margin-bottom: 2rem;
+}
+
+.solaire-badge {
+    display: inline-block;
+    background: #FFF0E0;
+    color: #D97736;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+}
+
+.solaire-form-header h2 {
+    font-family: var(--font-primary);
+    color: #2C1810;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.solaire-form-header p {
+    color: #63534B;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.solaire-alert {
+    padding: 1.25rem;
+    border-radius: 18px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.solaire-alert-success {
+    background: #F0FDF4;
+    border: 1.5px solid #BBF7D0;
+    color: #166534;
+}
+
+.solaire-alert-error {
+    background: #FEF2F2;
+    border: 1.5px solid #FECACA;
+    color: #991B1B;
+}
+
+.solaire-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.solaire-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.solaire-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.solaire-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Event Type Pills */
+.solaire-pills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+}
+
+.solaire-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: #FAF6F0;
+    border: 1.5px solid #EFE6DA;
+    color: #63534B;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.solaire-pill:hover {
+    background: #FFF3E8;
+    border-color: #E8A87C;
+    color: #D97736;
+}
+
+.solaire-pill.active {
+    background: #D97736;
+    border-color: #D97736;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(217, 119, 54, 0.3);
+}
+
+/* Floating Input Fields */
+.solaire-input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: #FAF6F0;
+    border: 1.5px solid #EFE6DA;
+    color: #2C1810;
+    font-size: 0.95rem;
+    font-family: var(--font-secondary);
+    transition: all 0.25s ease;
+    outline: none;
+}
+
+.solaire-input:focus {
+    background: #ffffff;
+    border-color: #D97736;
+    box-shadow: 0 0 0 4px rgba(217, 119, 54, 0.12);
+}
+
+.solaire-textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.6;
+}
+
+/* Submit Button */
+.solaire-submit-wrapper {
+    padding-top: 0.5rem;
+}
+
+.solaire-submit-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: linear-gradient(135deg, #D97736, #E76F51);
+    color: #ffffff;
+    padding: 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(217, 119, 54, 0.35);
+    transition: all 0.3s ease;
+}
+
+.solaire-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(217, 119, 54, 0.48);
+}
+
+@media (max-width: 600px) {
+    .solaire-contact-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+    .solaire-row {
+        grid-template-columns: 1fr;
+    }
+    .solaire-pills-grid {
+        grid-template-columns: 1fr;
+    }
+}

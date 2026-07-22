@@ -21,7 +21,7 @@ export async function adminLogin(formData) {
         cookieStore.set('admin_session', 'authenticated', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24, // 1 day
+            maxAge: 60 * 60 * 24,
             path: '/',
         });
         redirect('/admin/dashboard');
@@ -74,7 +74,6 @@ export async function submitContactForm(formData) {
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(name, email, phone, event_type, event_date, guests, message);
 
-    // Try sending email if SMTP settings are provided in site_info or env
     try {
         const rows = db.prepare('SELECT * FROM site_info').all();
         const info = {};
@@ -98,16 +97,16 @@ export async function submitContactForm(formData) {
                 from: `"Mamé Fricoto Web" <${user}>`,
                 to: recipient,
                 replyTo: email,
-                subject: `🍽️ Nouvelle demande : ${event_type} - ${name}`,
+                subject: `Nouvelle demande : ${event_type} - ${name}`,
                 html: `
-                    <div style="font-family: Arial, sans-serif; padding: 20px; color: #2C1810; max-width: 600px; border: 1px solid #E8A87C; border-radius: 12px;">
+                    <div style="font-family: sans-serif; padding: 20px; color: #2C1810; max-width: 600px; border: 1px solid #E8A87C; border-radius: 12px;">
                         <h2 style="color: #3D5A80;">Nouveau message de contact — Mamé Fricoto</h2>
                         <p><strong>Nom :</strong> ${name}</p>
                         <p><strong>Email :</strong> ${email}</p>
                         <p><strong>Téléphone :</strong> ${phone}</p>
-                        <p><strong>Type de prestation :</strong> ${event_type}</p>
+                        <p><strong>Prestation :</strong> ${event_type}</p>
                         ${event_date ? `<p><strong>Date souhaitée :</strong> ${event_date}</p>` : ''}
-                        ${guests ? `<p><strong>Nombre d'invités :</strong> ${guests}</p>` : ''}
+                        ${guests ? `<p><strong>Invités :</strong> ${guests}</p>` : ''}
                         <hr style="border-top: 1px solid #f2e8e4; margin: 20px 0;" />
                         <p><strong>Message :</strong></p>
                         <blockquote style="background: #FFF8F0; padding: 15px; border-left: 4px solid #E8A87C; margin: 0;">
@@ -118,7 +117,7 @@ export async function submitContactForm(formData) {
             });
         }
     } catch (err) {
-        console.warn("SMTP email notification ignored or not configured:", err.message);
+        console.warn("SMTP email notification ignored:", err.message);
     }
 
     revalidatePath('/contact');
@@ -146,17 +145,14 @@ export async function deleteMessage(formData) {
 export async function updateSiteInfo(formData) {
     const db = getDb();
 
-    // Check if new custom logo uploaded
     const logo_file = formData.get('logo_file');
     if (logo_file && logo_file.size > 0) {
         const logoUrl = await saveUploadedFile(logo_file);
         if (logoUrl) {
-            // Save to public/logo.png or save in site_info
             db.prepare('INSERT INTO site_info (key, value) VALUES (\'site_logo\', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(logoUrl);
         }
     }
 
-    // Check if new About image uploaded
     const about_file = formData.get('about_file');
     if (about_file && about_file.size > 0) {
         const aboutUrl = await saveUploadedFile(about_file);
@@ -178,11 +174,17 @@ export async function updateSiteInfo(formData) {
     return { success: true };
 }
 
-// --- WEEKLY MENU (WITH MULTI-IMAGE CAROUSEL SUPPORT) ---
+// --- WEEKLY MENU ---
 export async function addWeeklyMenu(formData) {
     const title = formData.get('title');
     const description = formData.get('description');
+    let embed_url = formData.get('embed_url') || '';
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
+
+    // Clean up embed URL if given (remove query params like ?img_index=1 for clean embed)
+    if (embed_url) {
+        embed_url = embed_url.split('?')[0].trim();
+    }
 
     const files = formData.getAll('image_files');
     const uploadedUrls = [];
@@ -202,10 +204,9 @@ export async function addWeeklyMenu(formData) {
         db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, is_current) VALUES (?, ?, ?, ?)').run(title, description || '', mainImageUrl, is_current);
+    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description || '', mainImageUrl, embed_url, is_current);
     const menuId = result.lastInsertRowid;
 
-    // Save all uploaded image pages into weekly_menu_images
     if (uploadedUrls.length > 0) {
         const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
         uploadedUrls.forEach((url, idx) => {
@@ -222,7 +223,12 @@ export async function editWeeklyMenu(formData) {
     const id = formData.get('id');
     const title = formData.get('title');
     const description = formData.get('description');
+    let embed_url = formData.get('embed_url') || '';
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
+
+    if (embed_url) {
+        embed_url = embed_url.split('?')[0].trim();
+    }
 
     const files = formData.getAll('image_files');
     const uploadedUrls = [];
@@ -241,16 +247,15 @@ export async function editWeeklyMenu(formData) {
     }
 
     if (uploadedUrls.length > 0) {
-        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description || '', uploadedUrls[0], is_current, id);
+        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, embed_url=?, is_current=? WHERE id=?').run(title, description || '', uploadedUrls[0], embed_url, is_current, id);
 
-        // Replace menu images
         db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
         const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
         uploadedUrls.forEach((url, idx) => {
             stmt.run(id, url, idx + 1);
         });
     } else {
-        db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description || '', is_current, id);
+        db.prepare('UPDATE weekly_menus SET title=?, description=?, embed_url=?, is_current=? WHERE id=?').run(title, description || '', embed_url, is_current, id);
     }
 
     revalidatePath('/');
@@ -269,10 +274,11 @@ export async function deleteWeeklyMenu(formData) {
     return { success: true };
 }
 
-// --- GALLERY POSTS (INSTAGRAM STORIES / DISHES) ---
+// --- GALLERY POSTS ---
 export async function addGalleryPost(formData) {
     const title = formData.get('title');
     const caption = formData.get('caption');
+    const media_type = formData.get('media_type') || 'image';
     const image_file = formData.get('image_file');
     let image_url = formData.get('image_url');
 
@@ -282,11 +288,11 @@ export async function addGalleryPost(formData) {
     }
 
     if (!image_url) {
-        return { error: 'Une image est obligatoire pour publier une story.' };
+        return { error: 'Un fichier photo ou vidéo est obligatoire.' };
     }
 
     const db = getDb();
-    db.prepare('INSERT INTO gallery_posts (title, caption, image_url) VALUES (?, ?, ?)').run(title || '', caption || '', image_url);
+    db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(title || '', caption || '', image_url, media_type);
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/galerie');
@@ -330,59 +336,5 @@ export async function deleteCarouselImage(formData) {
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/carousel');
-    return { success: true };
-}
-
-// --- ARTICLES ---
-export async function addArticle(formData) {
-    const title = formData.get('title');
-    const content = formData.get('content');
-    const image_file = formData.get('image_file');
-    let image_url = formData.get('image_url');
-
-    const uploadedUrl = await saveUploadedFile(image_file);
-    if (uploadedUrl) {
-        image_url = uploadedUrl;
-    }
-
-    const db = getDb();
-    db.prepare('INSERT INTO articles (title, content, image_url) VALUES (?, ?, ?)').run(title, content, image_url || null);
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/articles');
-    return { success: true };
-}
-
-export async function editArticle(formData) {
-    const id = formData.get('id');
-    const title = formData.get('title');
-    const content = formData.get('content');
-    const image_file = formData.get('image_file');
-    let image_url = formData.get('image_url');
-
-    const uploadedUrl = await saveUploadedFile(image_file);
-    if (uploadedUrl) {
-        image_url = uploadedUrl;
-    }
-
-    const db = getDb();
-    if (image_url) {
-        db.prepare('UPDATE articles SET title=?, content=?, image_url=? WHERE id=?').run(title, content, image_url, id);
-    } else {
-        db.prepare('UPDATE articles SET title=?, content=? WHERE id=?').run(title, content, id);
-    }
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/articles');
-    return { success: true };
-}
-
-export async function deleteArticle(formData) {
-    const id = formData.get('id');
-    const db = getDb();
-    db.prepare('DELETE FROM articles WHERE id = ?').run(id);
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/articles');
     return { success: true };
 }

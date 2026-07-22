@@ -1,4 +1,4 @@
-import { getSiteInfo, getAllWeeklyMenus, getArticles } from '@/lib/data';
+import { getSiteInfo, getAllWeeklyMenus, getContactMessages } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export const metadata = {
 export default function DashboardOverview() {
     const info = getSiteInfo();
     const menus = getAllWeeklyMenus();
-    const articles = getArticles();
+    const messages = getContactMessages();
 
     return (
         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
@@ -26,8 +26,8 @@ export default function DashboardOverview() {
                     <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--admin-primary)' }}>{menus.length}</p>
                 </div>
                 <div className="admin-card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '140px', borderTop: '4px solid var(--admin-accent)' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#64748b' }}>Articles</h3>
-                    <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--admin-accent)' }}>{articles.length}</p>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#64748b' }}>Messages Reçus</h3>
+                    <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--admin-accent)' }}>{messages.length}</p>
                 </div>
                 <div className="admin-card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '140px', borderTop: '4px solid #22c55e' }}>
                     <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: '#64748b' }}>État du Site</h3>
@@ -58,9 +58,6 @@ export default function DashboardOverview() {
                         <p style={{ fontWeight: '500', color: '#1e293b' }}>{info.hours}</p>
                     </div>
                 </div>
-                <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-                    Allez dans <strong>Informations Site</strong> pour modifier ces valeurs.
-                </p>
             </div>
         </div>
     );

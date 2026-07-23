@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu } from '@/app/actions';
-import { Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays, CheckCircle2, Images, Instagram, Link2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays, CheckCircle2, Images } from 'lucide-react';
 
 export default function WeeklyMenuClient({ menus }) {
     const [editingId, setEditingId] = useState(null);
@@ -12,17 +12,17 @@ export default function WeeklyMenuClient({ menus }) {
         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
             <div style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
-                    Menu de la Semaine (Post Instagram ou Multi-Images)
+                    Menu de la Semaine
                 </h1>
                 <p style={{ color: '#64748b', maxWidth: '650px', marginBottom: '1.5rem' }}>
-                    Collez simplement le <strong>lien de votre post Instagram</strong> (ex: <code>https://www.instagram.com/p/Dax0CDnjTLJ/</code>) pour l&apos;afficher en direct sur le site, <strong>OU</strong> uploadez vos visuels !
+                    Ajoutez simplement le titre du menu et uploadez les photos (1 ou plusieurs images) pour les afficher dans le carrousel tactile du site !
                 </p>
                 <button
                     onClick={() => { setIsAdding(!isAdding); setEditingId(null); }}
                     className="admin-btn admin-btn-primary"
                     style={{ boxShadow: '0 4px 15px rgba(61,90,128,0.2)' }}
                 >
-                    {isAdding ? <><X size={16} /> Annuler</> : <><Plus size={16} /> Publier un Menu (Lien Insta ou Images)</>}
+                    {isAdding ? <><X size={16} /> Annuler</> : <><Plus size={16} /> Publier un Menu (Ajouter les images)</>}
                 </button>
             </div>
 
@@ -38,37 +38,20 @@ export default function WeeklyMenuClient({ menus }) {
                             <input type="text" name="title" className="admin-input" placeholder="Ex: Menu du 15 au 18 Juillet" required style={{ background: '#faf8f5' }} />
                         </div>
 
-                        {/* Option 1: Copy-Paste Instagram Link */}
-                        <div style={{ background: 'linear-gradient(135deg, rgba(240, 148, 51, 0.08), rgba(220, 39, 67, 0.08))', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(220, 39, 67, 0.2)' }}>
-                            <label className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#dc2743', fontWeight: '700' }}>
-                                <Instagram size={18} /> Option la plus rapide : Lien du Post Instagram
-                            </label>
-                            <input
-                                type="url"
-                                name="embed_url"
-                                placeholder="Collez le lien Instagram ici (ex: https://www.instagram.com/p/Dax0CDnjTLJ/)"
-                                className="admin-input"
-                                style={{ background: 'white', marginTop: '0.35rem' }}
-                            />
-                            <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginTop: '0.35rem' }}>
-                                Le post Instagram interactif apparaîtra directement scrollable sur votre site !
-                            </span>
-                        </div>
-
                         <div>
-                            <label className="admin-label">Description (optionnel)</label>
+                            <label className="admin-label">Description des plats (optionnel)</label>
                             <textarea name="description" className="admin-input" rows="3" placeholder="Ex: Tarte tatin aubergines, Cake citron, Riz safran..." style={{ background: '#faf8f5' }}></textarea>
                         </div>
 
-                        {/* Option 2: Upload Files */}
-                        <div className="admin-dropzone" style={{ position: 'relative', border: '2px dashed var(--admin-primary)', background: '#f0f4f8' }}>
-                            <label htmlFor="menu-files-new" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', cursor: 'pointer', padding: '1.5rem 0' }}>
-                                <Images size={40} style={{ marginBottom: '0.75rem', color: 'var(--admin-primary)' }} />
-                                <span style={{ display: 'block', color: '#1e293b', fontWeight: '700', marginBottom: '0.25rem' }}>
-                                    Ou uploadez les photos de votre menu (Multi-Sélection)
+                        {/* Image Upload Box */}
+                        <div className="admin-dropzone" style={{ position: 'relative', border: '2px dashed var(--admin-primary)', background: '#f0f4f8', borderRadius: '16px', padding: '2rem 1rem' }}>
+                            <label htmlFor="menu-files-new" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', cursor: 'pointer' }}>
+                                <Images size={48} style={{ marginBottom: '0.75rem', color: 'var(--admin-primary)' }} />
+                                <span style={{ display: 'block', color: '#1e293b', fontWeight: '700', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
+                                    Sélectionnez les photos de votre menu (Multi-Sélection)
                                 </span>
-                                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                    Choisissez une ou plusieurs images depuis votre téléphone / ordinateur
+                                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                                    Choisissez une ou plusieurs images depuis votre téléphone ou votre ordinateur
                                 </span>
                                 <input id="menu-files-new" type="file" name="image_files" accept="image/*" multiple style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                             </label>
@@ -117,12 +100,8 @@ export default function WeeklyMenuClient({ menus }) {
                                     <form action={editWeeklyMenu} onSubmit={() => setEditingId(null)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                         <input type="hidden" name="id" value={menu.id} />
                                         <div>
-                                            <label className="admin-label">Titre</label>
+                                            <label className="admin-label">Titre du menu *</label>
                                             <input type="text" name="title" defaultValue={menu.title} className="admin-input" required style={{ background: '#faf8f5' }} />
-                                        </div>
-                                        <div>
-                                            <label className="admin-label">Lien Post Instagram (embed)</label>
-                                            <input type="url" name="embed_url" defaultValue={menu.embed_url || ''} placeholder="https://www.instagram.com/p/..." className="admin-input" style={{ background: '#faf8f5' }} />
                                         </div>
                                         <div>
                                             <label className="admin-label">Description</label>
@@ -130,7 +109,7 @@ export default function WeeklyMenuClient({ menus }) {
                                         </div>
                                         <div className="admin-dropzone" style={{ position: 'relative', padding: '1.5rem' }}>
                                             <label htmlFor={`menu-files-${menu.id}`} style={{ display: 'block', width: '100%', cursor: 'pointer', textAlign: 'center' }}>
-                                                <span style={{ fontWeight: '600', color: '#475569' }}>Remplacer les images (Multi-Sélection)</span>
+                                                <span style={{ fontWeight: '600', color: '#475569' }}>Remplacer / Ajouter des images (Multi-Sélection)</span>
                                                 <input id={`menu-files-${menu.id}`} type="file" name="image_files" accept="image/*" multiple style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                                             </label>
                                         </div>
@@ -168,11 +147,6 @@ export default function WeeklyMenuClient({ menus }) {
                                         ) : (
                                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', background: '#f8fafc' }}>
                                                 <ImageIcon size={48} style={{ opacity: 0.4 }} />
-                                            </div>
-                                        )}
-                                        {menu.embed_url && (
-                                            <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: '#dc2743', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                                <Instagram size={12} /> Post Insta lié
                                             </div>
                                         )}
                                         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '0.5rem' }}>

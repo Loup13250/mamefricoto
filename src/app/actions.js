@@ -7,7 +7,6 @@ import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
 
-// Safe helper to extract numeric ID whether passed as a number, string, or FormData object
 function extractId(idOrFormData) {
     if (!idOrFormData) return null;
     if (typeof idOrFormData === 'object' && typeof idOrFormData.get === 'function') {
@@ -135,12 +134,7 @@ export async function updateSiteInfo(formData) {
 export async function addWeeklyMenu(formData) {
     const title = formData.get('title');
     const description = formData.get('description');
-    let embed_url = formData.get('embed_url') || '';
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
-
-    if (embed_url) {
-        embed_url = embed_url.split('?')[0].trim();
-    }
 
     const files = formData.getAll('image_files');
     const uploadedUrls = [];
@@ -161,7 +155,7 @@ export async function addWeeklyMenu(formData) {
         db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description || '', mainImageUrl, embed_url, is_current);
+    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description || '', mainImageUrl, '', is_current);
     const menuId = result.lastInsertRowid;
 
     const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
@@ -178,12 +172,7 @@ export async function editWeeklyMenu(formData) {
     const id = extractId(formData);
     const title = formData.get('title');
     const description = formData.get('description');
-    let embed_url = formData.get('embed_url') || '';
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
-
-    if (embed_url) {
-        embed_url = embed_url.split('?')[0].trim();
-    }
 
     const files = formData.getAll('image_files');
     const uploadedUrls = [];
@@ -202,7 +191,7 @@ export async function editWeeklyMenu(formData) {
     }
 
     if (uploadedUrls.length > 0) {
-        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, embed_url=?, is_current=? WHERE id=?').run(title, description || '', uploadedUrls[0], embed_url, is_current, id);
+        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description || '', uploadedUrls[0], is_current, id);
         db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
         const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
         uploadedUrls.forEach((url, idx) => {
@@ -211,13 +200,13 @@ export async function editWeeklyMenu(formData) {
     } else {
         const existingImages = db.prepare('SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ?').get(id);
         if (existingImages.count === 0) {
-            db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, embed_url=?, is_current=? WHERE id=?').run(title, description || '', DEFAULT_MENU_IMAGES[0], embed_url, is_current, id);
+            db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description || '', DEFAULT_MENU_IMAGES[0], is_current, id);
             const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
             DEFAULT_MENU_IMAGES.forEach((url, idx) => {
                 stmt.run(id, url, idx + 1);
             });
         } else {
-            db.prepare('UPDATE weekly_menus SET title=?, description=?, embed_url=?, is_current=? WHERE id=?').run(title, description || '', embed_url, is_current, id);
+            db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description || '', is_current, id);
         }
     }
 

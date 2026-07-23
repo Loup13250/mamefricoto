@@ -4,15 +4,6 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Phone, Instagram, Heart, Share2, MessageCircle, CheckCircle2, MapPin } from 'lucide-react';
 import './WeeklyMenuCarousel.css';
 
-function getInstagramEmbedUrl(url) {
-    if (!url) return null;
-    const match = url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
-    if (match && match[1]) {
-        return `https://www.instagram.com/p/${match[1]}/embed/captioned/`;
-    }
-    return null;
-}
-
 function isVideoUrl(url) {
     if (!url) return false;
     return /\.(mp4|mov|webm|ogg)(\?.*)?$/i.test(url);
@@ -27,7 +18,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
     if (!menu) return null;
 
-    const embedUrl = getInstagramEmbedUrl(menu.embed_url);
     const images = menu.images && menu.images.length > 0 ? menu.images : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : []);
 
     const handlePrev = useCallback(() => {
@@ -63,12 +53,11 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         if (!touchEnd) return;
 
         const diff = touchStartX.current - touchEnd;
-        // Low threshold for quick responsive swiping on mobile (20px)
         if (Math.abs(diff) > 20) {
             if (diff > 0) {
-                handleNext(); // Swipe Left -> Next photo
+                handleNext();
             } else {
-                handlePrev(); // Swipe Right -> Prev photo
+                handlePrev();
             }
         }
         touchStartX.current = 0;
@@ -88,32 +77,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
     };
 
-    const targetInstaLink = menu.embed_url || siteInfo?.instagram || "https://www.instagram.com/mamefricoto/";
-
-    // ONLY USE IFRAME EMBED IF NO LOCAL IMAGES ARE PRESENT
-    if (embedUrl && images.length === 0) {
-        return (
-            <div className="insta-embed-card animate-fade-up">
-                <div className="insta-embed-container">
-                    <iframe
-                        src={embedUrl}
-                        className="insta-embed-iframe"
-                        frameBorder="0"
-                        scrolling="no"
-                        allowtransparency="true"
-                        title="Post Instagram Menu de la Semaine"
-                    />
-                </div>
-                <div className="insta-embed-cta-box">
-                    <a href="tel:0743646411" className="btn-peach order-call-btn">
-                        <Phone size={18} />
-                        Commander par téléphone — 07 43 64 64 11
-                    </a>
-                </div>
-            </div>
-        );
-    }
-
+    const targetInstaLink = siteInfo?.instagram || "https://www.instagram.com/mamefricoto/";
     const currentMedia = images[currentIndex]?.image_url || menu.image_url;
     const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
 
@@ -188,7 +152,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Arrow Buttons (Touch event propagation stopped to prevent interference on mobile) */}
+                {/* Arrow Buttons */}
                 {images.length > 1 && (
                     <>
                         <button

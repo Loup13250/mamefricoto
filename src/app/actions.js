@@ -7,6 +7,16 @@ import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
 
+// Safe helper to extract numeric ID whether passed as a number, string, or FormData object
+function extractId(idOrFormData) {
+    if (!idOrFormData) return null;
+    if (typeof idOrFormData === 'object' && typeof idOrFormData.get === 'function') {
+        const val = idOrFormData.get('id');
+        return val ? parseInt(val, 10) : null;
+    }
+    return parseInt(idOrFormData, 10);
+}
+
 // --- AUTH ---
 export async function adminLogin(formData) {
     const username = formData.get('username');
@@ -165,7 +175,7 @@ export async function addWeeklyMenu(formData) {
 }
 
 export async function editWeeklyMenu(formData) {
-    const id = formData.get('id');
+    const id = extractId(formData);
     const title = formData.get('title');
     const description = formData.get('description');
     let embed_url = formData.get('embed_url') || '';
@@ -216,7 +226,10 @@ export async function editWeeklyMenu(formData) {
     return { success: true };
 }
 
-export async function deleteWeeklyMenu(id) {
+export async function deleteWeeklyMenu(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
     db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(id);
@@ -225,7 +238,10 @@ export async function deleteWeeklyMenu(id) {
     return { success: true };
 }
 
-export async function toggleWeeklyMenuCurrent(id) {
+export async function toggleWeeklyMenuCurrent(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     db.prepare('UPDATE weekly_menus SET is_current = 1 WHERE id = ?').run(id);
@@ -259,7 +275,10 @@ export async function addCarouselImage(formData) {
     return { success: true };
 }
 
-export async function deleteCarouselImage(id) {
+export async function deleteCarouselImage(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
     revalidatePath('/');
@@ -293,7 +312,10 @@ export async function addGalleryPost(formData) {
     return { success: true };
 }
 
-export async function deleteGalleryPost(id) {
+export async function deleteGalleryPost(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
     revalidatePath('/');
@@ -326,14 +348,20 @@ export async function submitContactForm(formData) {
     return { success: true, message: 'Votre demande a bien été envoyée. Mamé Fricoto vous recontactera rapidement !' };
 }
 
-export async function markMessageRead(id) {
+export async function markMessageRead(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').run(id);
     revalidatePath('/admin/dashboard/messages');
     return { success: true };
 }
 
-export async function deleteMessage(id) {
+export async function deleteMessage(idOrFormData) {
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
     const db = getDb();
     db.prepare('DELETE FROM contact_messages WHERE id = ?').run(id);
     revalidatePath('/admin/dashboard/messages');

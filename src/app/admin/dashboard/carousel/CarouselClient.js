@@ -4,6 +4,52 @@ import Image from 'next/image';
 import { addCarouselImage, deleteCarouselImage, editCarouselImage } from '@/app/actions';
 import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
+async function compressImageFile(file, maxWidth = 1200, quality = 0.75) {
+    if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
 function CarouselForm({ onCancel }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -38,7 +84,8 @@ function CarouselForm({ onCancel }) {
 
         formData.delete('image_file');
         if (selectedFile) {
-            formData.append('image_file', selectedFile);
+            const compressed = await compressImageFile(selectedFile, 1200, 0.75);
+            formData.append('image_file', compressed);
         }
 
         if (!selectedFile && !formData.get('image_url')) {
@@ -126,7 +173,7 @@ function CarouselForm({ onCancel }) {
                             padding: '6px 12px', background: 'rgba(14,13,12,0.75)',
                             fontSize: '0.75rem', color: '#C8A96E', textAlign: 'center',
                         }}>
-                            {selectedFile.name} (Aperçu)
+                            {selectedFile.name} (Optimisé automatiquement)
                         </div>
                     </div>
                 ) : (
@@ -151,7 +198,7 @@ function CarouselForm({ onCancel }) {
                             Glisser une image ici, ou cliquer pour choisir
                         </span>
                         <span style={{ fontSize: '0.8rem', color: 'rgba(245,240,232,0.4)' }}>
-                            Recommandé : Format paysage (1920x1080)
+                            Optimisation automatique pour affichage ultra-rapide
                         </span>
                         <input
                             ref={inputRef}
@@ -222,7 +269,8 @@ function EditCarouselForm({ item, onCancel }) {
         formData.append('id', item.id);
 
         if (selectedFile) {
-            formData.set('image_file', selectedFile);
+            const compressed = await compressImageFile(selectedFile, 1200, 0.75);
+            formData.set('image_file', compressed);
         }
 
         startTransition(async () => {

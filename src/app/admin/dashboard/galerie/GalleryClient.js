@@ -107,6 +107,14 @@ export default function GalleryClient({ posts }) {
             setError('Format non supporté. Utilisez JPG, PNG, WEBP, MP4, MOV ou WEBM.');
             return;
         }
+
+        const maxMB = 4.5;
+        if (file.size > maxMB * 1024 * 1024) {
+            setError(`Ce fichier fait ${(file.size / (1024 * 1024)).toFixed(1)} Mo. Sur Vercel, les uploads directs sont limités à ${maxMB} Mo maximum. Veuillez compacter votre vidéo ou coller son URL ci-dessous.`);
+            setSelectedFile(null);
+            return;
+        }
+
         setError('');
         setSelectedFile(file);
     };

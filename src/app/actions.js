@@ -67,8 +67,14 @@ const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB max (vidéos/photos haute 
 async function saveUploadedFile(file) {
     if (!file || typeof file === 'string' || !file.name || file.size === 0) return null;
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-        throw new Error('Fichier trop volumineux (50 Mo maximum).');
+    const isVercel = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
+    const maxSize = isVercel ? 4.5 * 1024 * 1024 : 50 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+        throw new Error(isVercel
+            ? "Le fichier dépasse la limite d'upload direct de 4.5 Mo sur Vercel. Veuillez utiliser une vidéo plus courte / compressée ou coller un lien URL."
+            : 'Fichier trop volumineux (50 Mo maximum).'
+        );
     }
 
     const rawExt = path.extname(file.name).toLowerCase();
@@ -78,19 +84,27 @@ async function saveUploadedFile(file) {
         throw new Error(`Format de fichier non autorisé (${ext}). Acceptés : JPG, PNG, WEBP, GIF, MP4, WEBM, MOV.`);
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    try {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+        const uploadsDir = isVercel
+            ? path.join('/tmp', 'uploads')
+            : path.join(process.cwd(), 'public', 'uploads');
+
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+        const filePath = path.join(uploadsDir, fileName);
+
+        fs.writeFileSync(filePath, buffer);
+        return `/uploads/${fileName}`;
+    } catch (err) {
+        console.error("Erreur enregistrement fichier :", err);
+        throw new Error(err.message || "Impossible d'enregistrer le fichier.");
     }
-
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
-    const filePath = path.join(uploadsDir, fileName);
-
-    fs.writeFileSync(filePath, buffer);
-    return `/uploads/${fileName}`;
 }
 
 function deleteLocalFileIfPresent(imageUrl) {
@@ -340,41 +354,49 @@ export async function deleteCarouselImage(idOrFormData) {
 
 // --- GALLERY ---
 export async function addGalleryPost(formData) {
-    await requireAdminAuth();
-    const title = (formData.get('title') || '').toString().trim();
-    const caption = (formData.get('caption') || '').toString().trim();
-    const media_type = (formData.get('media_type') || 'image').toString().trim();
-    const image_url_text = (formData.get('image_url') || '').toString().trim();
-    const file = formData.get('image_file');
+    try {
+        await requireAdminAuth();
+        const title = (formData.get('title') || '').toString().trim();
+        const caption = (formData.get('caption') || '').toString().trim();
+        let media_type = (formData.get('media_type') || 'image').toString().trim();
+        const image_url_text = (formData.get('image_url') || '').toString().trim();
+        const file = formData.get('image_file');
 
-    let image_url = image_url_text;
-    if (file && file.size > 0) {
-        const uploaded = await saveUploadedFile(file);
-        if (uploaded) image_url = uploaded;
-    }
-
-    if (!image_url) {
-        return { error: 'Veuillez ajouter une image ou une vidéo' };
-    }
-
-    const db = getDb();
-    db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
-        title, caption, image_url, media_type
-    );
-
-    // Nettoyage automatique : limiter la galerie aux 15 plus récentes
-    const allPosts = db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
-    if (allPosts.length > 15) {
-        const postsToDelete = allPosts.slice(15);
-        for (const oldPost of postsToDelete) {
-            deleteLocalFileIfPresent(oldPost.image_url);
-            db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
+        let image_url = image_url_text;
+        if (file && file.size > 0) {
+            if (file.type && file.type.startsWith('video/')) {
+                media_type = 'video';
+            }
+            const uploaded = await saveUploadedFile(file);
+            if (uploaded) image_url = uploaded;
         }
-    }
 
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/galerie');
-    return { success: true };
+        if (!image_url) {
+            return { error: 'Veuillez sélectionner un fichier ou coller une URL' };
+        }
+
+        const db = getDb();
+        db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
+            title, caption, image_url, media_type
+        );
+
+        // Nettoyage automatique : limiter la galerie aux 15 plus récentes
+        const allPosts = db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
+        if (allPosts.length > 15) {
+            const postsToDelete = allPosts.slice(15);
+            for (const oldPost of postsToDelete) {
+                deleteLocalFileIfPresent(oldPost.image_url);
+                db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
+            }
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/galerie');
+        return { success: true };
+    } catch (err) {
+        console.error('[Gallery] Erreur :', err);
+        return { error: err.message || 'Une erreur est survenue lors de la publication.' };
+    }
 }
 
 export async function deleteGalleryPost(idOrFormData) {

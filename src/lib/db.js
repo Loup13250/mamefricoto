@@ -6,15 +6,15 @@ let localDbInstance;
 let lastCloudSyncTime = 0;
 let localDataVersion = 0;
 
-// Bucket de synchronisation cloud automatique pour Vercel Serverless
-const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v4';
+// API REST dédiée et ultra-rapide pour la persistance globale Vercel
+const CLOUD_DB_URL = 'https://api.restful-api.dev/objects/ff8081819f7e10ae019f95f5b7f422ab';
 
 async function fetchCloudDb() {
     try {
-        const res = await fetch(CLOUD_KV_URL, { cache: 'no-store' });
+        const res = await fetch(CLOUD_DB_URL, { cache: 'no-store' });
         if (res.ok) {
-            const data = await res.json();
-            return data;
+            const body = await res.json();
+            return body?.data || null;
         }
     } catch (e) {
         console.error("[Cloud DB] Sync fetch error:", e);
@@ -24,12 +24,18 @@ async function fetchCloudDb() {
 
 async function saveCloudDb(data) {
     try {
-        await fetch(CLOUD_KV_URL, {
-            method: 'POST',
+        const res = await fetch(CLOUD_DB_URL, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
+            body: JSON.stringify({
+                name: 'mamefricoto_db_prod',
+                data: data
+            }),
             cache: 'no-store'
         });
+        if (!res.ok) {
+            console.error("[Cloud DB] Sync save failed with status:", res.status);
+        }
     } catch (e) {
         console.error("[Cloud DB] Sync save error:", e);
     }
@@ -111,12 +117,12 @@ async function syncVercelCloudState(db) {
     const isVercel = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
     if (!isVercel) return;
     const now = Date.now();
-    if (now - lastCloudSyncTime < 1500) return;
+    if (now - lastCloudSyncTime < 1000) return;
     lastCloudSyncTime = now;
 
     let cloudData = await fetchCloudDb();
     
-    // Si le bucket cloud est vierge/absent, l'initialiser immédiatement avec les 4 prestations traiteur de départ
+    // Si le cloud n'a pas encore la base initiale, sauvegarder la base actuelle et la persister
     if (!cloudData || !cloudData.is_seeded) {
         const seedData = exportDbTables(db);
         if (seedData) {
@@ -190,7 +196,7 @@ export function getDb() {
         }
     }
 
-    // Fallback SQLite local (better-sqlite3 avec Cloud KV Sync pour Vercel)
+    // Fallback SQLite local (better-sqlite3 avec Cloud Persistence pour Vercel)
     const Database = require('better-sqlite3');
     let dbPath = path.join(process.cwd(), 'database', 'mamefricoto.db');
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');

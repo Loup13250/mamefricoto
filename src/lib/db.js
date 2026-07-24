@@ -7,7 +7,7 @@ let lastCloudSyncTime = 0;
 let localDataVersion = 0;
 
 // Bucket de synchronisation cloud automatique pour Vercel Serverless
-const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v2';
+const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v3';
 
 async function fetchCloudDb() {
     try {
@@ -114,8 +114,19 @@ async function syncVercelCloudState(db) {
     if (now - lastCloudSyncTime < 800) return;
     lastCloudSyncTime = now;
 
-    const cloudData = await fetchCloudDb();
-    if (cloudData && cloudData.updated_at && cloudData.updated_at > localDataVersion) {
+    let cloudData = await fetchCloudDb();
+    
+    // Si le bucket cloud est vierge/absent, l'initialiser immédiatement avec le contenu de départ et le persister
+    if (!cloudData || !cloudData.is_seeded) {
+        const seedData = exportDbTables(db);
+        if (seedData) {
+            await saveCloudDb(seedData);
+            localDataVersion = seedData.updated_at;
+        }
+        return;
+    }
+
+    if (cloudData.updated_at && cloudData.updated_at > localDataVersion) {
         importDbTables(db, cloudData);
     }
 }
@@ -237,60 +248,58 @@ export function getDb() {
         }
     }
 
-    // Uniquement pour le dev local : auto-seed par défaut si la base est neuve
-    if (!isVercel) {
-        try {
-            const menuCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
-            if (menuCount === 0) {
-                const res = localDbInstance.prepare(`
-                    INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current)
-                    VALUES (
-                        'Menu du 15 au 18 Juillet',
-                        'Découvrez le menu de la semaine de Mamé Fricoto : Tarte tatin aubergines & tomates, Cake au citron, Riz safran chorizo, Salade de lentilles, Tortilla froide...',
-                        '/uploads/insta-menu-1.png',
-                        'https://www.instagram.com/p/Dax0CDnjTLJ/',
-                        1
-                    )
-                `).run();
-
-                const menuId = res.lastInsertRowid;
-                const images = [
+    // Données par défaut initiales
+    try {
+        const menuCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
+        if (menuCount === 0) {
+            const res = localDbInstance.prepare(`
+                INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current)
+                VALUES (
+                    'Menu du 15 au 18 Juillet',
+                    'Découvrez le menu de la semaine de Mamé Fricoto : Tarte tatin aubergines & tomates, Cake au citron, Riz safran chorizo, Salade de lentilles, Tortilla froide...',
                     '/uploads/insta-menu-1.png',
-                    '/uploads/insta-menu-2.png',
-                    '/uploads/insta-menu-3.png',
-                    '/uploads/insta-menu-4.png',
-                    '/uploads/insta-menu-5.png'
-                ];
-                const stmt = localDbInstance.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-                images.forEach((img, idx) => stmt.run(menuId, img, idx + 1));
-            }
-        } catch (seedErr) {
-            console.error("Failed to seed default weekly menu:", seedErr);
-        }
+                    'https://www.instagram.com/p/Dax0CDnjTLJ/',
+                    1
+                )
+            `).run();
 
-        try {
-            const galleryCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
-            if (galleryCount === 0) {
-                const galleryStmt = localDbInstance.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
-                galleryStmt.run('Menu de la semaine', 'Formule complète & plats faits maison', '/uploads/insta-menu-1.png', 'image', 1);
-                galleryStmt.run('Les plats du jour', 'Riz safran, salade de lentilles, tortilla', '/uploads/insta-menu-2.png', 'image', 2);
-                galleryStmt.run('Les formules & tarifs', 'Plat seul 12€, Formule 15€/18€', '/uploads/insta-menu-3.png', 'image', 3);
-                galleryStmt.run('En cuisine avec Mamé', 'Labo à domicile à Eyguières', '/uploads/insta-menu-5.png', 'image', 4);
-            }
-        } catch (gallerySeedErr) {
-            console.error("Failed to seed default gallery:", gallerySeedErr);
+            const menuId = res.lastInsertRowid;
+            const images = [
+                '/uploads/insta-menu-1.png',
+                '/uploads/insta-menu-2.png',
+                '/uploads/insta-menu-3.png',
+                '/uploads/insta-menu-4.png',
+                '/uploads/insta-menu-5.png'
+            ];
+            const stmt = localDbInstance.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
+            images.forEach((img, idx) => stmt.run(menuId, img, idx + 1));
         }
+    } catch (seedErr) {
+        console.error("Failed to seed default weekly menu:", seedErr);
+    }
 
-        try {
-            const carouselCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
-            if (carouselCount === 0) {
-                const carouselStmt = localDbInstance.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
-                carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
-                carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
-            }
-        } catch (carouselSeedErr) {
-            console.error("Failed to seed default carousel:", carouselSeedErr);
+    try {
+        const galleryCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
+        if (galleryCount === 0) {
+            const galleryStmt = localDbInstance.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
+            galleryStmt.run('Menu de la semaine', 'Formule complète & plats faits maison', '/uploads/insta-menu-1.png', 'image', 1);
+            galleryStmt.run('Les plats du jour', 'Riz safran, salade de lentilles, tortilla', '/uploads/insta-menu-2.png', 'image', 2);
+            galleryStmt.run('Les formules & tarifs', 'Plat seul 12€, Formule 15€/18€', '/uploads/insta-menu-3.png', 'image', 3);
+            galleryStmt.run('En cuisine avec Mamé', 'Labo à domicile à Eyguières', '/uploads/insta-menu-5.png', 'image', 4);
         }
+    } catch (gallerySeedErr) {
+        console.error("Failed to seed default gallery:", gallerySeedErr);
+    }
+
+    try {
+        const carouselCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
+        if (carouselCount === 0) {
+            const carouselStmt = localDbInstance.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
+            carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
+            carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
+        }
+    } catch (carouselSeedErr) {
+        console.error("Failed to seed default carousel:", carouselSeedErr);
     }
 
     dbWrapper = {

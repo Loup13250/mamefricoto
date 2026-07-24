@@ -1,8 +1,8 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
-import { addCarouselImage, deleteCarouselImage } from '@/app/actions';
-import { Image as ImageIcon, Plus, Trash2, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { addCarouselImage, deleteCarouselImage, editCarouselImage } from '@/app/actions';
+import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 function CarouselForm({ onCancel }) {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -197,8 +197,126 @@ function CarouselForm({ onCancel }) {
     );
 }
 
+function EditCarouselForm({ item, onCancel }) {
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const inputRef = useRef(null);
+
+    const handleFileSelect = (file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            setError('Format non supporté. Veuillez choisir une image.');
+            return;
+        }
+        setError('');
+        setSelectedFile(file);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        const formData = new FormData(e.target);
+        formData.append('id', item.id);
+
+        if (selectedFile) {
+            formData.set('image_file', selectedFile);
+        }
+
+        startTransition(async () => {
+            const result = await editCarouselImage(formData);
+            if (result?.error) {
+                setError(result.error);
+            } else {
+                setSuccess(true);
+                setTimeout(() => onCancel(), 1000);
+            }
+        });
+    };
+
+    if (success) {
+        return (
+            <div style={{ padding: '1.5rem', textAlign: 'center', background: 'rgba(34,197,94,0.06)', borderRadius: '6px' }}>
+                <CheckCircle2 size={32} style={{ color: '#22c55e', marginBottom: '0.5rem' }} />
+                <p style={{ color: '#86efac', fontWeight: '600', fontSize: '0.9rem' }}>Modifications enregistrées avec succès !</p>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div>
+                    <label className="admin-label">Titre principal *</label>
+                    <input type="text" name="title" defaultValue={item.title || ''} className="admin-input" required />
+                </div>
+                <div>
+                    <label className="admin-label">Ordre d'affichage</label>
+                    <input type="number" name="display_order" defaultValue={item.display_order || 1} min="1" className="admin-input" />
+                </div>
+            </div>
+
+            <div>
+                <label className="admin-label">Sous-titre / Description</label>
+                <input type="text" name="subtitle" defaultValue={item.subtitle || ''} className="admin-input" placeholder="Ex: Livraison & Retrait à Eyguières" />
+            </div>
+
+            <div>
+                <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Photo actuelle (ou cliquer pour remplacer)</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ width: '120px', height: '70px', borderRadius: '4px', overflow: 'hidden', background: '#000', border: '1px solid rgba(200,169,110,0.3)' }}>
+                        <Image
+                            src={selectedFile ? URL.createObjectURL(selectedFile) : item.image_url}
+                            alt="Aperçu"
+                            width={240}
+                            height={140}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            unoptimized
+                        />
+                    </div>
+                    <div>
+                        <button
+                            type="button"
+                            onClick={() => inputRef.current?.click()}
+                            className="admin-btn admin-btn-secondary"
+                            style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                        >
+                            Changer la photo
+                        </button>
+                        <input
+                            ref={inputRef}
+                            type="file"
+                            name="image_file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                        />
+                        <input type="hidden" name="image_url" defaultValue={item.image_url || ''} />
+                    </div>
+                </div>
+            </div>
+
+            {error && (
+                <div style={{ color: '#fca5a5', fontSize: '0.85rem' }}>{error}</div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                    Annuler
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending}>
+                    {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Enregistrer'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
 export default function CarouselClient({ images }) {
     const [isAdding, setIsAdding] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
     const [isDeleting, startDeleteTransition] = useTransition();
 
@@ -215,10 +333,10 @@ export default function CarouselClient({ images }) {
                 <div>
                     <h1 style={{ fontSize: '1.6rem', fontWeight: '700', color: '#F5F0E8' }}>Gestion du Carrousel</h1>
                     <p style={{ color: 'rgba(245,240,232,0.5)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-                        Gérez les bannières d&apos;accueil et leurs visuels.
+                        Gérez les bannières d&apos;accueil, leurs titres, descriptions et visuels.
                     </p>
                 </div>
-                {!isAdding && (
+                {!isAdding && !editingItem && (
                     <button
                         onClick={() => setIsAdding(true)}
                         className="admin-btn admin-btn-primary"
@@ -237,6 +355,20 @@ export default function CarouselClient({ images }) {
                         </button>
                     </div>
                     <CarouselForm onCancel={() => setIsAdding(false)} />
+                </div>
+            )}
+
+            {editingItem && (
+                <div className="admin-card" style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem', border: '1px solid rgba(200,169,110,0.4)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
+                        <h2 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#C8A96E', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Pencil size={16} /> Modifier la bannière
+                        </h2>
+                        <button type="button" onClick={() => setEditingItem(null)} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '4px', background: 'none', border: 'none' }}>
+                            <X size={18} />
+                        </button>
+                    </div>
+                    <EditCarouselForm item={editingItem} onCancel={() => setEditingItem(null)} />
                 </div>
             )}
 
@@ -269,7 +401,16 @@ export default function CarouselClient({ images }) {
                                         </div>
                                     )}
 
-                                    <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
+                                    {/* Action Buttons: Edit + Delete */}
+                                    <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                                        <button
+                                            onClick={() => { setEditingItem(img); setIsAdding(false); }}
+                                            style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'rgba(14,13,12,0.75)', border: '1px solid rgba(200,169,110,0.3)', color: '#C8A96E', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+                                            title="Modifier les textes et l'image"
+                                        >
+                                            <Pencil size={14} />
+                                        </button>
+
                                         {deleteId === img.id ? (
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 <button

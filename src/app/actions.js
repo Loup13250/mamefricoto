@@ -367,6 +367,41 @@ export async function deleteCarouselImage(idOrFormData) {
     return { success: true };
 }
 
+export async function editCarouselImage(formData) {
+    await requireAdminAuth();
+    const id = parseInt(formData.get('id') || '0', 10);
+    if (!id) return { error: 'ID de la photo invalide' };
+
+    const title = (formData.get('title') || '').toString().trim();
+    const subtitle = (formData.get('subtitle') || '').toString().trim();
+    const display_order = parseInt(formData.get('display_order') || '1', 10);
+    const file = formData.get('image_file');
+    let image_url = (formData.get('image_url') || '').toString().trim();
+
+    const db = getDb();
+    const existing = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
+    if (!existing) return { error: 'Photo du carrousel introuvable' };
+
+    if (file && file.size > 0) {
+        const uploaded = await saveUploadedFile(file);
+        if (uploaded) image_url = uploaded;
+    }
+
+    if (!image_url) {
+        image_url = existing.image_url;
+    }
+
+    await db.prepare(`
+        UPDATE carousel_images
+        SET title = ?, subtitle = ?, image_url = ?, display_order = ?
+        WHERE id = ?
+    `).run(title, subtitle, image_url, display_order, id);
+
+    revalidatePath('/');
+    revalidatePath('/admin/dashboard/carousel');
+    return { success: true };
+}
+
 // --- GALLERY ---
 export async function addGalleryPost(formData) {
     try {

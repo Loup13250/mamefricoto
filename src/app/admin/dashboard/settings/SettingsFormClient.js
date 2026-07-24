@@ -71,7 +71,7 @@ export default function SettingsFormClient({ info }) {
                     <ImageIcon size={18} style={{ color: '#C8A96E' }} /> Visuels du Site (Logo &amp; Image À Propos)
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
 
                     {/* Logo Box */}
                     <div>
@@ -187,7 +187,7 @@ export default function SettingsFormClient({ info }) {
                 <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Phone size={18} style={{ color: '#C8A96E' }} /> Coordonnées &amp; Contact
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     <div>
                         <label className="admin-label">Email de réception des devis *</label>
                         <input type="email" name="contact_email" defaultValue={info.contact_email} className="admin-input" required />
@@ -214,7 +214,7 @@ export default function SettingsFormClient({ info }) {
                 <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Globe size={18} style={{ color: '#C8A96E' }} /> Réseaux &amp; Liens
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     <div>
                         <label className="admin-label">Lien Instagram</label>
                         <input type="url" name="instagram" defaultValue={info.instagram} className="admin-input" />

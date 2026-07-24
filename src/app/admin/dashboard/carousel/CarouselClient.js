@@ -73,7 +73,7 @@ function CarouselForm({ onCancel }) {
 
     return (
         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
                     <label className="admin-label">Titre principal *</label>
                     <input type="text" name="title" className="admin-input" placeholder="Ex: Cuisine Maison avec Amour" required />

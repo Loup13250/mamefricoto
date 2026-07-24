@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu as MenuIcon, X as XIcon, Phone } from 'lucide-react';
+import { Menu as MenuIcon, X as XIcon, Phone, Instagram, Facebook, MapPin } from 'lucide-react';
 import './Header.css';
 
 export default function Header() {
@@ -90,7 +90,7 @@ export default function Header() {
                     aria-controls="mobile-nav"
                     aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 >
-                    {mobileMenuOpen ? <XIcon size={22} /> : <MenuIcon size={22} />}
+                    {mobileMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
                 </button>
 
                 <div
@@ -106,15 +106,56 @@ export default function Header() {
                     aria-modal="true"
                     aria-hidden={!mobileMenuOpen}
                 >
-                    <nav className="mobile-nav-links" aria-label="Navigation mobile">
-                        <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>Accueil</Link>
-                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>À Propos</Link>
-                        <Link href="/contact" className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>Contact</Link>
-                        <a href="tel:0743646411" className="btn-gold mobile-cta" onClick={closeMobileMenu}>
-                            <Phone size={16} />
-                            Commander — 07 43 64 64 11
-                        </a>
+                    {/* Drawer Header */}
+                    <div className="mobile-drawer-header">
+                        <div className="mobile-drawer-brand">
+                            <span className="mobile-drawer-title">Mamé Fricoto</span>
+                            <span className="mobile-drawer-sub">Cuisine Familiale &amp; Fait Maison</span>
+                        </div>
+                        <button
+                            type="button"
+                            className="mobile-drawer-close"
+                            onClick={closeMobileMenu}
+                            aria-label="Fermer le menu"
+                        >
+                            <XIcon size={22} />
+                        </button>
+                    </div>
+
+                    {/* Main Nav Links (centered) */}
+                    <nav className="mobile-nav-body" aria-label="Navigation mobile">
+                        <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            Accueil
+                        </Link>
+                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            À Propos
+                        </Link>
+                        <Link href="/contact" className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            Contact &amp; Devis
+                        </Link>
                     </nav>
+
+                    {/* Drawer Footer */}
+                    <div className="mobile-drawer-footer">
+                        <a href="tel:0743646411" className="mobile-phone-cta" onClick={closeMobileMenu}>
+                            <Phone size={16} />
+                            <span>07 43 64 64 11</span>
+                        </a>
+
+                        <div className="mobile-location-tag">
+                            <MapPin size={13} style={{ color: 'var(--gold)' }} />
+                            <span>Livraison &amp; Retrait à Eyguières (13)</span>
+                        </div>
+
+                        <div className="mobile-socials">
+                            <a href="https://www.instagram.com/mamefricoto/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                                <Instagram size={18} />
+                            </a>
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                                <Facebook size={18} />
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>

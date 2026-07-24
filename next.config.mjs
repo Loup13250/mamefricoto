@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['better-sqlite3'],
+  outputFileTracingIncludes: {
+    '/**': ['./database/**/*'],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',

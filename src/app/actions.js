@@ -196,6 +196,18 @@ export async function addWeeklyMenu(formData) {
         stmt.run(menuId, url, idx + 1);
     });
 
+    // Nettoyage automatique : ne conserver que les 3 derniers menus
+    const allMenus = db.prepare('SELECT id FROM weekly_menus ORDER BY created_at DESC').all();
+    if (allMenus.length > 3) {
+        const menusToDelete = allMenus.slice(3);
+        for (const oldMenu of menusToDelete) {
+            const images = db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(oldMenu.id);
+            images.forEach(img => deleteLocalFileIfPresent(img.image_url));
+            db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(oldMenu.id);
+            db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(oldMenu.id);
+        }
+    }
+
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
     return { success: true };
@@ -349,6 +361,16 @@ export async function addGalleryPost(formData) {
     db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
         title, caption, image_url, media_type
     );
+
+    // Nettoyage automatique : limiter la galerie aux 15 plus récentes
+    const allPosts = db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
+    if (allPosts.length > 15) {
+        const postsToDelete = allPosts.slice(15);
+        for (const oldPost of postsToDelete) {
+            deleteLocalFileIfPresent(oldPost.image_url);
+            db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
+        }
+    }
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/galerie');

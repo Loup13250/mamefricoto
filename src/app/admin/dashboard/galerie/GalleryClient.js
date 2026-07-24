@@ -1,118 +1,453 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useTransition, useCallback } from 'react';
 import Image from 'next/image';
-import { addGalleryPost, deleteGalleryPost } from '@/app/actions';
-import { Camera, Plus, Trash2, X, Video, Film } from 'lucide-react';
+import { addGalleryPost, deleteGalleryPost, reorderGalleryPost } from '@/app/actions';
+import {
+    Plus, Trash2, X, Film, UploadCloud, Loader2,
+    CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight
+} from 'lucide-react';
 
-export default function GalleryClient({ posts }) {
-    const [isAdding, setIsAdding] = useState(false);
+/* =====================================================
+   PRÉVISUALISATION MEDIA (image ou vidéo)
+   ===================================================== */
+function MediaPreview({ file, onRemove }) {
+    const isVideo = file.type.startsWith('video/');
+    const src = URL.createObjectURL(file);
 
     return (
-        <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            <div style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2.5rem' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
-                    Galerie Instagram (Photos & Vidéos / Stories)
-                </h1>
-                <p style={{ color: '#64748b', maxWidth: '600px', marginBottom: '1.5rem' }}>
-                    Postez ici vos photos et vos vidéos de cuisine (format MP4, MOV, WEBM). Elles s&apos;afficheront sur le fil de la page d&apos;accueil !
+        <div style={{
+            position: 'relative',
+            background: '#0E0D0C',
+            border: '1px solid rgba(200,169,110,0.25)',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            aspectRatio: '1 / 1',
+        }}>
+            {isVideo ? (
+                <>
+                    <video
+                        src={src}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                    />
+                    <div style={{
+                        position: 'absolute', top: '8px', left: '8px',
+                        background: 'rgba(14,13,12,0.85)',
+                        border: '1px solid rgba(200,169,110,0.3)',
+                        color: '#C8A96E',
+                        fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.1em',
+                        padding: '3px 8px', borderRadius: '3px', textTransform: 'uppercase',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                    }}>
+                        <Play size={10} fill="currentColor" /> Vidéo
+                    </div>
+                </>
+            ) : (
+                <Image
+                    src={src}
+                    alt="Aperçu"
+                    width={300}
+                    height={300}
+                    style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                    unoptimized
+                />
+            )}
+
+            <button
+                type="button"
+                onClick={onRemove}
+                title="Retirer"
+                style={{
+                    position: 'absolute', top: '8px', right: '8px',
+                    width: '28px', height: '28px',
+                    background: 'rgba(239,68,68,0.9)',
+                    border: 'none', borderRadius: '3px', color: 'white',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                }}
+            >
+                <X size={14} />
+            </button>
+
+            <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                padding: '4px 6px',
+                background: 'rgba(14,13,12,0.7)',
+                fontSize: '0.7rem', color: 'rgba(245,240,232,0.6)',
+                textAlign: 'center',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+                {file.name}
+            </div>
+        </div>
+    );
+}
+
+/* =====================================================
+   COMPOSANT PRINCIPAL
+   ===================================================== */
+export default function GalleryClient({ posts }) {
+    const [isAdding, setIsAdding] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [isDeleting, startDeleteTransition] = useTransition();
+    const inputRef = useRef(null);
+    const formRef = useRef(null);
+
+    const handleFileSelect = (file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+            setError('Format non supporté. Utilisez JPG, PNG, WEBP, MP4, MOV ou WEBM.');
+            return;
+        }
+        setError('');
+        setSelectedFile(file);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFileSelect(file);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        const formData = new FormData(e.target);
+
+        // On supprime les champs natifs du file input et on injecte notre fichier proprement
+        formData.delete('image_file');
+        if (selectedFile) {
+            formData.append('image_file', selectedFile);
+        }
+
+        // S'assurer que media_type est correct selon le fichier
+        if (selectedFile?.type.startsWith('video/')) {
+            formData.set('media_type', 'video');
+        }
+
+        if (!selectedFile && !formData.get('image_url')) {
+            setError('Veuillez sélectionner un fichier ou coller une URL.');
+            return;
+        }
+
+        startTransition(async () => {
+            const result = await addGalleryPost(formData);
+            if (result?.error) {
+                setError(result.error);
+            } else {
+                setSuccess(true);
+                setSelectedFile(null);
+                formRef.current?.reset();
+                setTimeout(() => {
+                    setSuccess(false);
+                    setIsAdding(false);
+                }, 1500);
+            }
+        });
+    };
+
+    const handleDelete = (id) => {
+        startDeleteTransition(async () => {
+            await deleteGalleryPost(id);
+            setDeleteId(null);
+        });
+    };
+
+    const resetForm = () => {
+        setIsAdding(false);
+        setSelectedFile(null);
+        setError('');
+        setSuccess(false);
+        formRef.current?.reset();
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+
+            {/* Header */}
+            <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
+                <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
+                <p style={{ color: 'rgba(245,240,232,0.5)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page d&apos;accueil dans la section galerie.
                 </p>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    className="admin-btn admin-btn-primary"
-                >
-                    {isAdding ? <><X size={16} /> Annuler</> : <><Plus size={16} /> Ajouter une Photo / Vidéo</>}
-                </button>
+                {!isAdding && (
+                    <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
+                        <Plus size={16} /> Ajouter une photo / vidéo
+                    </button>
+                )}
             </div>
 
+            {/* Formulaire ajout */}
             {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '700px', marginBottom: '3rem', borderTop: '4px solid var(--admin-primary)' }}>
-                    <h2 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '1.5rem', color: '#1e293b' }}>
-                        Publier une photo ou une vidéo
-                    </h2>
-                    <form action={addGalleryPost} onSubmit={() => setIsAdding(false)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        <div>
-                            <label className="admin-label">Titre / Nom du plat (optionnel)</label>
-                            <input type="text" name="title" className="admin-input" placeholder="Ex: Risotto crémeux aux gambas" style={{ background: '#faf8f5' }} />
-                        </div>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Publier une réalisation</h2>
+                        <button type="button" onClick={resetForm} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                            <X size={20} />
+                        </button>
+                    </div>
 
-                        <div>
-                            <label className="admin-label">Type de média</label>
-                            <select name="media_type" className="admin-input" style={{ background: '#faf8f5' }}>
-                                <option value="image">📷 Photo / Image</option>
-                                <option value="video">🎥 Vidéo (MP4, MOV, WEBM)</option>
-                            </select>
+                    {success ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px' }}>
+                            <CheckCircle2 size={40} style={{ color: '#22c55e', marginBottom: '1rem' }} />
+                            <p style={{ color: '#86efac', fontWeight: '600' }}>Publication réussie !</p>
                         </div>
+                    ) : (
+                        <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                        <div>
-                            <label className="admin-label">Légende / Description (optionnel)</label>
-                            <textarea name="caption" className="admin-input" rows="3" placeholder="Ex: Préparation du buffet dînatoire en direct du labo..." style={{ background: '#faf8f5' }}></textarea>
-                        </div>
+                            {/* Prévisualisation du fichier sélectionné */}
+                            {selectedFile ? (
+                                <div>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)', marginBottom: '0.75rem' }}>
+                                        Aperçu — Prêt à publier
+                                    </p>
+                                    <div style={{ maxWidth: '280px' }}>
+                                        <MediaPreview file={selectedFile} onRemove={() => setSelectedFile(null)} />
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Dropzone */
+                                <div>
+                                    <label className="admin-label" style={{ marginBottom: '0.75rem', display: 'block' }}>
+                                        Fichier (image ou vidéo) *
+                                    </label>
+                                    <div
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                        onDragLeave={() => setIsDragging(false)}
+                                        onDrop={handleDrop}
+                                        onClick={() => inputRef.current?.click()}
+                                        style={{
+                                            border: `2px dashed ${isDragging ? '#C8A96E' : 'rgba(200,169,110,0.3)'}`,
+                                            background: isDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                                            borderRadius: '6px',
+                                            padding: '2.5rem 1rem',
+                                            display: 'flex', flexDirection: 'column',
+                                            alignItems: 'center', justifyContent: 'center',
+                                            gap: '0.5rem', cursor: 'pointer',
+                                            transition: 'all 0.25s ease',
+                                        }}
+                                    >
+                                        <UploadCloud size={36} style={{ color: isDragging ? '#C8A96E' : 'rgba(200,169,110,0.5)' }} />
+                                        <span style={{ fontWeight: '600', color: '#F5F0E8', fontSize: '0.95rem' }}>
+                                            Glisser le fichier ici, ou cliquer pour choisir
+                                        </span>
+                                        <span style={{ fontSize: '0.8rem', color: 'rgba(245,240,232,0.4)' }}>
+                                            Images (JPG, PNG, WEBP) ou Vidéos (MP4, MOV, WEBM)
+                                        </span>
+                                        <input
+                                            ref={inputRef}
+                                            type="file"
+                                            name="image_file"
+                                            accept="image/*,video/*"
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) handleFileSelect(file);
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                    </div>
 
-                        <div className="admin-dropzone" style={{ position: 'relative' }}>
-                            <label htmlFor="story-file-upload" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', cursor: 'pointer', padding: '2rem 0' }}>
-                                <Video size={40} style={{ marginBottom: '0.75rem', color: 'var(--admin-primary)' }} />
-                                <span style={{ display: 'block', color: '#1e293b', fontWeight: '700', marginBottom: '0.25rem' }}>
-                                    Cliquez pour choisir un fichier photo ou vidéo
-                                </span>
-                                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                    Images (JPG, PNG, WEBP) ou Vidéos (MP4, MOV, WEBM)
-                                </span>
-                                <input id="story-file-upload" type="file" name="image_file" accept="image/*,video/*" style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-                            </label>
-                        </div>
+                                    {/* URL alternative */}
+                                    <div style={{ marginTop: '1rem' }}>
+                                        <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
+                                            Ou coller une URL web (optionnel)
+                                        </label>
+                                        <input
+                                            type="url"
+                                            name="image_url"
+                                            placeholder="https://..."
+                                            className="admin-input"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                        <div>
-                            <label className="admin-label">Ou coller l&apos;URL d&apos;un média web</label>
-                            <input type="url" name="image_url" placeholder="https://..." className="admin-input" style={{ background: '#faf8f5' }} />
-                        </div>
+                            {/* Type de média (hidden auto-détecté) */}
+                            <input
+                                type="hidden"
+                                name="media_type"
+                                value={selectedFile?.type.startsWith('video/') ? 'video' : 'image'}
+                            />
 
-                        <div style={{ paddingTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
-                            <button type="submit" className="admin-btn admin-btn-primary" style={{ padding: '14px 40px' }}>
-                                Publier la réalisation
-                            </button>
-                        </div>
-                    </form>
+                            {/* Titre */}
+                            <div>
+                                <label className="admin-label">Titre / Nom du plat (optionnel)</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    className="admin-input"
+                                    placeholder="Ex : Risotto crémeux aux gambas"
+                                />
+                            </div>
+
+                            {/* Légende */}
+                            <div>
+                                <label className="admin-label">Légende (optionnel)</label>
+                                <textarea
+                                    name="caption"
+                                    className="admin-input"
+                                    rows="2"
+                                    placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
+                                />
+                            </div>
+
+                            {/* Erreur */}
+                            {error && (
+                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: '0.9rem' }}>
+                                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                                    {error}
+                                </div>
+                            )}
+
+                            {/* Boutons */}
+                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(200,169,110,0.08)' }}>
+                                <button type="button" onClick={resetForm} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                                    Annuler
+                                </button>
+                                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '160px' }}>
+                                    {isPending ? (
+                                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Upload en cours...</>
+                                    ) : 'Publier la réalisation'}
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </div>
             )}
 
-            <div style={{ width: '100%' }}>
-                <h2 style={{ fontSize: '1.3rem', fontWeight: '600', color: '#1e293b', marginBottom: '1.5rem', textAlign: 'center' }}>
+            {/* Grille des publications */}
+            <div style={{ width: '100%', maxWidth: '760px' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.35)', marginBottom: '1.25rem' }}>
                     Publications ({posts.length})
                 </h2>
 
-                <div className="admin-grid-carousel" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
-                    {posts.map(post => (
-                        <div key={post.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                            <div style={{ height: '220px', width: '100%', overflow: 'hidden', position: 'relative', background: '#000' }}>
+                {posts.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', color: 'rgba(245,240,232,0.35)' }}>
+                        Aucune publication pour le moment.
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                        {posts.map((post, idx) => (
+                            <div key={post.id} style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: '#0E0D0C', borderRadius: '6px', border: '1px solid rgba(200,169,110,0.15)' }}>
                                 {post.media_type === 'video' ? (
-                                    <video src={post.image_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <>
+                                        <video src={post.image_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <div style={{ position: 'absolute', top: '6px', left: '6px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 7px', borderRadius: '2px', display: 'flex', alignItems: 'center', gap: '3px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                            <Film size={10} /> Vidéo
+                                        </div>
+                                    </>
                                 ) : (
-                                    <Image src={post.image_url} alt={post.title || ''} width={400} height={400} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+                                    <Image src={post.image_url} alt={post.title || ''} width={400} height={400} style={{ width: '100%', height: 'auto', objectFit: 'cover' }} unoptimized />
                                 )}
 
-                                {post.media_type === 'video' && (
-                                    <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                        <Film size={12} /> VIDÉO
-                                    </div>
-                                )}
+                                {/* Badge position */}
+                                <div style={{
+                                    position: 'absolute', top: '6px', right: '6px',
+                                    background: 'rgba(14,13,12,0.85)', color: '#C8A96E',
+                                    fontSize: '0.65rem', fontWeight: '700',
+                                    padding: '2px 7px', borderRadius: '3px',
+                                    border: '1px solid rgba(200,169,110,0.3)',
+                                }}>
+                                    #{idx + 1}
+                                </div>
 
-                                <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
-                                    <form action={deleteGalleryPost}>
-                                        <input type="hidden" name="id" value={post.id} />
-                                        <button type="submit" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.95)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }} title="Supprimer">
-                                            <Trash2 size={14} />
+                                {/* Hover overlay with Actions & Reordering */}
+                                <div style={{
+                                    position: 'absolute', inset: 0,
+                                    background: 'rgba(14,13,12,0.82)',
+                                    display: 'flex', flexDirection: 'column',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    gap: '0.6rem',
+                                    opacity: 0, transition: 'opacity 0.25s',
+                                    padding: '0.5rem',
+                                }}
+                                    className="gallery-item-overlay"
+                                >
+                                    {post.title && <p style={{ color: '#F5F0E8', fontSize: '0.82rem', fontWeight: '600', textAlign: 'center', margin: 0, lineClamp: 2 }}>{post.title}</p>}
+
+                                    {/* Reorder Buttons */}
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                        <button
+                                            onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'up'))}
+                                            disabled={idx === 0 || isDeleting}
+                                            title="Déplacer vers la gauche / plus haut"
+                                            style={{
+                                                width: '30px', height: '30px',
+                                                background: idx === 0 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
+                                                border: '1px solid rgba(200,169,110,0.3)',
+                                                color: idx === 0 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}
+                                        >
+                                            <ArrowLeft size={14} />
                                         </button>
-                                    </form>
+                                        <button
+                                            onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'down'))}
+                                            disabled={idx === posts.length - 1 || isDeleting}
+                                            title="Déplacer vers la droite / plus bas"
+                                            style={{
+                                                width: '30px', height: '30px',
+                                                background: idx === posts.length - 1 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
+                                                border: '1px solid rgba(200,169,110,0.3)',
+                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                borderRadius: '3px', cursor: idx === posts.length - 1 ? 'default' : 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}
+                                        >
+                                            <ArrowRight size={14} />
+                                        </button>
+                                    </div>
+
+                                    {deleteId === post.id ? (
+                                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                                            <button
+                                                onClick={() => handleDelete(post.id)}
+                                                disabled={isDeleting}
+                                                style={{ padding: '5px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                            >
+                                                {isDeleting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer ?'}
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleteId(null)}
+                                                style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setDeleteId(post.id)}
+                                            style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.85)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginTop: '2px' }}
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                            <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                {post.title && <h3 style={{ fontWeight: '700', fontSize: '0.95rem', color: '#1e293b', marginBottom: '0.25rem' }}>{post.title}</h3>}
-                                {post.caption && <p style={{ color: '#64748b', fontSize: '0.85rem', lineHeight: '1.5' }}>{post.caption}</p>}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: #F5F0E8; margin-bottom: 0.5rem; }
+                .gallery-item-overlay { opacity: 0 !important; }
+                div:has(> .gallery-item-overlay):hover .gallery-item-overlay { opacity: 1 !important; }
+            `}</style>
         </div>
     );
 }

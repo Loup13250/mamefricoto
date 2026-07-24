@@ -58,6 +58,12 @@ export function getDb() {
             try {
                 db.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run();
             } catch {}
+            try {
+                db.prepare("ALTER TABLE contact_messages ADD COLUMN status TEXT DEFAULT 'nouveau'").run();
+            } catch {}
+            try {
+                db.prepare("ALTER TABLE contact_messages ADD COLUMN admin_notes TEXT DEFAULT ''").run();
+            } catch {}
         } catch (schemaErr) {
             console.error("Failed to run schema check:", schemaErr);
         }

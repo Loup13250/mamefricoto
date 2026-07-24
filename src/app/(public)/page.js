@@ -5,7 +5,7 @@ import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
 import InstagramGallery from '@/components/InstagramGallery';
-import { Phone, Truck, CalendarDays, Building2, UtensilsCrossed, ChefHat, Instagram, Star, ArrowRight, Sparkles, HeartHandshake } from 'lucide-react';
+import { Phone, Truck, ArrowRight, Star } from 'lucide-react';
 import './home.css';
 
 export const revalidate = 0;
@@ -18,81 +18,82 @@ export default function Home() {
 
     const services = [
         {
-            icon: <UtensilsCrossed size={30} />,
-            badge: "AU QUOTIDIEN",
-            title: "Plat du Jour",
-            description: "Chaque jour, un nouveau plat mijoté avec des ingrédients frais du marché. Une cuisine généreuse comme à la maison.",
-            color: "#D97736",
+            num: '01',
+            badge: 'Au quotidien',
+            title: 'Plat du Jour',
+            description: 'Un nouveau plat mijoté chaque jour avec des ingrédients frais du marché. Une cuisine généreuse, sincère, comme à la maison.',
         },
         {
-            icon: <HeartHandshake size={30} />,
-            badge: "FÊTES & COCKTAILS",
-            title: "Buffets Dînatoires",
-            description: "Bouchées raffinées, verrines provençales et douceurs sucrées présentées en buffets gourmands pour vos soirées.",
-            color: "#E76F51",
+            num: '02',
+            badge: 'Fêtes & Cocktails',
+            title: 'Buffets Dînatoires',
+            description: 'Bouchées raffinées, verrines et douceurs présentées en buffets gourmands pour vos soirées et cocktails.',
         },
         {
-            icon: <Sparkles size={30} />,
-            badge: "SUR MESURE",
-            title: "Événements Privés",
-            description: "Anniversaires, baptêmes, réunions de famille. Nous élaborons un menu personnalisé selon vos envies.",
-            color: "#2B4C7E",
+            num: '03',
+            badge: 'Sur mesure',
+            title: 'Événements Privés',
+            description: 'Anniversaires, baptêmes, réunions de famille. Un menu personnalisé élaboré selon vos envies et votre nombre de convives.',
         },
         {
-            icon: <Building2 size={30} />,
-            badge: "PROFESSIONNELS",
+            num: '04',
+            badge: 'Professionnels',
             title: "Repas d'Entreprise",
-            description: "Plateaux repas complets, déjeuners d'équipe et séminaires livrés directement dans vos locaux.",
-            color: "#4A6FA5",
+            description: 'Plateaux repas complets, déjeuners d\'équipe et séminaires livrés directement dans vos locaux.',
         },
     ];
 
     return (
-        <main>
-            {/* ===== HERO CAROUSEL SECTION ===== */}
+        <main id="main-content" tabIndex="-1">
+            {/* ===== HERO ===== */}
             <HeroCarousel slides={carousel} />
 
-            {/* ===== BANDEAU LIVRAISON ===== */}
-            <section className="delivery-banner">
-                <div className="container delivery-banner-inner">
-                    <div className="delivery-item">
-                        <Truck size={20} />
-                        <span>Livraison à domicile & entreprises</span>
+            {/* ===== INFO STRIP ===== */}
+            <div className="info-strip">
+                <div className="container info-strip-inner">
+                    <div className="info-strip-item">
+                        <Truck size={14} />
+                        <span>Livraison à domicile</span>
                     </div>
-                    <div className="delivery-divider"></div>
-                    <div className="delivery-item">
-                        <UtensilsCrossed size={20} />
-                        <span>Retrait au labo à Eyguières</span>
+                    <div className="info-strip-sep" />
+                    <div className="info-strip-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span>Retrait au labo · Eyguières</span>
                     </div>
-                    <div className="delivery-divider"></div>
-                    <div className="delivery-item">
-                        <ChefHat size={20} />
-                        <span>100% Fait Maison avec Amour</span>
+                    <div className="info-strip-sep" />
+                    <div className="info-strip-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+                        <span>Commandes avant 10h</span>
+                    </div>
+                    <div className="info-strip-sep" />
+                    <div className="info-strip-item">
+                        <Phone size={14} />
+                        <a href="tel:0743646411" style={{ color: 'inherit' }}>07 43 64 64 11</a>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* ===== MENU DE LA SEMAINE ===== */}
-            <section id="menu-semaine" className="section-padding weekly-menu-section">
+            <section id="menu-semaine" className="menu-section">
                 <div className="container">
-                    <div className="text-center animate-fade-up" style={{ marginBottom: '3rem' }}>
-                        <span className="section-subtitle">DU MARDI AU SAMEDI</span>
-                        <h2 className="section-title">Le Menu de la Semaine</h2>
-                        <p style={{ maxWidth: '600px', margin: '0.5rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-                            Découvrez nos plats frais de la semaine. Commandes par téléphone au 07 43 64 64 11 !
+                    <div className="menu-section-header anim-up">
+                        <div>
+                            <span className="label">Du mardi au samedi</span>
+                            <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Le Menu<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Semaine</em></h2>
+                        </div>
+                        <p className="body-sm" style={{ maxWidth: '300px', textAlign: 'right' }}>
+                            Commandes par téléphone au 07 43 64 64 11. Livraison ou retrait au labo.
                         </p>
                     </div>
 
                     {weeklyMenu ? (
                         <WeeklyMenuCarousel menu={weeklyMenu} siteInfo={siteInfo} />
                     ) : (
-                        <div className="weekly-menu-empty animate-fade-up delay-200">
-                            <ChefHat size={48} />
+                        <div className="menu-empty anim-up delay-2">
                             <h3>Le menu arrive très bientôt</h3>
-                            <p>Suivez Mamé Fricoto sur Instagram pour découvrir les prochains plats.</p>
+                            <p style={{ marginBottom: '1.5rem' }}>Suivez Mamé Fricoto sur Instagram pour découvrir les prochains plats.</p>
                             {siteInfo.instagram && (
-                                <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ marginTop: '1.5rem' }}>
-                                    <Instagram size={18} />
+                                <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline">
                                     Suivre @mamefricoto
                                 </a>
                             )}
@@ -101,31 +102,27 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ===== INSTAGRAM STORIES / DISHES GALLERY ===== */}
+            {/* ===== GALLERY ===== */}
             {galleryPosts && galleryPosts.length > 0 && (
-                <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
+                <section className="gallery-section">
+                    <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
+                </section>
             )}
 
             {/* ===== NOS PRESTATIONS ===== */}
-            <section className="section-padding services-section">
+            <section className="services-section">
                 <div className="container">
-                    <div className="text-center animate-fade-up" style={{ marginBottom: '3.5rem' }}>
-                        <span className="section-subtitle">VOTRE TRAITEUR À EYGUIÈRES</span>
-                        <h2 className="section-title">Nos Prestations Gourmandes</h2>
-                        <p style={{ maxWidth: '620px', margin: '0.5rem auto 0', color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-                            Du repas du quotidien aux grandes réceptions, Mamé Fricoto cuisine pour vous avec passion.
-                        </p>
+                    <div className="section-header anim-up" style={{ maxWidth: '600px', marginBottom: '3.5rem' }}>
+                        <span className="label">Votre traiteur à Eyguières</span>
+                        <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Nos Prestations</h2>
                     </div>
-
                     <div className="services-grid">
-                        {services.map((service, i) => (
-                            <div key={service.title} className={`service-card animate-fade-up delay-${(i + 1) * 100}`}>
-                                <div className="service-badge-tag">{service.badge}</div>
-                                <div className="service-icon" style={{ backgroundColor: `${service.color}15`, color: service.color }}>
-                                    {service.icon}
-                                </div>
-                                <h3>{service.title}</h3>
-                                <p>{service.description}</p>
+                        {services.map((s) => (
+                            <div key={s.num} className="service-card">
+                                <div className="service-num">{s.num}</div>
+                                <span className="service-badge">{s.badge}</span>
+                                <h3>{s.title}</h3>
+                                <p>{s.description}</p>
                             </div>
                         ))}
                     </div>
@@ -133,79 +130,79 @@ export default function Home() {
             </section>
 
             {/* ===== À PROPOS ===== */}
-            <section className="section-padding about-section">
-                <div className="container">
-                    <div className="about-grid">
-                        <div className="about-image-wrapper animate-fade-up">
-                            <Image
-                                src={siteInfo.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
-                                alt="Cuisine maison Mamé Fricoto"
-                                width={800}
-                                height={600}
-                                className="about-image"
-                                unoptimized
-                            />
-                        </div>
-                        <div className="about-text animate-fade-up delay-200">
-                            <span className="section-subtitle">CUISINE FAMILIALE & PASSIONNÉE</span>
-                            <h2 className="section-title">L&apos;Esprit Mamé Fricoto</h2>
-                            <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', lineHeight: '1.8' }}>
-                                {siteInfo.about_text}
-                            </p>
-                            <div className="about-details">
-                                <div className="about-detail">
-                                    <strong>Localisation</strong>
-                                    <p>{siteInfo.address || 'Eyguières, Bouches-du-Rhône'}</p>
-                                </div>
-                                <div className="about-detail">
-                                    <strong>Contact</strong>
-                                    <p>{siteInfo.phone || '07 43 64 64 11'}</p>
-                                </div>
+            <section className="about-section">
+                <div className="about-grid">
+                    <div className="about-img-col">
+                        <Image
+                            src={siteInfo.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
+                            alt="Cuisine maison Mamé Fricoto"
+                            width={800}
+                            height={900}
+                            className="about-img"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            unoptimized
+                        />
+                    </div>
+                    <div className="about-text-col">
+                        <span className="label">Cuisine familiale & passionnée</span>
+                        <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
+                            L&apos;Esprit<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Mamé Fricoto</em>
+                        </h2>
+                        <p className="body-lg" style={{ whiteSpace: 'pre-line' }}>{siteInfo.about_text}</p>
+                        <div className="about-facts">
+                            <div className="about-fact">
+                                <strong>Localisation</strong>
+                                <p>{siteInfo.address || 'Eyguières, Bouches-du-Rhône'}</p>
                             </div>
-                            <Link href="/a-propos" className="btn-secondary" style={{ marginTop: '2rem' }}>
-                                En savoir plus
-                                <ArrowRight size={16} />
-                            </Link>
+                            <div className="about-fact">
+                                <strong>Contact</strong>
+                                <p>{siteInfo.phone || '07 43 64 64 11'}</p>
+                            </div>
                         </div>
+                        <Link href="/a-propos" className="btn-outline" style={{ alignSelf: 'flex-start' }}>
+                            En savoir plus
+                            <ArrowRight size={15} />
+                        </Link>
                     </div>
                 </div>
             </section>
 
             {/* ===== AVIS GOOGLE ===== */}
             {siteInfo.google_reviews && (
-                <section className="reviews-banner">
-                    <div className="container reviews-banner-inner">
+                <div className="reviews-strip">
+                    <div className="container reviews-strip-inner">
                         <div className="reviews-stars">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} size={22} fill="#D97736" color="#D97736" />
+                                <Star key={i} size={18} fill="var(--gold)" color="var(--gold)" />
                             ))}
                         </div>
                         <p>Consultez les avis de nos clients sur Google</p>
-                        <a href={siteInfo.google_reviews} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ marginLeft: '1.5rem' }}>
+                        <a href={siteInfo.google_reviews} target="_blank" rel="noopener noreferrer" className="btn-gold">
                             Voir les avis Google
-                            <ArrowRight size={16} />
+                            <ArrowRight size={14} />
                         </a>
                     </div>
-                </section>
+                </div>
             )}
 
             {/* ===== CTA FINAL ===== */}
             <section className="final-cta">
-                <div className="container text-center">
-                    <div className="animate-fade-up">
-                        <h2 style={{ fontSize: '2.5rem', color: 'white', marginBottom: '1rem' }}>Une envie gourmande ?</h2>
-                        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
-                            Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.
-                        </p>
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <a href="tel:0743646411" className="btn-peach" style={{ fontSize: '1.1rem', padding: '18px 40px' }}>
-                                <Phone size={20} />
-                                07 43 64 64 11
-                            </a>
-                            <Link href="/contact" className="btn-secondary" style={{ borderColor: 'rgba(255,255,255,0.4)', color: 'white' }}>
-                                Demander un Devis Événement
-                            </Link>
-                        </div>
+                <div className="container text-center anim-up">
+                    <span className="label">Commander</span>
+                    <h2 className="title-lg final-cta" style={{ marginTop: '1rem', marginBottom: '1rem', background: 'transparent', padding: 0, border: 'none' }}>
+                        Une envie gourmande ?
+                    </h2>
+                    <p className="body-lg" style={{ maxWidth: '480px', margin: '0 auto' }}>
+                        Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.
+                    </p>
+                    <div className="final-cta-actions">
+                        <a href="tel:0743646411" className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
+                            <Phone size={18} />
+                            07 43 64 64 11
+                        </a>
+                        <Link href="/contact" className="btn-outline">
+                            Demander un devis
+                        </Link>
                     </div>
                 </div>
             </section>

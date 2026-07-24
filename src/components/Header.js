@@ -52,65 +52,66 @@ export default function Header() {
         return () => window.removeEventListener('keydown', handleEsc);
     }, [mobileMenuOpen]);
 
-    const headerClass = (!isHome || scrolled || mobileMenuOpen) ? 'site-header--scrolled' : 'site-header--top';
+    const isTop = isHome && !scrolled && !mobileMenuOpen;
 
     return (
-        <header className={`site-header ${headerClass}`}>
-            <div className="container header-container">
+        <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
+            <div className="container header-inner">
                 <Link href="/" className="logo-link" aria-label="Mamé Fricoto — Accueil">
                     <Image
                         src="/logo.png"
                         alt="Mamé Fricoto"
-                        width={140}
-                        height={50}
+                        width={130}
+                        height={46}
                         className="logo-img"
+                        style={{ width: 'auto', height: '44px' }}
                         priority
                     />
                 </Link>
 
-                <nav className="site-nav">
-                    <Link href="/" className={pathname === '/' ? 'active' : ''}>Accueil</Link>
-                    <Link href="/a-propos" className={pathname === '/a-propos' ? 'active' : ''}>À Propos</Link>
-                    <Link href="/contact" className={pathname === '/contact' ? 'active' : ''}>Contact</Link>
+                <nav className="site-nav" aria-label="Navigation principale">
+                    <Link href="/" className={pathname === '/' ? 'nav-link active' : 'nav-link'}>Accueil</Link>
+                    <Link href="/a-propos" className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>À Propos</Link>
+                    <Link href="/contact" className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
                 </nav>
 
-                <div className="header-actions">
-                    <a href="tel:0743646411" className="btn-primary header-cta-btn">
-                        <Phone size={16} />
-                        Commander
+                <div className="header-cta">
+                    <a href="tel:0743646411" className="cta-phone-btn">
+                        <Phone size={14} />
+                        07 43 64 64 11
                     </a>
                 </div>
 
                 <button
                     type="button"
-                    className="mobile-menu-toggle"
+                    className="mobile-toggle"
                     onClick={toggleMobileMenu}
                     aria-expanded={mobileMenuOpen}
-                    aria-controls="mobile-navigation"
-                    aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu de navigation'}
+                    aria-controls="mobile-nav"
+                    aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 >
-                    {mobileMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+                    {mobileMenuOpen ? <XIcon size={22} /> : <MenuIcon size={22} />}
                 </button>
 
                 <div
-                    className={`mobile-drawer-backdrop ${mobileMenuOpen ? 'open' : ''}`}
+                    className={`mobile-backdrop ${mobileMenuOpen ? 'open' : ''}`}
                     onClick={closeMobileMenu}
                     aria-hidden={!mobileMenuOpen}
                 />
 
                 <div
-                    id="mobile-navigation"
+                    id="mobile-nav"
                     className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}
                     role="dialog"
                     aria-modal="true"
                     aria-hidden={!mobileMenuOpen}
                 >
-                    <nav className="mobile-nav" aria-label="Navigation mobile">
-                        <Link href="/" className={pathname === '/' ? 'active' : ''} onClick={closeMobileMenu}>Accueil</Link>
-                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'active' : ''} onClick={closeMobileMenu}>À Propos</Link>
-                        <Link href="/contact" className={pathname === '/contact' ? 'active' : ''} onClick={closeMobileMenu}>Contact</Link>
-                        <a href="tel:0743646411" className="btn-primary mobile-cta-btn" onClick={closeMobileMenu}>
-                            <Phone size={18} />
+                    <nav className="mobile-nav-links" aria-label="Navigation mobile">
+                        <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>Accueil</Link>
+                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>À Propos</Link>
+                        <Link href="/contact" className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>Contact</Link>
+                        <a href="tel:0743646411" className="btn-gold mobile-cta" onClick={closeMobileMenu}>
+                            <Phone size={16} />
                             Commander — 07 43 64 64 11
                         </a>
                     </nav>

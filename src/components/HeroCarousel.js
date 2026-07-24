@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import './HeroCarousel.css';
 
 export default function HeroCarousel({ slides }) {
@@ -13,8 +14,7 @@ export default function HeroCarousel({ slides }) {
         if (isHovered || slides.length <= 1) return;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-        }, 5000); // Auto slide every 5 seconds
-
+        }, 6000);
         return () => clearInterval(timer);
     }, [isHovered, slides.length]);
 
@@ -32,41 +32,56 @@ export default function HeroCarousel({ slides }) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="hero-carousel">
+            <div className="hero-track">
                 {slides.map((slide, index) => (
                     <div
                         key={slide.id || index}
                         className={`hero-slide ${index === currentIndex ? 'active' : ''}`}
-                        style={{
-                            backgroundImage: `linear-gradient(rgba(30, 45, 68, 0.55), rgba(30, 45, 68, 0.7)), url(${slide.image_url})`
-                        }}
                     >
-                        <div className="hero-content animate-fade-up">
-                            <h1 className="hero-title">{slide.title}</h1>
-                            {slide.subtitle && <p className="hero-subtitle">{slide.subtitle}</p>}
-                            <div className="hero-actions" style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                <a href="#menu-semaine" className="hero-discover-btn">
-                                    Découvrir le Menu
-                                </a>
-                                <a href="tel:0743646411" className="hero-phone-btn">
-                                    <Phone size={18} />
-                                    07 43 64 64 11
-                                </a>
-                            </div>
-                        </div>
+                        <Image
+                            src={slide.image_url}
+                            alt={slide.title || 'Bannière Mamé Fricoto'}
+                            fill
+                            priority={index === 0}
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                            style={{ objectFit: 'cover' }}
+                            unoptimized
+                        />
                     </div>
                 ))}
             </div>
 
-            {/* Slider Controls */}
+            <div className="hero-content container">
+                <div className="hero-content-inner anim-up">
+                    <p className="hero-eyebrow">Traiteur Maison · Eyguières</p>
+                    <h1 className="hero-title">
+                        {slides[currentIndex]?.title || (<><em>Mamé Fricoto</em><br />Cuisine Maison</>)}
+                    </h1>
+                    {slides[currentIndex]?.subtitle && (
+                        <p className="hero-subtitle">{slides[currentIndex].subtitle}</p>
+                    )}
+                    <div className="hero-actions">
+                        <a href="#menu-semaine" className="btn-gold">
+                            Voir le menu
+                        </a>
+                        <a href="tel:0743646411" className="btn-outline">
+                            <Phone size={15} />
+                            07 43 64 64 11
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             {slides.length > 1 && (
                 <>
-                    <button type="button" onClick={handlePrev} className="hero-arrow hero-arrow-left" aria-label="Bannière précédente">
-                        <ChevronLeft size={24} />
-                    </button>
-                    <button type="button" onClick={handleNext} className="hero-arrow hero-arrow-right" aria-label="Bannière suivante">
-                        <ChevronRight size={24} />
-                    </button>
+                    <div className="hero-arrows">
+                        <button type="button" onClick={handlePrev} className="hero-arrow" aria-label="Précédent">
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button type="button" onClick={handleNext} className="hero-arrow" aria-label="Suivant">
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
                     <div className="hero-dots">
                         {slides.map((_, idx) => (
                             <button

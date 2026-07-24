@@ -1,20 +1,21 @@
 'use client';
 import { useState } from 'react';
 import { submitContactForm } from '@/app/actions';
-import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, Utensils, HeartHandshake, PartyPopper, Building } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, Utensils, HeartHandshake, PartyPopper, Building, HelpCircle } from 'lucide-react';
 import './ContactForm.css';
 
 export default function ContactForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [selectedEventType, setSelectedEventType] = useState("Plat du jour / Repas");
+    const [selectedEventType, setSelectedEventType] = useState('Plat du jour / Repas');
 
     const eventTypes = [
-        { id: "Plat du jour / Repas", label: "Plat du Jour", icon: <Utensils size={16} /> },
-        { id: "Buffet Dînatoire", label: "Buffet Dînatoire", icon: <HeartHandshake size={16} /> },
-        { id: "Événement Privé", label: "Événement Privé", icon: <PartyPopper size={16} /> },
-        { id: "Repas d'Entreprise", label: "Entreprise / Séminaire", icon: <Building size={16} /> },
+        { id: 'Plat du jour / Repas', label: 'Plat du Jour', icon: <Utensils size={14} /> },
+        { id: 'Buffet Dînatoire', label: 'Buffet Dînatoire', icon: <HeartHandshake size={14} /> },
+        { id: 'Événement Privé', label: 'Événement Privé', icon: <PartyPopper size={14} /> },
+        { id: "Repas d'Entreprise", label: 'Entreprise', icon: <Building size={14} /> },
+        { id: 'Autre prestation', label: 'Autre', icon: <HelpCircle size={14} /> },
     ];
 
     async function handleSubmit(e) {
@@ -39,41 +40,42 @@ export default function ContactForm() {
     }
 
     return (
-        <div className="solaire-contact-card animate-fade-up">
-            <div className="solaire-form-header">
-                <span className="solaire-badge">DISCUTONS DE VOTRE PROJET</span>
-                <h2>Demande de Devis & Réservation</h2>
-                <p>Remplissez les détails ci-dessous. Mamé Fricoto vous répondra très rapidement !</p>
+        <div className="contact-card anim-up">
+            <div className="contact-form-header">
+                <span className="label">Discutons de votre projet</span>
+                <h2>Demande de Devis &amp; Réservation</h2>
+                <p>Remplissez les détails ci-dessous. Mamé Fricoto vous répondra très rapidement.</p>
             </div>
 
             {success && (
-                <div className="solaire-alert solaire-alert-success">
-                    <CheckCircle2 size={24} className="solaire-alert-icon" />
+                <div className="form-alert alert-success" role="alert">
+                    <CheckCircle2 size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
-                        <strong>Votre message a été transmis à Mamé !</strong>
-                        <p>Merci beaucoup, nous vous recontacterons dans les plus brefs délais.</p>
+                        <strong style={{ display: 'block', marginBottom: '0.25rem' }}>Message transmis</strong>
+                        Merci, nous vous recontacterons dans les plus brefs délais.
                     </div>
                 </div>
             )}
 
             {error && (
-                <div className="solaire-alert solaire-alert-error">
-                    <AlertCircle size={20} />
+                <div className="form-alert alert-error" role="alert">
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
                     <span>{error}</span>
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="solaire-form">
-                {/* Event Type Pills */}
-                <div className="solaire-field">
-                    <label className="solaire-label">Type de prestation</label>
-                    <div className="solaire-pills-grid">
+            <form onSubmit={handleSubmit} className="contact-form" aria-label="Formulaire de demande de devis">
+                <div className="form-field">
+                    <span className="form-label" id="label-prestation">Type de prestation</span>
+                    <div className="form-pills" role="radiogroup" aria-labelledby="label-prestation">
                         {eventTypes.map((type) => (
                             <button
                                 key={type.id}
                                 type="button"
+                                role="radio"
+                                aria-checked={selectedEventType === type.id}
                                 onClick={() => setSelectedEventType(type.id)}
-                                className={`solaire-pill ${selectedEventType === type.id ? 'active' : ''}`}
+                                className={`form-pill ${selectedEventType === type.id ? 'active' : ''}`}
                             >
                                 {type.icon}
                                 {type.label}
@@ -82,64 +84,67 @@ export default function ContactForm() {
                     </div>
                 </div>
 
-                {/* Name & Phone */}
-                <div className="solaire-row">
-                    <div className="solaire-field">
-                        <label className="solaire-label">
-                            <User size={15} /> Nom & Prénom *
+                <div className="form-row">
+                    <div className="form-field">
+                        <label htmlFor="contact-name" className="form-label">
+                            <User size={13} /> Nom &amp; Prénom *
                         </label>
-                        <input type="text" name="name" required placeholder="Ex: Marie Dupont" className="solaire-input" />
+                        <input id="contact-name" type="text" name="name" required placeholder="Marie Dupont" className="form-input" />
                     </div>
-                    <div className="solaire-field">
-                        <label className="solaire-label">
-                            <Phone size={15} /> Téléphone *
+                    <div className="form-field">
+                        <label htmlFor="contact-phone" className="form-label">
+                            <Phone size={13} /> Téléphone *
                         </label>
-                        <input type="tel" name="phone" required placeholder="06 00 00 00 00" className="solaire-input" />
+                        <input id="contact-phone" type="tel" name="phone" required placeholder="06 00 00 00 00" className="form-input" />
                     </div>
                 </div>
 
-                {/* Email */}
-                <div className="solaire-field">
-                    <label className="solaire-label">
-                        <Mail size={15} /> Adresse Email *
+                <div className="form-field">
+                    <label htmlFor="contact-email" className="form-label">
+                        <Mail size={13} /> Adresse Email *
                     </label>
-                    <input type="email" name="email" required placeholder="marie@exemple.fr" className="solaire-input" />
+                    <input id="contact-email" type="email" name="email" required placeholder="marie@exemple.fr" className="form-input" />
                 </div>
 
-                {/* Date & Guests */}
-                <div className="solaire-row">
-                    <div className="solaire-field">
-                        <label className="solaire-label">
-                            <Calendar size={15} /> Date souhaitée
+                <div className="form-row">
+                    <div className="form-field">
+                        <label htmlFor="contact-date" className="form-label">
+                            <Calendar size={13} /> Date souhaitée
                         </label>
-                        <input type="date" name="event_date" className="solaire-input" />
+                        <input
+                            id="contact-date"
+                            type="date"
+                            name="event_date"
+                            className="form-input"
+                            min={new Date().toISOString().split('T')[0]}
+                        />
                     </div>
-                    <div className="solaire-field">
-                        <label className="solaire-label">
-                            <Users size={15} /> Nombre d&apos;invités
+                    <div className="form-field">
+                        <label htmlFor="contact-guests" className="form-label">
+                            <Users size={13} /> Nombre de convives
                         </label>
-                        <input type="text" name="guests" placeholder="Ex: 20 personnes" className="solaire-input" />
+                        <input id="contact-guests" type="text" name="guests" placeholder="Ex : 20 personnes" className="form-input" />
                     </div>
                 </div>
 
-                {/* Message */}
-                <div className="solaire-field">
-                    <label className="solaire-label">Votre message ou précisions *</label>
+                <div className="form-field">
+                    <label htmlFor="contact-message" className="form-label">Votre message *</label>
                     <textarea
+                        id="contact-message"
                         name="message"
                         required
                         rows="4"
-                        placeholder="Racontez-nous ce que vous souhaitez (lieu, menu souhaité, allergies ou contraintes)..."
-                        className="solaire-input solaire-textarea"
-                    ></textarea>
+                        placeholder="Décrivez votre projet (lieu, menu souhaité, allergies, contraintes)..."
+                        className="form-input form-textarea"
+                    />
                 </div>
 
-                <div className="solaire-submit-wrapper">
-                    <button type="submit" className="solaire-submit-btn" disabled={loading}>
+                <div className="form-submit-row">
+                    <button type="submit" className="form-submit-btn" disabled={loading}>
                         {loading ? 'Envoi en cours...' : (
                             <>
                                 Envoyer ma demande
-                                <Send size={18} />
+                                <Send size={16} />
                             </>
                         )}
                     </button>

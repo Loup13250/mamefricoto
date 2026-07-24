@@ -1,184 +1,647 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useTransition, useCallback } from 'react';
 import Image from 'next/image';
-import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu } from '@/app/actions';
-import { Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays, CheckCircle2, Images } from 'lucide-react';
+import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage } from '@/app/actions';
+import {
+    Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays,
+    CheckCircle2, Images, GripVertical, ArrowUp, ArrowDown,
+    Loader2, UploadCloud, AlertCircle
+} from 'lucide-react';
 
-export default function WeeklyMenuClient({ menus }) {
-    const [editingId, setEditingId] = useState(null);
-    const [isAdding, setIsAdding] = useState(false);
-
+/* =====================================================
+   IMAGE PREVIEW ITEM — avec réordonnancement par boutons
+   ===================================================== */
+function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
+    const src = typeof file === 'string' ? file : URL.createObjectURL(file);
     return (
-        <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            <div style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2.5rem' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
-                    Menu de la Semaine
-                </h1>
-                <p style={{ color: '#64748b', maxWidth: '650px', marginBottom: '1.5rem' }}>
-                    Ajoutez simplement le titre du menu et uploadez les photos (1 ou plusieurs images) pour les afficher dans le carrousel tactile du site !
-                </p>
+        <div style={{
+            position: 'relative',
+            background: '#0E0D0C',
+            border: '1px solid rgba(200,169,110,0.2)',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            aspectRatio: '1 / 1',
+        }}>
+            <Image
+                src={src}
+                alt={`Aperçu ${index + 1}`}
+                width={300}
+                height={300}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                unoptimized
+            />
+
+            {/* Badge numéro */}
+            <div style={{
+                position: 'absolute', top: '8px', left: '8px',
+                background: 'rgba(14,13,12,0.85)',
+                border: '1px solid rgba(200,169,110,0.4)',
+                color: '#C8A96E',
+                fontSize: '0.72rem', fontWeight: '700',
+                padding: '3px 9px', borderRadius: '3px',
+                backdropFilter: 'blur(4px)',
+            }}>{index + 1} / {total}</div>
+
+            {/* Boutons ordre */}
+            <div style={{
+                position: 'absolute', top: '8px', right: '8px',
+                display: 'flex', flexDirection: 'column', gap: '3px',
+            }}>
                 <button
-                    onClick={() => { setIsAdding(!isAdding); setEditingId(null); }}
-                    className="admin-btn admin-btn-primary"
-                    style={{ boxShadow: '0 4px 15px rgba(61,90,128,0.2)' }}
+                    type="button"
+                    onClick={() => onMoveUp(index)}
+                    disabled={index === 0}
+                    title="Monter"
+                    style={{
+                        width: '26px', height: '26px',
+                        background: 'rgba(14,13,12,0.85)',
+                        border: '1px solid rgba(200,169,110,0.3)',
+                        color: index === 0 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
+                        borderRadius: '3px', cursor: index === 0 ? 'default' : 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        backdropFilter: 'blur(4px)',
+                        transition: 'all 0.2s',
+                    }}
                 >
-                    {isAdding ? <><X size={16} /> Annuler</> : <><Plus size={16} /> Publier un Menu (Ajouter les images)</>}
+                    <ArrowUp size={13} />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onMoveDown(index)}
+                    disabled={index === total - 1}
+                    title="Descendre"
+                    style={{
+                        width: '26px', height: '26px',
+                        background: 'rgba(14,13,12,0.85)',
+                        border: '1px solid rgba(200,169,110,0.3)',
+                        color: index === total - 1 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
+                        borderRadius: '3px', cursor: index === total - 1 ? 'default' : 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        backdropFilter: 'blur(4px)',
+                        transition: 'all 0.2s',
+                    }}
+                >
+                    <ArrowDown size={13} />
                 </button>
             </div>
 
-            {/* Add Form */}
-            {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '720px', marginBottom: '3rem', borderTop: '4px solid var(--admin-primary)' }}>
-                    <h2 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '1.5rem', color: '#1e293b' }}>
-                        Ajouter un nouveau menu de la semaine
-                    </h2>
-                    <form action={addWeeklyMenu} onSubmit={() => setIsAdding(false)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        <div>
-                            <label className="admin-label">Titre du menu *</label>
-                            <input type="text" name="title" className="admin-input" placeholder="Ex: Menu du 15 au 18 Juillet" required style={{ background: '#faf8f5' }} />
-                        </div>
+            {/* Bouton supprimer */}
+            <button
+                type="button"
+                onClick={() => onRemove(index)}
+                title="Retirer"
+                style={{
+                    position: 'absolute', bottom: '8px', right: '8px',
+                    width: '28px', height: '28px',
+                    background: 'rgba(239,68,68,0.9)',
+                    border: 'none', borderRadius: '3px', color: 'white',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                }}
+            >
+                <X size={14} />
+            </button>
+        </div>
+    );
+}
 
-                        <div>
-                            <label className="admin-label">Description des plats (optionnel)</label>
-                            <textarea name="description" className="admin-input" rows="3" placeholder="Ex: Tarte tatin aubergines, Cake citron, Riz safran..." style={{ background: '#faf8f5' }}></textarea>
-                        </div>
+/* =====================================================
+   DROPZONE — sélection ou glisser-déposer
+   ===================================================== */
+function DropZone({ onFiles, isDragging, setIsDragging }) {
+    const inputRef = useRef(null);
 
-                        {/* Image Upload Box */}
-                        <div className="admin-dropzone" style={{ position: 'relative', border: '2px dashed var(--admin-primary)', background: '#f0f4f8', borderRadius: '16px', padding: '2rem 1rem' }}>
-                            <label htmlFor="menu-files-new" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', cursor: 'pointer' }}>
-                                <Images size={48} style={{ marginBottom: '0.75rem', color: 'var(--admin-primary)' }} />
-                                <span style={{ display: 'block', color: '#1e293b', fontWeight: '700', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
-                                    Sélectionnez les photos de votre menu (Multi-Sélection)
-                                </span>
-                                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                    Choisissez une ou plusieurs images depuis votre téléphone ou votre ordinateur
-                                </span>
-                                <input id="menu-files-new" type="file" name="image_files" accept="image/*" multiple style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-                            </label>
-                        </div>
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (dropped.length > 0) onFiles(dropped);
+    };
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                            <input type="checkbox" name="is_current" id="is_current_new" defaultChecked style={{ width: '20px', height: '20px', accentColor: 'var(--admin-primary)' }} />
-                            <label htmlFor="is_current_new" style={{ fontWeight: '600', color: '#166534', cursor: 'pointer' }}>
-                                Définir comme menu en cours (affiché sur la page d&apos;accueil)
-                            </label>
-                        </div>
+    return (
+        <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => inputRef.current?.click()}
+            style={{
+                border: `2px dashed ${isDragging ? '#C8A96E' : 'rgba(200,169,110,0.3)'}`,
+                background: isDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                borderRadius: '6px',
+                padding: '2.5rem 1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+            }}
+        >
+            <UploadCloud size={36} style={{ color: isDragging ? '#C8A96E' : 'rgba(200,169,110,0.5)' }} />
+            <span style={{ fontWeight: '600', color: '#F5F0E8', fontSize: '0.95rem' }}>
+                Glisser les images ici, ou cliquer pour choisir
+            </span>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(245,240,232,0.4)' }}>
+                JPG, PNG, WEBP · Plusieurs images possibles
+            </span>
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                    const selected = Array.from(e.target.files || []);
+                    if (selected.length > 0) onFiles(selected);
+                    e.target.value = '';
+                }}
+            />
+        </div>
+    );
+}
 
-                        <div style={{ paddingTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
-                            <button type="submit" className="admin-btn admin-btn-primary" style={{ padding: '14px 40px', fontSize: '1rem' }}>
-                                Publier ce menu
-                            </button>
-                        </div>
-                    </form>
+/* =====================================================
+   FORM AJOUT / ÉDITION
+   ===================================================== */
+function MenuForm({ menu, onCancel }) {
+    const isEdit = !!menu;
+    const [files, setFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const handleNewFiles = useCallback((newFiles) => {
+        setFiles(prev => [...prev, ...newFiles]);
+    }, []);
+
+    const handleRemove = useCallback((idx) => {
+        setFiles(prev => prev.filter((_, i) => i !== idx));
+    }, []);
+
+    const handleMoveUp = useCallback((idx) => {
+        if (idx === 0) return;
+        setFiles(prev => {
+            const next = [...prev];
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+            return next;
+        });
+    }, []);
+
+    const handleMoveDown = useCallback((idx) => {
+        setFiles(prev => {
+            if (idx >= prev.length - 1) return prev;
+            const next = [...prev];
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+            return next;
+        });
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        const formData = new FormData(e.target);
+
+        // On supprime les fichiers natifs du form et on ajoute les nôtres dans l'ordre choisi
+        formData.delete('image_files');
+        for (const file of files) {
+            formData.append('image_files', file);
+        }
+
+        startTransition(async () => {
+            const action = isEdit ? editWeeklyMenu : addWeeklyMenu;
+            const result = await action(formData);
+            if (result?.error) {
+                setError(result.error);
+            } else {
+                setSuccess(true);
+                setTimeout(() => onCancel(), 1200);
+            }
+        });
+    };
+
+    if (success) {
+        return (
+            <div style={{
+                padding: '3rem', textAlign: 'center',
+                background: 'rgba(34,197,94,0.06)',
+                border: '1px solid rgba(34,197,94,0.2)',
+                borderRadius: '8px',
+            }}>
+                <CheckCircle2 size={40} style={{ color: '#22c55e', marginBottom: '1rem' }} />
+                <p style={{ color: '#86efac', fontWeight: '600', fontSize: '1rem' }}>
+                    {isEdit ? 'Menu mis à jour !' : 'Menu publié avec succès !'}
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {isEdit && <input type="hidden" name="id" value={menu.id} />}
+
+            {/* Titre */}
+            <div>
+                <label className="admin-label">Titre du menu *</label>
+                <input
+                    type="text"
+                    name="title"
+                    className="admin-input"
+                    placeholder="Ex : Menu du 15 au 18 Juillet"
+                    defaultValue={menu?.title || ''}
+                    required
+                />
+            </div>
+
+            {/* Description */}
+            <div>
+                <label className="admin-label">Description des plats (optionnel)</label>
+                <textarea
+                    name="description"
+                    className="admin-input"
+                    rows="3"
+                    placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
+                    defaultValue={menu?.description || ''}
+                />
+            </div>
+
+            {/* DropZone */}
+            <div>
+                <label className="admin-label" style={{ marginBottom: '0.75rem', display: 'block' }}>
+                    Photos du menu
+                    {files.length > 0 && (
+                        <span style={{ marginLeft: '0.75rem', color: '#C8A96E', fontWeight: '600' }}>
+                            {files.length} image{files.length > 1 ? 's' : ''} sélectionnée{files.length > 1 ? 's' : ''}
+                        </span>
+                    )}
+                </label>
+                <DropZone onFiles={handleNewFiles} isDragging={isDragging} setIsDragging={setIsDragging} />
+            </div>
+
+            {/* Prévisualisation + ordre */}
+            {files.length > 0 && (
+                <div>
+                    <p style={{
+                        fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em',
+                        textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)',
+                        marginBottom: '0.75rem',
+                    }}>
+                        Aperçu &amp; Ordre d&apos;affichage — La 1ère image sera la miniature
+                    </p>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                        gap: '10px',
+                    }}>
+                        {files.map((file, idx) => (
+                            <PreviewItem
+                                key={idx}
+                                file={file}
+                                index={idx}
+                                total={files.length}
+                                onRemove={handleRemove}
+                                onMoveUp={handleMoveUp}
+                                onMoveDown={handleMoveDown}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
 
-            {/* Menus List */}
-            <div style={{ width: '100%' }}>
-                <h2 style={{ fontSize: '1.3rem', fontWeight: '600', color: '#1e293b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                    <span style={{ width: '30px', height: '2px', background: '#e2e8f0' }}></span>
+            {/* Images existantes (édition) */}
+            {isEdit && menu?.images?.length > 0 && (
+                <div>
+                    <p style={{
+                        fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em',
+                        textTransform: 'uppercase', color: 'rgba(200,169,110,0.85)',
+                        marginBottom: '0.75rem',
+                    }}>
+                        Photos actuelles du menu ({menu.images.length}) — Gérez l&apos;ordre ou supprimez des photos :
+                    </p>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                        gap: '10px',
+                    }}>
+                        {menu.images.map((img, idx) => (
+                            <div key={img.id} style={{
+                                border: '1px solid rgba(200,169,110,0.25)',
+                                borderRadius: '6px', overflow: 'hidden',
+                                aspectRatio: '1 / 1', position: 'relative',
+                                background: '#0E0D0C',
+                            }}>
+                                <Image
+                                    src={img.image_url}
+                                    alt={`Photo ${idx + 1}`}
+                                    width={200}
+                                    height={200}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    unoptimized
+                                />
+
+                                {/* Badge numéro */}
+                                <div style={{
+                                    position: 'absolute', top: '6px', left: '6px',
+                                    background: 'rgba(14,13,12,0.85)',
+                                    border: '1px solid rgba(200,169,110,0.4)',
+                                    color: '#C8A96E', fontSize: '0.68rem', fontWeight: '700',
+                                    padding: '2px 7px', borderRadius: '3px',
+                                }}>#{idx + 1}</div>
+
+                                {/* Reorder Controls */}
+                                <div style={{
+                                    position: 'absolute', top: '6px', right: '6px',
+                                    display: 'flex', flexDirection: 'column', gap: '3px',
+                                }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
+                                        disabled={idx === 0 || isPending}
+                                        title="Déplacer vers le haut / miniature principale"
+                                        style={{
+                                            width: '26px', height: '26px',
+                                            background: 'rgba(14,13,12,0.85)',
+                                            border: '1px solid rgba(200,169,110,0.3)',
+                                            color: idx === 0 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
+                                            borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}
+                                    >
+                                        <ArrowUp size={12} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
+                                        disabled={idx === menu.images.length - 1 || isPending}
+                                        title="Déplacer vers le bas"
+                                        style={{
+                                            width: '26px', height: '26px',
+                                            background: 'rgba(14,13,12,0.85)',
+                                            border: '1px solid rgba(200,169,110,0.3)',
+                                            color: idx === menu.images.length - 1 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
+                                            borderRadius: '3px', cursor: idx === menu.images.length - 1 ? 'default' : 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}
+                                    >
+                                        <ArrowDown size={12} />
+                                    </button>
+                                </div>
+
+                                {/* Delete image button */}
+                                {menu.images.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
+                                        disabled={isPending}
+                                        title="Supprimer cette photo"
+                                        style={{
+                                            position: 'absolute', bottom: '6px', right: '6px',
+                                            width: '26px', height: '26px',
+                                            background: 'rgba(239,68,68,0.9)',
+                                            border: 'none', borderRadius: '3px', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <X size={13} />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Menu en cours */}
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                padding: '1rem 1.25rem',
+                background: 'rgba(34,197,94,0.05)',
+                border: '1px solid rgba(34,197,94,0.15)',
+                borderRadius: '4px',
+            }}>
+                <input
+                    type="checkbox"
+                    name="is_current"
+                    id={`is_current_${menu?.id || 'new'}`}
+                    defaultChecked={menu ? !!menu.is_current : true}
+                    style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
+                />
+                <label htmlFor={`is_current_${menu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
+                    Afficher comme menu en cours sur la page d&apos;accueil
+                </label>
+            </div>
+
+            {/* Erreur */}
+            {error && (
+                <div style={{
+                    display: 'flex', gap: '0.75rem', alignItems: 'center',
+                    padding: '1rem', borderRadius: '4px',
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                    color: '#fca5a5', fontSize: '0.9rem',
+                }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                    {error}
+                </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(200,169,110,0.08)' }}>
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                    Annuler
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '160px' }}>
+                    {isPending ? (
+                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Upload en cours...</>
+                    ) : (
+                        isEdit ? 'Enregistrer les modifications' : 'Publier ce menu'
+                    )}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+/* =====================================================
+   COMPOSANT PRINCIPAL
+   ===================================================== */
+export default function WeeklyMenuClient({ menus }) {
+    const [editingId, setEditingId] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [isPending, startTransition] = useTransition();
+
+    const handleDelete = (id) => {
+        startTransition(async () => {
+            await deleteWeeklyMenu(id);
+            setDeleteId(null);
+        });
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+
+            {/* Header */}
+            <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
+                <h1 className="admin-page-title">Menu de la Semaine</h1>
+                <p style={{ color: 'rgba(245,240,232,0.5)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                    Ajoutez le titre et uploadez les photos du menu. Vous pouvez visualiser et réordonner les images avant de publier.
+                </p>
+                {!isAdding && !editingId && (
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="admin-btn admin-btn-primary"
+                    >
+                        <Plus size={16} /> Ajouter un Menu
+                    </button>
+                )}
+            </div>
+
+            {/* Formulaire ajout */}
+            {isAdding && (
+                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Nouveau menu</h2>
+                        <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <MenuForm onCancel={() => setIsAdding(false)} />
+                </div>
+            )}
+
+            {/* Formulaire édition */}
+            {editingId && (
+                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Modifier le menu</h2>
+                        <button type="button" onClick={() => setEditingId(null)} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <MenuForm
+                        menu={menus.find(m => m.id === editingId)}
+                        onCancel={() => setEditingId(null)}
+                    />
+                </div>
+            )}
+
+            {/* Liste */}
+            <div style={{ width: '100%', maxWidth: '760px' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.35)', marginBottom: '1.25rem' }}>
                     Tous les menus ({menus.length})
-                    <span style={{ width: '30px', height: '2px', background: '#e2e8f0' }}></span>
                 </h2>
 
                 {menus.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#94a3b8', fontStyle: 'italic', background: 'white', borderRadius: '20px', border: '1px solid #f1ede8' }}>
+                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', color: 'rgba(245,240,232,0.35)' }}>
                         Aucun menu publié pour le moment.
                     </div>
                 ) : (
-                    <div className="admin-grid-menus">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(200,169,110,0.06)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
                         {menus.map(menu => (
-                            editingId === menu.id ? (
-                                /* Edit Form */
-                                <div key={menu.id} className="admin-card" style={{ gridColumn: '1 / -1', borderTop: '4px solid var(--admin-accent)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#1e293b' }}>Modification du menu</h2>
-                                        <button type="button" onClick={() => setEditingId(null)} style={{ color: '#94a3b8', cursor: 'pointer', background: '#f1f5f9', padding: '8px', borderRadius: '50%', border: 'none' }}>
-                                            <X size={20} />
-                                        </button>
-                                    </div>
-                                    <form action={editWeeklyMenu} onSubmit={() => setEditingId(null)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                                        <input type="hidden" name="id" value={menu.id} />
-                                        <div>
-                                            <label className="admin-label">Titre du menu *</label>
-                                            <input type="text" name="title" defaultValue={menu.title} className="admin-input" required style={{ background: '#faf8f5' }} />
-                                        </div>
-                                        <div>
-                                            <label className="admin-label">Description</label>
-                                            <textarea name="description" defaultValue={menu.description} className="admin-input" rows="3" style={{ background: '#faf8f5' }}></textarea>
-                                        </div>
-                                        <div className="admin-dropzone" style={{ position: 'relative', padding: '1.5rem' }}>
-                                            <label htmlFor={`menu-files-${menu.id}`} style={{ display: 'block', width: '100%', cursor: 'pointer', textAlign: 'center' }}>
-                                                <span style={{ fontWeight: '600', color: '#475569' }}>Remplacer / Ajouter des images (Multi-Sélection)</span>
-                                                <input id={`menu-files-${menu.id}`} type="file" name="image_files" accept="image/*" multiple style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-                                            </label>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', background: menu.is_current ? '#f0fdf4' : '#fafaf8', borderRadius: '12px', border: `1px solid ${menu.is_current ? '#bbf7d0' : '#e2e8f0'}` }}>
-                                            <input type="checkbox" name="is_current" id={`is_current_${menu.id}`} defaultChecked={menu.is_current} style={{ width: '20px', height: '20px', accentColor: 'var(--admin-primary)' }} />
-                                            <label htmlFor={`is_current_${menu.id}`} style={{ fontWeight: '600', cursor: 'pointer', color: menu.is_current ? '#166534' : '#475569' }}>
-                                                Menu en cours (affiché sur la page d&apos;accueil)
-                                            </label>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid #f1ede8' }}>
-                                            <button type="button" onClick={() => setEditingId(null)} className="admin-btn admin-btn-secondary">Annuler</button>
-                                            <button type="submit" className="admin-btn admin-btn-primary">Enregistrer</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            ) : (
-                                /* Menu Card */
-                                <div key={menu.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', position: 'relative' }}>
-                                    {menu.is_current === 1 && (
-                                        <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 5, display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#22c55e', color: 'white', padding: '6px 14px', borderRadius: '999px', fontSize: '0.8rem', fontWeight: '700', boxShadow: '0 2px 8px rgba(34,197,94,0.3)' }}>
-                                            <CheckCircle2 size={14} />
-                                            EN COURS
+                            <div key={menu.id} className="admin-menu-item-row" style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'minmax(60px, 80px) 1fr auto',
+                                gap: '1rem',
+                                alignItems: 'center',
+                                padding: '1rem 1.25rem',
+                                background: '#161412',
+                                transition: 'background 0.2s',
+                            }}>
+                                {/* Thumbnail */}
+                                <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: 'rgba(255,255,255,0.04)', flexShrink: 0, border: '1px solid rgba(200,169,110,0.1)' }}>
+                                    {menu.images?.length > 0 ? (
+                                        <Image
+                                            src={menu.images[0].image_url}
+                                            alt={menu.title}
+                                            width={160}
+                                            height={120}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(245,240,232,0.2)' }}>
+                                            <ImageIcon size={24} />
                                         </div>
                                     )}
-                                    <div className="admin-thumb-menu">
-                                        {menu.images && menu.images.length > 0 ? (
-                                            <Image
-                                                src={menu.images[0].image_url}
-                                                alt={menu.title}
-                                                width={600}
-                                                height={600}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', background: '#f8fafc' }}>
-                                                <ImageIcon size={48} style={{ opacity: 0.4 }} />
-                                            </div>
-                                        )}
-                                        <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '0.5rem' }}>
-                                            <button onClick={() => { setEditingId(menu.id); setIsAdding(false); }} style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.95)', borderRadius: '50%', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569', border: 'none' }} title="Modifier">
-                                                <Pencil size={16} />
-                                            </button>
-                                            <form action={deleteWeeklyMenu}>
-                                                <input type="hidden" name="id" value={menu.id} />
-                                                <button type="submit" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.95)', borderRadius: '50%', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', border: 'none' }} title="Supprimer">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <h3 style={{ fontWeight: '700', fontSize: '1.1rem', color: '#1e293b', marginBottom: '0.5rem' }}>{menu.title}</h3>
-                                        {menu.description && (
-                                            <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.6', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {menu.description}
-                                            </p>
-                                        )}
-                                        <p style={{ marginTop: 'auto', paddingTop: '1rem', fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500' }}>
-                                            <CalendarDays size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.35rem' }} />
-                                            {new Date(menu.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </p>
-                                    </div>
                                 </div>
-                            )
+
+                                {/* Infos */}
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: '#F5F0E8' }}>{menu.title}</h3>
+                                        {menu.is_current === 1 && (
+                                            <span style={{ fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(34,197,94,0.12)', color: '#22c55e', padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                                                En cours
+                                            </span>
+                                        )}
+                                        {menu.images?.length > 0 && (
+                                            <span style={{ fontSize: '0.7rem', color: 'rgba(200,169,110,0.6)' }}>
+                                                {menu.images.length} photo{menu.images.length > 1 ? 's' : ''}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p style={{ fontSize: '0.75rem', color: 'rgba(245,240,232,0.3)' }}>
+                                        <CalendarDays size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
+                                        {new Date(menu.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </p>
+                                </div>
+
+                                {/* Actions */}
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        onClick={() => { setEditingId(menu.id); setIsAdding(false); }}
+                                        style={{ width: '34px', height: '34px', background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.2)', color: '#C8A96E', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                                        title="Modifier"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+
+                                    {/* Confirm delete */}
+                                    {deleteId === menu.id ? (
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            <button
+                                                onClick={() => handleDelete(menu.id)}
+                                                disabled={isPending}
+                                                style={{ padding: '0 12px', height: '34px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                                            >
+                                                {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleteId(null)}
+                                                style={{ width: '34px', height: '34px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(245,240,232,0.5)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setDeleteId(menu.id)}
+                                            style={{ width: '34px', height: '34px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                .admin-page-title {
+                    font-size: 1.6rem;
+                    font-weight: 700;
+                    color: #F5F0E8;
+                    margin-bottom: 0.5rem;
+                }
+            `}</style>
         </div>
     );
 }

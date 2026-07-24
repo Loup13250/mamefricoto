@@ -1,13 +1,35 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Play, Instagram, Phone, ArrowRight } from 'lucide-react';
+import { X, Play, Instagram, Phone, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import './InstagramGallery.css';
 
 export default function InstagramGallery({ posts, siteInfo }) {
-    const [selectedPost, setSelectedPost] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+
+    const handleKeyDown = useCallback((e) => {
+        if (selectedIndex === null) return;
+        if (e.key === 'Escape') setSelectedIndex(null);
+        if (e.key === 'ArrowLeft') setSelectedIndex((prev) => (prev > 0 ? prev - 1 : posts.length - 1));
+        if (e.key === 'ArrowRight') setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
+    }, [selectedIndex, posts]);
+
+    useEffect(() => {
+        if (selectedIndex !== null) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedIndex, handleKeyDown]);
 
     if (!posts || posts.length === 0) return null;
+
+    const selectedPost = selectedIndex !== null ? posts[selectedIndex] : null;
 
     return (
         <div className="container">
@@ -24,7 +46,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                         key={post.id}
                         className="gallery-item anim-up"
                         style={{ animationDelay: `${(idx % 4) * 80}ms` }}
-                        onClick={() => setSelectedPost(post)}
+                        onClick={() => setSelectedIndex(idx)}
                     >
                         {post.media_type === 'video' ? (
                             <>
@@ -68,11 +90,39 @@ export default function InstagramGallery({ posts, siteInfo }) {
 
             {/* Lightbox */}
             {selectedPost && (
-                <div className="modal-backdrop" onClick={() => setSelectedPost(null)}>
-                    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className="modal-close" onClick={() => setSelectedPost(null)} aria-label="Fermer">
+                <div className="modal-backdrop" onClick={() => setSelectedIndex(null)}>
+                    <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+                        
+                        {/* Navigation Buttons */}
+                        {posts.length > 1 && (
+                            <>
+                                <button
+                                    className="lightbox-nav-btn prev"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : posts.length - 1));
+                                    }}
+                                    aria-label="Précédent"
+                                >
+                                    <ChevronLeft size={28} />
+                                </button>
+                                <button
+                                    className="lightbox-nav-btn next"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
+                                    }}
+                                    aria-label="Suivant"
+                                >
+                                    <ChevronRight size={28} />
+                                </button>
+                            </>
+                        )}
+
+                        <button type="button" className="modal-close" onClick={() => setSelectedIndex(null)} aria-label="Fermer">
                             <X size={18} />
                         </button>
+                        
                         <div className="modal-img-box">
                             {selectedPost.media_type === 'video' ? (
                                 <video src={selectedPost.image_url} controls autoPlay loop style={{ width: '100%', maxHeight: '560px' }} />
@@ -85,6 +135,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                                     className="modal-img"
                                     style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                                     unoptimized
+                                    key={selectedPost.image_url} /* Force re-render on change */
                                 />
                             )}
                         </div>

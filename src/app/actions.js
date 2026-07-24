@@ -560,7 +560,7 @@ export async function updateMessageNotes(id, notes) {
 export async function reorderGalleryPost(id, direction) {
     await requireAdminAuth();
     const db = getDb();
-    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, id ASC').all();
+    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
     const index = posts.findIndex(p => p.id === id);
     if (index === -1) return { error: 'Post non trouvé' };
 

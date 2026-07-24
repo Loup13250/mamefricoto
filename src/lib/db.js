@@ -1,12 +1,58 @@
-import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-let db;
+let dbWrapper;
 
 export function getDb() {
-    if (db) return db;
+    if (dbWrapper) return dbWrapper;
 
+    const tursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL;
+    const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN;
+
+    if (tursoUrl && (tursoUrl.startsWith('libsql') || tursoUrl.startsWith('https'))) {
+        try {
+            const { createClient } = require('@libsql/client');
+            const client = createClient({
+                url: tursoUrl,
+                authToken: tursoToken,
+            });
+
+            dbWrapper = {
+                prepare(sql) {
+                    return {
+                        async all(...args) {
+                            const flatArgs = args.flat();
+                            const res = await client.execute({ sql, args: flatArgs });
+                            return Array.from(res.rows);
+                        },
+                        async get(...args) {
+                            const flatArgs = args.flat();
+                            const res = await client.execute({ sql, args: flatArgs });
+                            return res.rows[0] || undefined;
+                        },
+                        async run(...args) {
+                            const flatArgs = args.flat();
+                            const res = await client.execute({ sql, args: flatArgs });
+                            return {
+                                lastInsertRowid: res.lastInsertRowid ? Number(res.lastInsertRowid) : 0,
+                                changes: res.rowsAffected
+                            };
+                        }
+                    };
+                },
+                async exec(sql) {
+                    await client.executeMultiple(sql);
+                }
+            };
+
+            return dbWrapper;
+        } catch (tursoErr) {
+            console.error("Failed to initialize Turso client:", tursoErr);
+        }
+    }
+
+    // Fallback SQLite local (better-sqlite3)
+    const Database = require('better-sqlite3');
     let dbPath = path.join(process.cwd(), 'database', 'mamefricoto.db');
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');
 
@@ -34,11 +80,12 @@ export function getDb() {
         }
     }
 
+    let localDb;
     try {
-        db = new Database(dbPath);
+        localDb = new Database(dbPath);
         if (!process.env.VERCEL) {
             try {
-                db.pragma('journal_mode = WAL');
+                localDb.pragma('journal_mode = WAL');
             } catch (pragmaErr) {
                 console.warn("Failed to set WAL journal mode:", pragmaErr);
             }
@@ -51,23 +98,22 @@ export function getDb() {
     if (fs.existsSync(schemaPath)) {
         try {
             const schema = fs.readFileSync(schemaPath, 'utf-8');
-            db.exec(schema);
+            localDb.exec(schema);
 
-            // Safe column additions for existing DBs
-            try { db.prepare("ALTER TABLE weekly_menus ADD COLUMN embed_url TEXT").run(); } catch {}
-            try { db.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run(); } catch {}
-            try { db.prepare("ALTER TABLE contact_messages ADD COLUMN status TEXT DEFAULT 'nouveau'").run(); } catch {}
-            try { db.prepare("ALTER TABLE contact_messages ADD COLUMN admin_notes TEXT DEFAULT ''").run(); } catch {}
+            try { localDb.prepare("ALTER TABLE weekly_menus ADD COLUMN embed_url TEXT").run(); } catch {}
+            try { localDb.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run(); } catch {}
+            try { localDb.prepare("ALTER TABLE contact_messages ADD COLUMN status TEXT DEFAULT 'nouveau'").run(); } catch {}
+            try { localDb.prepare("ALTER TABLE contact_messages ADD COLUMN admin_notes TEXT DEFAULT ''").run(); } catch {}
         } catch (schemaErr) {
             console.error("Failed to run schema check:", schemaErr);
         }
     }
 
-    // Auto-seed default content if tables are empty (especially on Vercel fresh deployment)
+    // Auto-seed default content if tables are empty
     try {
-        const menuCount = db.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
+        const menuCount = localDb.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
         if (menuCount === 0) {
-            const res = db.prepare(`
+            const res = localDb.prepare(`
                 INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current)
                 VALUES (
                     'Menu du 15 au 18 Juillet',
@@ -86,7 +132,7 @@ export function getDb() {
                 '/uploads/insta-menu-4.png',
                 '/uploads/insta-menu-5.png'
             ];
-            const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
+            const stmt = localDb.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
             images.forEach((img, idx) => stmt.run(menuId, img, idx + 1));
         }
     } catch (seedErr) {
@@ -94,9 +140,9 @@ export function getDb() {
     }
 
     try {
-        const galleryCount = db.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
+        const galleryCount = localDb.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
         if (galleryCount === 0) {
-            const galleryStmt = db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
+            const galleryStmt = localDb.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
             galleryStmt.run('Menu de la semaine', 'Formule complète & plats faits maison', '/uploads/insta-menu-1.png', 'image', 1);
             galleryStmt.run('Les plats du jour', 'Riz safran, salade de lentilles, tortilla', '/uploads/insta-menu-2.png', 'image', 2);
             galleryStmt.run('Les formules & tarifs', 'Plat seul 12€, Formule 15€/18€', '/uploads/insta-menu-3.png', 'image', 3);
@@ -107,9 +153,9 @@ export function getDb() {
     }
 
     try {
-        const carouselCount = db.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
+        const carouselCount = localDb.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
         if (carouselCount === 0) {
-            const carouselStmt = db.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
+            const carouselStmt = localDb.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
             carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
             carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
         }
@@ -117,5 +163,25 @@ export function getDb() {
         console.error("Failed to seed default carousel:", carouselSeedErr);
     }
 
-    return db;
+    dbWrapper = {
+        prepare(sql) {
+            const stmt = localDb.prepare(sql);
+            return {
+                async all(...args) {
+                    return stmt.all(...args);
+                },
+                async get(...args) {
+                    return stmt.get(...args);
+                },
+                async run(...args) {
+                    return stmt.run(...args);
+                }
+            };
+        },
+        async exec(sql) {
+            localDb.exec(sql);
+        }
+    };
+
+    return dbWrapper;
 }

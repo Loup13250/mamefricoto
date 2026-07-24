@@ -8,12 +8,12 @@ export const metadata = {
     title: 'Dashboard | Admin Mamé Fricoto',
 };
 
-export default function DashboardOverview() {
-    const info = getSiteInfo();
-    const currentMenu = getCurrentWeeklyMenu();
-    const messages = getContactMessages();
-    const unreadCount = getUnreadMessageCount();
-    const galleryPosts = getGalleryPosts();
+export default async function DashboardOverview() {
+    const info = await getSiteInfo();
+    const currentMenu = await getCurrentWeeklyMenu();
+    const messages = await getContactMessages();
+    const unreadCount = await getUnreadMessageCount();
+    const galleryPosts = await getGalleryPosts();
 
     const recentMessages = messages.slice(0, 3);
 

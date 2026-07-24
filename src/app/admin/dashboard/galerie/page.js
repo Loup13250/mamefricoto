@@ -7,7 +7,7 @@ export const metadata = {
     title: 'Galerie Instagram | Admin Mamé Fricoto',
 };
 
-export default function GaleriePage() {
-    const posts = getGalleryPosts();
+export default async function GaleriePage() {
+    const posts = await getGalleryPosts();
     return <GalleryClient posts={posts} />;
 }

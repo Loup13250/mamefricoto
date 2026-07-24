@@ -10,11 +10,11 @@ import './home.css';
 
 export const revalidate = 0;
 
-export default function Home() {
-    const siteInfo = getSiteInfo();
-    const carousel = getCarouselImages();
-    const weeklyMenu = getCurrentWeeklyMenu();
-    const galleryPosts = getGalleryPosts();
+export default async function Home() {
+    const siteInfo = await getSiteInfo();
+    const carousel = await getCarouselImages();
+    const weeklyMenu = await getCurrentWeeklyMenu();
+    const galleryPosts = await getGalleryPosts();
 
     const services = [
         {

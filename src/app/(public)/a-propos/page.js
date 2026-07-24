@@ -33,8 +33,8 @@ const services = [
     },
 ];
 
-export default function AProposPage() {
-    const info = getSiteInfo();
+export default async function AProposPage() {
+    const info = await getSiteInfo();
 
     return (
         <main style={{ paddingTop: '80px' }}>

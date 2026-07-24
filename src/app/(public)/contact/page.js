@@ -9,8 +9,8 @@ export const metadata = {
 
 export const revalidate = 0;
 
-export default function ContactPage() {
-    const info = getSiteInfo();
+export default async function ContactPage() {
+    const info = await getSiteInfo();
 
     return (
         <main style={{ paddingTop: '80px' }}>

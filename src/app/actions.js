@@ -37,7 +37,7 @@ export async function adminLogin(formData) {
     const password = (formData.get('password') || '').toString().trim();
 
     const db = getDb();
-    const user = db.prepare('SELECT * FROM admin_users WHERE username = ? AND password = ?').get(username, password);
+    const user = await db.prepare('SELECT * FROM admin_users WHERE username = ? AND password = ?').get(username, password);
 
     if (user) {
         const cookieStore = await cookies();
@@ -62,7 +62,6 @@ export async function adminLogout() {
 
 // --- SECURE FILE UPLOAD HELPER ---
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg']);
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB max (vidéos/photos haute résol)
 
 async function saveUploadedFile(file) {
     if (!file || typeof file === 'string' || !file.name || file.size === 0) return null;
@@ -72,7 +71,7 @@ async function saveUploadedFile(file) {
 
     if (file.size > maxSize) {
         throw new Error(isVercel
-            ? "Le fichier dépasse la limite d'upload direct de 4.5 Mo sur Vercel. Veuillez utiliser une vidéo plus courte / compressée ou coller un lien URL."
+            ? "Le fichier dépasse la limite d'upload direct de 4.5 Mo sur Vercel. Veuillez utiliser une vidéo/image plus légère ou coller un lien URL."
             : 'Fichier trop volumineux (50 Mo maximum).'
         );
     }
@@ -88,10 +87,26 @@ async function saveUploadedFile(file) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const uploadsDir = isVercel
-            ? path.join('/tmp', 'uploads')
-            : path.join(process.cwd(), 'public', 'uploads');
+        const mimeTypes = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.webp': 'image/webp',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.mov': 'video/quicktime',
+        };
+        const mimeType = file.type || mimeTypes[ext] || 'image/jpeg';
 
+        // Sur Vercel ou environnement Serverless, conversion en Data URI Base64 autonome pour éviter les 404
+        if (isVercel || process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL) {
+            const base64 = buffer.toString('base64');
+            return `data:${mimeType};base64,${base64}`;
+        }
+
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
@@ -148,7 +163,7 @@ export async function updateSiteInfo(formData) {
     for (const field of fields) {
         const val = formData.get(field);
         if (val !== null && val !== undefined) {
-            stmt.run(field, val.toString().trim());
+            await stmt.run(field, val.toString().trim());
         }
     }
 
@@ -157,12 +172,12 @@ export async function updateSiteInfo(formData) {
 
     if (logoFile && logoFile.size > 0) {
         const logoUrl = await saveUploadedFile(logoFile);
-        if (logoUrl) stmt.run('logo', logoUrl);
+        if (logoUrl) await stmt.run('logo', logoUrl);
     }
 
     if (aboutFile && aboutFile.size > 0) {
         const aboutUrl = await saveUploadedFile(aboutFile);
-        if (aboutUrl) stmt.run('about_image', aboutUrl);
+        if (aboutUrl) await stmt.run('about_image', aboutUrl);
     }
 
     revalidatePath('/');
@@ -199,26 +214,26 @@ export async function addWeeklyMenu(formData) {
     const db = getDb();
 
     if (is_current) {
-        db.prepare('UPDATE weekly_menus SET is_current = 0').run();
+        await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    const result = db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description, mainImageUrl, '', is_current);
+    const result = await db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description, mainImageUrl, '', is_current);
     const menuId = result.lastInsertRowid;
 
     const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-    imagesToAttach.forEach((url, idx) => {
-        stmt.run(menuId, url, idx + 1);
-    });
+    for (let idx = 0; idx < imagesToAttach.length; idx++) {
+        await stmt.run(menuId, imagesToAttach[idx], idx + 1);
+    }
 
     // Nettoyage automatique : ne conserver que les 3 derniers menus
-    const allMenus = db.prepare('SELECT id FROM weekly_menus ORDER BY created_at DESC').all();
+    const allMenus = await db.prepare('SELECT id FROM weekly_menus ORDER BY created_at DESC').all();
     if (allMenus.length > 3) {
         const menusToDelete = allMenus.slice(3);
         for (const oldMenu of menusToDelete) {
-            const images = db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(oldMenu.id);
+            const images = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(oldMenu.id);
             images.forEach(img => deleteLocalFileIfPresent(img.image_url));
-            db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(oldMenu.id);
-            db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(oldMenu.id);
+            await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(oldMenu.id);
+            await db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(oldMenu.id);
         }
     }
 
@@ -253,26 +268,26 @@ export async function editWeeklyMenu(formData) {
     const db = getDb();
 
     if (is_current) {
-        db.prepare('UPDATE weekly_menus SET is_current = 0').run();
+        await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
     if (uploadedUrls.length > 0) {
-        db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, uploadedUrls[0], is_current, id);
-        db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
+        await db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, uploadedUrls[0], is_current, id);
+        await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
         const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-        uploadedUrls.forEach((url, idx) => {
-            stmt.run(id, url, idx + 1);
-        });
+        for (let idx = 0; idx < uploadedUrls.length; idx++) {
+            await stmt.run(id, uploadedUrls[idx], idx + 1);
+        }
     } else {
-        const existingImages = db.prepare('SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ?').get(id);
+        const existingImages = await db.prepare('SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ?').get(id);
         if (existingImages.count === 0) {
-            db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, DEFAULT_MENU_IMAGES[0], is_current, id);
+            await db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, DEFAULT_MENU_IMAGES[0], is_current, id);
             const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-            DEFAULT_MENU_IMAGES.forEach((url, idx) => {
-                stmt.run(id, url, idx + 1);
-            });
+            for (let idx = 0; idx < DEFAULT_MENU_IMAGES.length; idx++) {
+                await stmt.run(id, DEFAULT_MENU_IMAGES[idx], idx + 1);
+            }
         } else {
-            db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description, is_current, id);
+            await db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description, is_current, id);
         }
     }
 
@@ -287,11 +302,11 @@ export async function deleteWeeklyMenu(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    const images = db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(id);
+    const images = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(id);
     images.forEach(img => deleteLocalFileIfPresent(img.image_url));
 
-    db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
-    db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
+    await db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(id);
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
@@ -304,8 +319,8 @@ export async function toggleWeeklyMenuCurrent(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    db.prepare('UPDATE weekly_menus SET is_current = 0').run();
-    db.prepare('UPDATE weekly_menus SET is_current = 1 WHERE id = ?').run(id);
+    await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
+    await db.prepare('UPDATE weekly_menus SET is_current = 1 WHERE id = ?').run(id);
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
     return { success: true };
@@ -330,7 +345,7 @@ export async function addCarouselImage(formData) {
     }
 
     const db = getDb();
-    db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, display_order) VALUES (?, ?, ?, ?)').run(image_url, title, subtitle, display_order);
+    await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, display_order) VALUES (?, ?, ?, ?)').run(image_url, title, subtitle, display_order);
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/carousel');
@@ -343,10 +358,10 @@ export async function deleteCarouselImage(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    const img = db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
+    const img = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
     if (img) deleteLocalFileIfPresent(img.image_url);
 
-    db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
     revalidatePath('/');
     revalidatePath('/admin/dashboard/carousel');
     return { success: true };
@@ -376,17 +391,17 @@ export async function addGalleryPost(formData) {
         }
 
         const db = getDb();
-        db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
+        await db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
             title, caption, image_url, media_type
         );
 
         // Nettoyage automatique : limiter la galerie aux 15 plus récentes
-        const allPosts = db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
+        const allPosts = await db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
         if (allPosts.length > 15) {
             const postsToDelete = allPosts.slice(15);
             for (const oldPost of postsToDelete) {
                 deleteLocalFileIfPresent(oldPost.image_url);
-                db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
+                await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
             }
         }
 
@@ -405,10 +420,10 @@ export async function deleteGalleryPost(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    const post = db.prepare('SELECT image_url FROM gallery_posts WHERE id = ?').get(id);
+    const post = await db.prepare('SELECT image_url FROM gallery_posts WHERE id = ?').get(id);
     if (post) deleteLocalFileIfPresent(post.image_url);
 
-    db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
     revalidatePath('/');
     revalidatePath('/admin/dashboard/galerie');
     return { success: true };
@@ -435,22 +450,20 @@ export async function submitContactForm(formData) {
         return { error: 'Veuillez remplir les champs obligatoires (nom, email, message).' };
     }
 
-    // Basic email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return { error: 'Adresse email invalide.' };
     }
 
     const db = getDb();
-    db.prepare(`
+    await db.prepare(`
         INSERT INTO contact_messages (name, email, phone, event_type, guests, event_date, message)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(name, email, phone, event_type, guests, event_date, message);
 
     revalidatePath('/admin/dashboard/messages');
 
-    // Récupération de l'URL Formspree (si configurée) pour envoyer l'email de notification
-    const formspreeUrlRow = db.prepare('SELECT value FROM site_info WHERE key = ?').get('formspree_url');
+    const formspreeUrlRow = await db.prepare('SELECT value FROM site_info WHERE key = ?').get('formspree_url');
     const formspreeUrl = formspreeUrlRow ? formspreeUrlRow.value : null;
 
     if (formspreeUrl && formspreeUrl.startsWith('http')) {
@@ -468,7 +481,7 @@ export async function markMessageRead(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    db.prepare("UPDATE contact_messages SET is_read = 1, status = 'en_cours' WHERE id = ?").run(id);
+    await db.prepare("UPDATE contact_messages SET is_read = 1, status = 'en_cours' WHERE id = ?").run(id);
     revalidatePath('/admin/dashboard/messages');
     revalidatePath('/admin/dashboard');
     return { success: true };
@@ -480,7 +493,7 @@ export async function deleteMessage(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    db.prepare('DELETE FROM contact_messages WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM contact_messages WHERE id = ?').run(id);
     revalidatePath('/admin/dashboard/messages');
     return { success: true };
 }
@@ -493,7 +506,7 @@ export async function updateMessageStatus(id, status) {
 
     const isRead = status === 'nouveau' ? 0 : 1;
     const db = getDb();
-    db.prepare('UPDATE contact_messages SET status = ?, is_read = ? WHERE id = ?').run(status, isRead, id);
+    await db.prepare('UPDATE contact_messages SET status = ?, is_read = ? WHERE id = ?').run(status, isRead, id);
     revalidatePath('/admin/dashboard/messages');
     revalidatePath('/admin/dashboard');
     return { success: true };
@@ -504,7 +517,7 @@ export async function updateMessageNotes(id, notes) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    db.prepare('UPDATE contact_messages SET admin_notes = ? WHERE id = ?').run(notes || '', id);
+    await db.prepare('UPDATE contact_messages SET admin_notes = ? WHERE id = ?').run(notes || '', id);
     revalidatePath('/admin/dashboard/messages');
     return { success: true };
 }
@@ -512,7 +525,7 @@ export async function updateMessageNotes(id, notes) {
 export async function reorderGalleryPost(id, direction) {
     await requireAdminAuth();
     const db = getDb();
-    const posts = db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, id ASC').all();
+    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, id ASC').all();
     const index = posts.findIndex(p => p.id === id);
     if (index === -1) return { error: 'Post non trouvé' };
 
@@ -526,8 +539,8 @@ export async function reorderGalleryPost(id, direction) {
     const targetOrder = targetPost.display_order || targetIndex + 1;
 
     const stmt = db.prepare('UPDATE gallery_posts SET display_order = ? WHERE id = ?');
-    stmt.run(targetOrder, currentPost.id);
-    stmt.run(currentOrder, targetPost.id);
+    await stmt.run(targetOrder, currentPost.id);
+    await stmt.run(currentOrder, targetPost.id);
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/galerie');
@@ -537,15 +550,15 @@ export async function reorderGalleryPost(id, direction) {
 export async function deleteWeeklyMenuImage(imageId) {
     await requireAdminAuth();
     const db = getDb();
-    const img = db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
+    const img = await db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
     if (!img) return { error: 'Image non trouvée' };
 
     deleteLocalFileIfPresent(img.image_url);
-    db.prepare('DELETE FROM weekly_menu_images WHERE id = ?').run(imageId);
+    await db.prepare('DELETE FROM weekly_menu_images WHERE id = ?').run(imageId);
 
-    const remaining = db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
+    const remaining = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
     if (remaining.length > 0) {
-        db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(remaining[0].image_url, img.menu_id);
+        await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(remaining[0].image_url, img.menu_id);
     }
 
     revalidatePath('/');
@@ -556,10 +569,10 @@ export async function deleteWeeklyMenuImage(imageId) {
 export async function reorderWeeklyMenuImage(imageId, direction) {
     await requireAdminAuth();
     const db = getDb();
-    const img = db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
+    const img = await db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
     if (!img) return { error: 'Image non trouvée' };
 
-    const images = db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(img.menu_id);
+    const images = await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(img.menu_id);
     const index = images.findIndex(i => i.id === imageId);
     if (index === -1) return { error: 'Image non trouvée' };
 
@@ -573,16 +586,15 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
     const targetOrder = targetImg.display_order || targetIndex + 1;
 
     const stmt = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
-    stmt.run(targetOrder, currentImg.id);
-    stmt.run(currentOrder, targetImg.id);
+    await stmt.run(targetOrder, currentImg.id);
+    await stmt.run(currentOrder, targetImg.id);
 
-    const updatedImages = db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
+    const updatedImages = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
     if (updatedImages.length > 0) {
-        db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(updatedImages[0].image_url, img.menu_id);
+        await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(updatedImages[0].image_url, img.menu_id);
     }
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
     return { success: true };
 }
-

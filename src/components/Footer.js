@@ -3,8 +3,8 @@ import Link from 'next/link';
 import './Footer.css';
 import { Facebook, Instagram, MapPin, Phone, Clock } from 'lucide-react';
 
-export default function Footer() {
-    const info = getSiteInfo();
+export default async function Footer() {
+    const info = await getSiteInfo();
 
     return (
         <footer className="site-footer">

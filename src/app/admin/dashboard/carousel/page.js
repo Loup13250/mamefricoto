@@ -3,7 +3,7 @@ import CarouselClient from './CarouselClient';
 
 export const dynamic = 'force-dynamic';
 
-export default function CarouselPage() {
-    const images = getCarouselImages();
+export default async function CarouselPage() {
+    const images = await getCarouselImages();
     return <CarouselClient images={images} />;
 }

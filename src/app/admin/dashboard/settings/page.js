@@ -3,8 +3,8 @@ import SettingsFormClient from './SettingsFormClient';
 
 export const dynamic = 'force-dynamic';
 
-export default function SettingsPage() {
-    const info = getSiteInfo();
+export default async function SettingsPage() {
+    const info = await getSiteInfo();
 
     return (
         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>

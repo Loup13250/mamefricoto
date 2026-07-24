@@ -7,7 +7,7 @@ export const metadata = {
     title: 'Messages | Admin Mamé Fricoto',
 };
 
-export default function MessagesPage() {
-    const messages = getContactMessages();
+export default async function MessagesPage() {
+    const messages = await getContactMessages();
     return <MessagesClient messages={messages} />;
 }

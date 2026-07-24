@@ -76,11 +76,11 @@ function CarouselForm({ onCancel }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                     <label className="admin-label">Titre principal *</label>
-                    <input type="text" name="title" className="admin-input" placeholder="Ex: Cuisine Maison avec Amour" required style={{ background: '#faf8f5' }} />
+                    <input type="text" name="title" className="admin-input" placeholder="Ex: Cuisine Maison avec Amour" required />
                 </div>
                 <div>
                     <label className="admin-label">Sous-titre (optionnel)</label>
-                    <input type="text" name="subtitle" className="admin-input" placeholder="Ex: Des plats faits maison livrés chez vous" style={{ background: '#faf8f5' }} />
+                    <input type="text" name="subtitle" className="admin-input" placeholder="Ex: Des plats faits maison livrés chez vous" />
                 </div>
             </div>
 
@@ -171,7 +171,7 @@ function CarouselForm({ onCancel }) {
                 {!selectedFile && (
                     <div style={{ marginTop: '0.75rem' }}>
                         <label className="admin-label" style={{ marginBottom: '0.35rem', display: 'block' }}>Ou URL d&apos;image web</label>
-                        <input type="url" name="image_url" placeholder="https://..." className="admin-input" style={{ background: '#faf8f5' }} />
+                        <input type="url" name="image_url" placeholder="https://..." className="admin-input" />
                     </div>
                 )}
             </div>

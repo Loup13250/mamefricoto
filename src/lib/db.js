@@ -7,7 +7,7 @@ let lastCloudSyncTime = 0;
 let localDataVersion = 0;
 
 // Bucket de synchronisation cloud automatique pour Vercel Serverless
-const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v1';
+const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v2';
 
 async function fetchCloudDb() {
     try {
@@ -39,6 +39,7 @@ function exportDbTables(db) {
     try {
         return {
             updated_at: Date.now(),
+            is_seeded: true,
             site_info: db.prepare('SELECT * FROM site_info').all(),
             weekly_menus: db.prepare('SELECT * FROM weekly_menus').all(),
             weekly_menu_images: db.prepare('SELECT * FROM weekly_menu_images').all(),
@@ -56,42 +57,42 @@ function importDbTables(db, data) {
     if (!data || typeof data !== 'object') return;
     try {
         db.exec('BEGIN TRANSACTION;');
-        if (data.site_info && Array.isArray(data.site_info) && data.site_info.length > 0) {
+        if (data.site_info && Array.isArray(data.site_info)) {
             db.exec('DELETE FROM site_info;');
             const stmt = db.prepare('INSERT OR REPLACE INTO site_info (key, value) VALUES (?, ?)');
             for (const row of data.site_info) {
                 stmt.run(row.key, row.value);
             }
         }
-        if (data.weekly_menus && Array.isArray(data.weekly_menus) && data.weekly_menus.length > 0) {
+        if (data.weekly_menus && Array.isArray(data.weekly_menus)) {
             db.exec('DELETE FROM weekly_menus;');
             const stmt = db.prepare('INSERT OR REPLACE INTO weekly_menus (id, title, description, image_url, embed_url, is_current, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
             for (const row of data.weekly_menus) {
                 stmt.run(row.id, row.title, row.description, row.image_url, row.embed_url, row.is_current ? 1 : 0, row.created_at || new Date().toISOString());
             }
         }
-        if (data.weekly_menu_images && Array.isArray(data.weekly_menu_images) && data.weekly_menu_images.length > 0) {
+        if (data.weekly_menu_images && Array.isArray(data.weekly_menu_images)) {
             db.exec('DELETE FROM weekly_menu_images;');
             const stmt = db.prepare('INSERT OR REPLACE INTO weekly_menu_images (id, menu_id, image_url, display_order) VALUES (?, ?, ?, ?)');
             for (const row of data.weekly_menu_images) {
                 stmt.run(row.id, row.menu_id, row.image_url, row.display_order || 0);
             }
         }
-        if (data.contact_messages && Array.isArray(data.contact_messages) && data.contact_messages.length > 0) {
+        if (data.contact_messages && Array.isArray(data.contact_messages)) {
             db.exec('DELETE FROM contact_messages;');
             const stmt = db.prepare('INSERT OR REPLACE INTO contact_messages (id, name, email, phone, event_type, event_date, guests, message, is_read, status, admin_notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             for (const row of data.contact_messages) {
                 stmt.run(row.id, row.name, row.email, row.phone, row.event_type, row.event_date, row.guests, row.message, row.is_read ? 1 : 0, row.status || 'nouveau', row.admin_notes || '', row.created_at || new Date().toISOString());
             }
         }
-        if (data.gallery_posts && Array.isArray(data.gallery_posts) && data.gallery_posts.length > 0) {
+        if (data.gallery_posts && Array.isArray(data.gallery_posts)) {
             db.exec('DELETE FROM gallery_posts;');
             const stmt = db.prepare('INSERT OR REPLACE INTO gallery_posts (id, title, caption, image_url, media_type, display_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
             for (const row of data.gallery_posts) {
                 stmt.run(row.id, row.title, row.caption, row.image_url, row.media_type || 'image', row.display_order || 0, row.created_at || new Date().toISOString());
             }
         }
-        if (data.carousel_images && Array.isArray(data.carousel_images) && data.carousel_images.length > 0) {
+        if (data.carousel_images && Array.isArray(data.carousel_images)) {
             db.exec('DELETE FROM carousel_images;');
             const stmt = db.prepare('INSERT OR REPLACE INTO carousel_images (id, title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?, ?)');
             for (const row of data.carousel_images) {
@@ -110,7 +111,7 @@ async function syncVercelCloudState(db) {
     const isVercel = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
     if (!isVercel) return;
     const now = Date.now();
-    if (now - lastCloudSyncTime < 1000) return;
+    if (now - lastCloudSyncTime < 800) return;
     lastCloudSyncTime = now;
 
     const cloudData = await fetchCloudDb();
@@ -182,7 +183,9 @@ export function getDb() {
     let dbPath = path.join(process.cwd(), 'database', 'mamefricoto.db');
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');
 
-    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    const isVercel = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
+
+    if (isVercel) {
         const tempDbPath = path.join('/tmp', 'mamefricoto.db');
         if (!fs.existsSync(tempDbPath)) {
             try {
@@ -208,7 +211,7 @@ export function getDb() {
 
     try {
         localDbInstance = new Database(dbPath);
-        if (!process.env.VERCEL) {
+        if (!isVercel) {
             try {
                 localDbInstance.pragma('journal_mode = WAL');
             } catch (pragmaErr) {
@@ -234,58 +237,60 @@ export function getDb() {
         }
     }
 
-    // Auto-seed default content if tables are empty
-    try {
-        const menuCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
-        if (menuCount === 0) {
-            const res = localDbInstance.prepare(`
-                INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current)
-                VALUES (
-                    'Menu du 15 au 18 Juillet',
-                    'Découvrez le menu de la semaine de Mamé Fricoto : Tarte tatin aubergines & tomates, Cake au citron, Riz safran chorizo, Salade de lentilles, Tortilla froide...',
+    // Uniquement pour le dev local : auto-seed par défaut si la base est neuve
+    if (!isVercel) {
+        try {
+            const menuCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM weekly_menus').get()?.count || 0;
+            if (menuCount === 0) {
+                const res = localDbInstance.prepare(`
+                    INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current)
+                    VALUES (
+                        'Menu du 15 au 18 Juillet',
+                        'Découvrez le menu de la semaine de Mamé Fricoto : Tarte tatin aubergines & tomates, Cake au citron, Riz safran chorizo, Salade de lentilles, Tortilla froide...',
+                        '/uploads/insta-menu-1.png',
+                        'https://www.instagram.com/p/Dax0CDnjTLJ/',
+                        1
+                    )
+                `).run();
+
+                const menuId = res.lastInsertRowid;
+                const images = [
                     '/uploads/insta-menu-1.png',
-                    'https://www.instagram.com/p/Dax0CDnjTLJ/',
-                    1
-                )
-            `).run();
-
-            const menuId = res.lastInsertRowid;
-            const images = [
-                '/uploads/insta-menu-1.png',
-                '/uploads/insta-menu-2.png',
-                '/uploads/insta-menu-3.png',
-                '/uploads/insta-menu-4.png',
-                '/uploads/insta-menu-5.png'
-            ];
-            const stmt = localDbInstance.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-            images.forEach((img, idx) => stmt.run(menuId, img, idx + 1));
+                    '/uploads/insta-menu-2.png',
+                    '/uploads/insta-menu-3.png',
+                    '/uploads/insta-menu-4.png',
+                    '/uploads/insta-menu-5.png'
+                ];
+                const stmt = localDbInstance.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
+                images.forEach((img, idx) => stmt.run(menuId, img, idx + 1));
+            }
+        } catch (seedErr) {
+            console.error("Failed to seed default weekly menu:", seedErr);
         }
-    } catch (seedErr) {
-        console.error("Failed to seed default weekly menu:", seedErr);
-    }
 
-    try {
-        const galleryCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
-        if (galleryCount === 0) {
-            const galleryStmt = localDbInstance.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
-            galleryStmt.run('Menu de la semaine', 'Formule complète & plats faits maison', '/uploads/insta-menu-1.png', 'image', 1);
-            galleryStmt.run('Les plats du jour', 'Riz safran, salade de lentilles, tortilla', '/uploads/insta-menu-2.png', 'image', 2);
-            galleryStmt.run('Les formules & tarifs', 'Plat seul 12€, Formule 15€/18€', '/uploads/insta-menu-3.png', 'image', 3);
-            galleryStmt.run('En cuisine avec Mamé', 'Labo à domicile à Eyguières', '/uploads/insta-menu-5.png', 'image', 4);
+        try {
+            const galleryCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM gallery_posts').get()?.count || 0;
+            if (galleryCount === 0) {
+                const galleryStmt = localDbInstance.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?)');
+                galleryStmt.run('Menu de la semaine', 'Formule complète & plats faits maison', '/uploads/insta-menu-1.png', 'image', 1);
+                galleryStmt.run('Les plats du jour', 'Riz safran, salade de lentilles, tortilla', '/uploads/insta-menu-2.png', 'image', 2);
+                galleryStmt.run('Les formules & tarifs', 'Plat seul 12€, Formule 15€/18€', '/uploads/insta-menu-3.png', 'image', 3);
+                galleryStmt.run('En cuisine avec Mamé', 'Labo à domicile à Eyguières', '/uploads/insta-menu-5.png', 'image', 4);
+            }
+        } catch (gallerySeedErr) {
+            console.error("Failed to seed default gallery:", gallerySeedErr);
         }
-    } catch (gallerySeedErr) {
-        console.error("Failed to seed default gallery:", gallerySeedErr);
-    }
 
-    try {
-        const carouselCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
-        if (carouselCount === 0) {
-            const carouselStmt = localDbInstance.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
-            carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
-            carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
+        try {
+            const carouselCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
+            if (carouselCount === 0) {
+                const carouselStmt = localDbInstance.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
+                carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
+                carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
+            }
+        } catch (carouselSeedErr) {
+            console.error("Failed to seed default carousel:", carouselSeedErr);
         }
-    } catch (carouselSeedErr) {
-        console.error("Failed to seed default carousel:", carouselSeedErr);
     }
 
     dbWrapper = {

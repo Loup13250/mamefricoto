@@ -7,7 +7,7 @@ let lastCloudSyncTime = 0;
 let localDataVersion = 0;
 
 // Bucket de synchronisation cloud automatique pour Vercel Serverless
-const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v3';
+const CLOUD_KV_URL = 'https://kvdb.io/MF894372984712398/mamefricoto_db_v4';
 
 async function fetchCloudDb() {
     try {
@@ -111,12 +111,12 @@ async function syncVercelCloudState(db) {
     const isVercel = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
     if (!isVercel) return;
     const now = Date.now();
-    if (now - lastCloudSyncTime < 800) return;
+    if (now - lastCloudSyncTime < 1500) return;
     lastCloudSyncTime = now;
 
     let cloudData = await fetchCloudDb();
     
-    // Si le bucket cloud est vierge/absent, l'initialiser immédiatement avec le contenu de départ et le persister
+    // Si le bucket cloud est vierge/absent, l'initialiser immédiatement avec les 4 prestations traiteur de départ
     if (!cloudData || !cloudData.is_seeded) {
         const seedData = exportDbTables(db);
         if (seedData) {
@@ -137,6 +137,7 @@ async function persistVercelCloudState(db) {
     const data = exportDbTables(db);
     if (data) {
         localDataVersion = data.updated_at;
+        lastCloudSyncTime = Date.now();
         await saveCloudDb(data);
     }
 }
@@ -291,12 +292,35 @@ export function getDb() {
         console.error("Failed to seed default gallery:", gallerySeedErr);
     }
 
+    // Carrousel principal : 4 Prestations de Traiteur (Plat du Jour, Buffets Dînatoires, Événements Privés, Repas d'Entreprise)
     try {
         const carouselCount = localDbInstance.prepare('SELECT COUNT(*) as count FROM carousel_images').get()?.count || 0;
         if (carouselCount === 0) {
             const carouselStmt = localDbInstance.prepare('INSERT INTO carousel_images (title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?)');
-            carouselStmt.run('Cuisine Familiale & Fait Maison', 'Livraison & Retrait à Eyguières', '/uploads/insta-menu-1.png', 1);
-            carouselStmt.run('Plats Frais & Généreux', 'Préparés avec amour chaque jour', '/uploads/insta-menu-2.png', 2);
+            carouselStmt.run(
+                'Plat du Jour Fait Maison',
+                'Un nouveau plat mijoté chaque jour avec des produits frais du marché · Eyguières',
+                '/uploads/carousel-plat-du-jour.png',
+                1
+            );
+            carouselStmt.run(
+                'Buffets Dînatoires & Cocktails',
+                'Bouchées raffinées, verrines et douceurs gourmandes pour vos soirées et réceptions',
+                '/uploads/carousel-buffet-dinatoire.png',
+                2
+            );
+            carouselStmt.run(
+                'Événements Privés Sur Mesure',
+                'Anniversaires, baptêmes, réunions de famille — un menu personnalisé d\'exception',
+                '/uploads/carousel-evenements-prives.png',
+                3
+            );
+            carouselStmt.run(
+                'Repas d\'Entreprise & Séminaires',
+                'Plateaux repas complets et déjeuners d\'équipe livrés dans vos locaux',
+                '/uploads/carousel-repas-entreprise.png',
+                4
+            );
         }
     } catch (carouselSeedErr) {
         console.error("Failed to seed default carousel:", carouselSeedErr);

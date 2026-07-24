@@ -48,6 +48,25 @@ export default async function DashboardOverview() {
                 </a>
             </div>
 
+            {/* Information Persistance Cloud Vercel */}
+            {!process.env.TURSO_DATABASE_URL && (
+                <div style={{
+                    background: 'rgba(200, 169, 110, 0.1)',
+                    border: '1px solid rgba(200, 169, 110, 0.3)',
+                    borderRadius: '8px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '2rem',
+                    color: '#F5F0E8',
+                    fontSize: '0.9rem',
+                    lineHeight: '1.6'
+                }}>
+                    <strong style={{ color: '#C8A96E', display: 'block', fontSize: '1rem', marginBottom: '0.3rem' }}>
+                        ℹ️ Astuce Persistance Permanente (Vercel Serverless)
+                    </strong>
+                    Sur Vercel, les conteneurs de serveur sont éphémères. Pour que l&apos;intégralité de vos ajouts et suppressions (carrousel, galerie, menus) soient sauvegardés à 100% pour toujours, il suffit de lier les 2 variables d&apos;environnement gratuites <code>TURSO_DATABASE_URL</code> et <code>TURSO_AUTH_TOKEN</code> dans Vercel (Settings ➔ Environment Variables).
+                </div>
+            )}
+
             {/* Practical Notification & Status Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
                 

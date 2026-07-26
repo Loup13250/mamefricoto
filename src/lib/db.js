@@ -21,20 +21,37 @@ export function getDb() {
                 authToken: tursoToken,
             });
 
+            let tableInitPromise = null;
+            const ensureTables = async () => {
+                if (!tableInitPromise) {
+                    tableInitPromise = (async () => {
+                        try {
+                            await client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+                        } catch (err) {
+                            console.error('Turso ensureTables error:', err);
+                        }
+                    })();
+                }
+                await tableInitPromise;
+            };
+
             dbWrapper = {
                 prepare(sql) {
                     return {
                         async all(...args) {
+                            await ensureTables();
                             const flatArgs = args.flat();
                             const res = await client.execute({ sql, args: flatArgs });
                             return Array.from(res.rows);
                         },
                         async get(...args) {
+                            await ensureTables();
                             const flatArgs = args.flat();
                             const res = await client.execute({ sql, args: flatArgs });
                             return res.rows[0] || undefined;
                         },
                         async run(...args) {
+                            await ensureTables();
                             const flatArgs = args.flat();
                             const res = await client.execute({ sql, args: flatArgs });
                             return {
@@ -45,6 +62,7 @@ export function getDb() {
                     };
                 },
                 async exec(sql) {
+                    await ensureTables();
                     await client.executeMultiple(sql);
                 }
             };
@@ -118,6 +136,12 @@ export function getDb() {
                         description TEXT NOT NULL,
                         badge TEXT,
                         display_order INTEGER DEFAULT 0,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS media_storage (
+                        id TEXT PRIMARY KEY,
+                        mime_type TEXT NOT NULL,
+                        data BLOB NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                 `);

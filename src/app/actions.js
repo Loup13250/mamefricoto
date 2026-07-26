@@ -100,11 +100,11 @@ async function saveUploadedFile(file) {
         };
         const mimeType = file.type || mimeTypes[ext] || 'image/jpeg';
 
-        // Sur Vercel ou environnement Serverless, conversion en Data URI Base64 autonome pour éviter les 404
-        if (isVercel || process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL) {
-            const base64 = buffer.toString('base64');
-            return `data:${mimeType};base64,${base64}`;
-        }
+        // Stockage ultra-performant dans media_storage pour éviter de gonfler le payload HTML avec de gros Data URIs
+        const mediaId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+        const db = getDb();
+        await db.prepare('INSERT INTO media_storage (id, mime_type, data) VALUES (?, ?, ?)').run(mediaId, mimeType, buffer);
+        return `/api/media/${mediaId}`;
 
         const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
         if (!fs.existsSync(uploadsDir)) {

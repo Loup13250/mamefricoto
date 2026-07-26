@@ -69,6 +69,10 @@ export default function DashboardLayout({ children }) {
                         <ImageIcon size={18} />
                         <span>Photos Carrousel</span>
                     </Link>
+                    <Link href="/admin/dashboard/prestations" className={`admin-nav-link ${pathname === '/admin/dashboard/prestations' ? 'active' : ''}`}>
+                        <ChefHat size={18} />
+                        <span>Prestations & Services</span>
+                    </Link>
                     <Link href="/admin/dashboard/settings" className={`admin-nav-link ${pathname === '/admin/dashboard/settings' ? 'active' : ''}`}>
                         <Settings size={18} />
                         <span>Informations Site</span>

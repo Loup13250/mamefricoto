@@ -109,6 +109,19 @@ export function getDb() {
             try { localDbInstance.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE contact_messages ADD COLUMN status TEXT DEFAULT 'nouveau'").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE contact_messages ADD COLUMN admin_notes TEXT DEFAULT ''").run(); } catch {}
+            try {
+                localDbInstance.exec(`
+                    CREATE TABLE IF NOT EXISTS services (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        num TEXT,
+                        title TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        badge TEXT,
+                        display_order INTEGER DEFAULT 0,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+            } catch {}
         } catch (schemaErr) {
             console.error("Failed to run schema check:", schemaErr);
         }

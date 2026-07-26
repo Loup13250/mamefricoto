@@ -632,3 +632,95 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
     revalidatePath('/admin/dashboard/menu-semaine');
     return { success: true };
 }
+
+// --- SERVICES / PRESTATIONS ---
+export async function addService(formData) {
+    await requireAdminAuth();
+    const title = (formData.get('title') || '').toString().trim();
+    const description = (formData.get('description') || '').toString().trim();
+    const badge = (formData.get('badge') || '').toString().trim();
+    const num = (formData.get('num') || '').toString().trim();
+
+    if (!title || !description) {
+        return { error: 'Veuillez remplir le titre et la description.' };
+    }
+
+    const db = getDb();
+    const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM services').get();
+    const nextOrder = (maxRow?.maxOrder || 0) + 1;
+
+    const formattedNum = num || (nextOrder < 10 ? `0${nextOrder}` : `${nextOrder}`);
+
+    await db.prepare('INSERT INTO services (num, title, description, badge, display_order) VALUES (?, ?, ?, ?, ?)').run(
+        formattedNum, title, description, badge, nextOrder
+    );
+
+    revalidatePath('/');
+    revalidatePath('/a-propos');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function editService(formData) {
+    await requireAdminAuth();
+    const id = extractId(formData);
+    if (!id) return { error: 'ID invalide' };
+
+    const title = (formData.get('title') || '').toString().trim();
+    const description = (formData.get('description') || '').toString().trim();
+    const badge = (formData.get('badge') || '').toString().trim();
+    const num = (formData.get('num') || '').toString().trim();
+
+    if (!title || !description) {
+        return { error: 'Veuillez remplir le titre et la description.' };
+    }
+
+    const db = getDb();
+    await db.prepare('UPDATE services SET num = ?, title = ?, description = ?, badge = ? WHERE id = ?').run(
+        num, title, description, badge, id
+    );
+
+    revalidatePath('/');
+    revalidatePath('/a-propos');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function deleteService(idOrFormData) {
+    await requireAdminAuth();
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
+    const db = getDb();
+    await db.prepare('DELETE FROM services WHERE id = ?').run(id);
+
+    revalidatePath('/');
+    revalidatePath('/a-propos');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function reorderService(id, direction) {
+    await requireAdminAuth();
+    const db = getDb();
+    const services = await db.prepare('SELECT id FROM services ORDER BY display_order ASC, id ASC').all();
+    const index = services.findIndex(s => s.id === id);
+    if (index === -1) return { error: 'Prestation non trouvée' };
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= services.length) return { success: true };
+
+    const temp = services[index];
+    services[index] = services[targetIndex];
+    services[targetIndex] = temp;
+
+    const stmt = db.prepare('UPDATE services SET display_order = ? WHERE id = ?');
+    for (let i = 0; i < services.length; i++) {
+        await stmt.run(i + 1, services[i].id);
+    }
+
+    revalidatePath('/');
+    revalidatePath('/a-propos');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}

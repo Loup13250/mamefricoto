@@ -1,7 +1,8 @@
-import { getSiteInfo } from '@/lib/data';
+import { getSiteInfo, getServices } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Phone, MapPin, Truck, UtensilsCrossed, CalendarDays, Building2, ArrowRight } from 'lucide-react';
+import { Phone, MapPin, ArrowRight } from 'lucide-react';
+import '../home.css';
 
 export const metadata = {
     title: 'À Propos | Mamé Fricoto — Traiteur Maison',
@@ -10,31 +11,9 @@ export const metadata = {
 
 export const revalidate = 0;
 
-const services = [
-    {
-        icon: <UtensilsCrossed size={22} />,
-        title: 'Plats du Jour',
-        desc: 'Chaque jour, des plats mijotés frais. Commandez la veille ou le matin pour un repas livré ou à retirer.',
-    },
-    {
-        icon: <CalendarDays size={22} />,
-        title: 'Événements',
-        desc: 'Anniversaires, mariages, baptêmes — un menu sur mesure adapté à votre nombre de convives.',
-    },
-    {
-        icon: <Building2 size={22} />,
-        title: "Repas d'Entreprise",
-        desc: "Plateaux repas, buffets pour séminaires et déjeuners d'équipe. Des formules professionnelles.",
-    },
-    {
-        icon: <Truck size={22} />,
-        title: 'Buffets Dînatoires',
-        desc: 'Des mets élégants présentés en buffet pour vos soirées cocktails et réceptions.',
-    },
-];
-
 export default async function AProposPage() {
     const info = await getSiteInfo();
+    const services = await getServices();
 
     return (
         <main style={{ paddingTop: '80px' }}>
@@ -143,52 +122,19 @@ export default async function AProposPage() {
             </section>
 
             {/* ===== SERVICES ===== */}
-            <section style={{ background: 'var(--bg-2)', padding: '7rem 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+            <section className="services-section">
                 <div className="container">
-                    <div style={{ marginBottom: '4rem' }} className="anim-up">
-                        <span className="label">Nos prestations</span>
-                        <h2 style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: 'clamp(2rem, 3.5vw, 3rem)',
-                            fontWeight: '400',
-                            marginTop: '0.75rem',
-                        }}>Ce que Nous Proposons</h2>
+                    <div className="section-header anim-up" style={{ maxWidth: '600px', marginBottom: '3.5rem' }}>
+                        <span className="label">Votre traiteur à Eyguières</span>
+                        <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Ce que Nous Proposons</h2>
                     </div>
-
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                        gap: '1px',
-                        background: 'var(--border)',
-                        border: '1px solid var(--border)',
-                    }}>
-                        {services.map((s, i) => (
-                            <div key={s.title} className={`anim-up delay-${i + 1}`} style={{
-                                background: 'var(--bg-card)',
-                                padding: '2.5rem',
-                                position: 'relative',
-                                overflow: 'hidden',
-                            }}>
-                                <div style={{
-                                    width: '48px',
-                                    height: '48px',
-                                    border: '1px solid var(--border)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'var(--gold)',
-                                    marginBottom: '1.5rem',
-                                }}>
-                                    {s.icon}
-                                </div>
-                                <h3 style={{
-                                    fontFamily: 'var(--font-heading)',
-                                    fontSize: '1.4rem',
-                                    fontWeight: '400',
-                                    marginBottom: '0.85rem',
-                                    color: 'var(--text-1)',
-                                }}>{s.title}</h3>
-                                <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: '1.75' }}>{s.desc}</p>
+                    <div className="services-grid">
+                        {services.map((s, idx) => (
+                            <div key={s.id || s.title} className="service-card">
+                                <div className="service-num">{s.num || `0${idx + 1}`}</div>
+                                {s.badge && <span className="service-badge">{s.badge}</span>}
+                                <h3>{s.title}</h3>
+                                <p>{s.description}</p>
                             </div>
                         ))}
                     </div>

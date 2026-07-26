@@ -58,6 +58,16 @@ CREATE TABLE IF NOT EXISTS carousel_images (
   display_order INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS services (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  num TEXT,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  badge TEXT,
+  display_order INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =====================
 -- Initial Data
 -- =====================

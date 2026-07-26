@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getGalleryPosts } from '@/lib/data';
+import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getGalleryPosts, getServices } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
@@ -15,33 +15,7 @@ export default async function Home() {
     const carousel = await getCarouselImages();
     const weeklyMenu = await getCurrentWeeklyMenu();
     const galleryPosts = await getGalleryPosts();
-
-    const services = [
-        {
-            num: '01',
-            badge: 'Au quotidien',
-            title: 'Plat du Jour',
-            description: 'Un nouveau plat mijoté chaque jour avec des ingrédients frais du marché. Une cuisine généreuse, sincère, comme à la maison.',
-        },
-        {
-            num: '02',
-            badge: 'Fêtes & Cocktails',
-            title: 'Buffets Dînatoires',
-            description: 'Bouchées raffinées, verrines et douceurs présentées en buffets gourmands pour vos soirées et cocktails.',
-        },
-        {
-            num: '03',
-            badge: 'Sur mesure',
-            title: 'Événements Privés',
-            description: 'Anniversaires, baptêmes, réunions de famille. Un menu personnalisé élaboré selon vos envies et votre nombre de convives.',
-        },
-        {
-            num: '04',
-            badge: 'Professionnels',
-            title: "Repas d'Entreprise",
-            description: 'Plateaux repas complets, déjeuners d\'équipe et séminaires livrés directement dans vos locaux.',
-        },
-    ];
+    const services = await getServices();
 
     return (
         <main id="main-content" tabIndex="-1">
@@ -117,10 +91,10 @@ export default async function Home() {
                         <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Nos Prestations</h2>
                     </div>
                     <div className="services-grid">
-                        {services.map((s) => (
-                            <div key={s.num} className="service-card">
-                                <div className="service-num">{s.num}</div>
-                                <span className="service-badge">{s.badge}</span>
+                        {services.map((s, idx) => (
+                            <div key={s.id || s.num || idx} className="service-card">
+                                <div className="service-num">{s.num || `0${idx + 1}`}</div>
+                                {s.badge && <span className="service-badge">{s.badge}</span>}
                                 <h3>{s.title}</h3>
                                 <p>{s.description}</p>
                             </div>

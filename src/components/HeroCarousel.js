@@ -64,9 +64,9 @@ export default function HeroCarousel({ slides }) {
                         <a href="#menu-semaine" className="btn-gold">
                             Voir le menu
                         </a>
-                        <a href="tel:0743646411" className="btn-outline">
+                        <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-outline">
                             <Phone size={15} />
-                            07 43 64 64 11
+                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                         </a>
                     </div>
                 </div>

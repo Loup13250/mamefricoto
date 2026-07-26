@@ -76,9 +76,9 @@ export default function Header() {
                 </nav>
 
                 <div className="header-cta">
-                    <a href="tel:0743646411" className="cta-phone-btn">
+                    <a href="tel:#" onClick={(e) => e.preventDefault()} className="cta-phone-btn">
                         <Phone size={14} />
-                        07 43 64 64 11
+                        07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                     </a>
                 </div>
 
@@ -137,9 +137,9 @@ export default function Header() {
 
                     {/* Drawer Footer */}
                     <div className="mobile-drawer-footer">
-                        <a href="tel:0743646411" className="mobile-phone-cta" onClick={closeMobileMenu}>
+                        <a href="tel:#" className="mobile-phone-cta" onClick={(e) => { e.preventDefault(); closeMobileMenu(); }}>
                             <Phone size={16} />
-                            <span>07 43 64 64 11</span>
+                            <span>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</span>
                         </a>
 
                         <div className="mobile-location-tag">

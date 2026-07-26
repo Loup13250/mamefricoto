@@ -152,9 +152,9 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     <p className="menu-description">{menu.description}</p>
                 )}
                 <p className="menu-order-note">
-                    Commandes au 07 43 64 64 11 &mdash; Retrait au labo à Eyguières ou livraison à domicile.
+                    Commandes au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11 &mdash; Retrait au labo à Eyguières ou livraison à domicile.
                 </p>
-                <a href="tel:0743646411" className="btn-terra menu-cta-btn">
+                <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-terra menu-cta-btn">
                     <Phone size={16} />
                     Commander par téléphone
                 </a>

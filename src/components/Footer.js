@@ -59,7 +59,7 @@ export default async function Footer() {
                             </li>
                             <li>
                                 <Phone size={16} />
-                                <a href="tel:0743646411">{info.phone || '07 43 64 64 11'}</a>
+                                <a href="tel:#" onClick={(e) => e.preventDefault()}>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</a>
                             </li>
                             <li>
                                 <Clock size={16} />

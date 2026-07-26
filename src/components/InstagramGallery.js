@@ -150,9 +150,9 @@ export default function InstagramGallery({ posts, siteInfo }) {
                             {selectedPost.title && <h3 className="modal-title">{selectedPost.title}</h3>}
                             {selectedPost.caption && <p className="modal-caption">{selectedPost.caption}</p>}
                             <div className="modal-cta">
-                                <a href="tel:0743646411" className="btn-terra modal-cta-btn">
+                                <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-terra modal-cta-btn">
                                     <Phone size={15} />
-                                    Commander — 07 43 64 64 11
+                                    Commander — 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                                 </a>
                             </div>
                         </div>

@@ -233,7 +233,10 @@ export default function SettingsFormClient({ info }) {
             {/* Descriptions */}
             <div style={{ borderBottom: '1px solid rgba(200,169,110,0.1)', paddingBottom: '1.75rem' }}>
                 <label className="admin-label">Texte de présentation &quot;À Propos&quot;</label>
-                <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="4" required style={{ lineHeight: '1.6' }}></textarea>
+                <p style={{ fontSize: '0.78rem', color: 'rgba(245,240,232,0.4)', marginBottom: '0.5rem' }}>
+                    Ce texte s&apos;affiche sur la page d&apos;accueil et sur la page À Propos. Vous pouvez sauter des lignes (Touche Entrée) pour créer plusieurs paragraphes.
+                </p>
+                <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
             </div>
 
             {/* Notification Email (Optionnel) */}

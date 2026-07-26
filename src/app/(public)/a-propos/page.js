@@ -87,12 +87,8 @@ export default async function AProposPage() {
                                 Une Cuisine Authentique,<br />
                                 <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Préparée avec le Cœur</em>
                             </h2>
-                            <p style={{ color: 'var(--text-2)', fontSize: '1rem', lineHeight: '1.85', marginBottom: '1.25rem', whiteSpace: 'pre-line' }}>
-                                {info.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous."}
-                            </p>
-                            <p style={{ color: 'var(--text-2)', fontSize: '1rem', lineHeight: '1.85' }}>
-                                Chaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement
-                                sélectionnés auprès de producteurs locaux. Pas d&apos;additifs, pas de raccourcis — juste de la vraie cuisine.
+                            <p style={{ color: 'var(--text-2)', fontSize: '1rem', lineHeight: '1.85', whiteSpace: 'pre-line' }}>
+                                {info.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis — juste de la vraie cuisine."}
                             </p>
 
                             <div style={{

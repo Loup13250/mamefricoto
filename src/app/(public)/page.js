@@ -163,7 +163,7 @@ export default async function Home() {
             <section className="final-cta">
                 <div className="container text-center anim-up">
                     <span className="label">Commander</span>
-                    <h2 className="title-lg final-cta" style={{ marginTop: '1rem', marginBottom: '1rem', background: 'transparent', padding: 0, border: 'none' }}>
+                    <h2 className="title-lg final-cta" style={{ marginTop: '1rem', marginBottom: '1rem', background: 'transparent', padding: '0 0 0.5rem 0', border: 'none' }}>
                         Une envie gourmande ?
                     </h2>
                     <p className="body-lg" style={{ maxWidth: '480px', margin: '0 auto' }}>

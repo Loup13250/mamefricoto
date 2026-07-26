@@ -80,8 +80,9 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             height={1100}
                             className="menu-img"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            priority
-                            unoptimized
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+                            priority={currentIndex === 0}
+                            loading={currentIndex === 0 ? 'eager' : 'lazy'}
                             draggable={false}
                         />
                     )

@@ -63,7 +63,8 @@ export default function InstagramGallery({ posts, siteInfo }) {
                                 height={500}
                                 className="gallery-img"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                unoptimized
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                loading="lazy"
                             />
                         )}
                         <div className="gallery-overlay">
@@ -134,7 +135,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                                     height={800}
                                     className="modal-img"
                                     style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
-                                    unoptimized
+                                    sizes="(max-width: 768px) 100vw, 800px"
                                     key={selectedPost.image_url} /* Force re-render on change */
                                 />
                             )}

@@ -114,7 +114,8 @@ export default async function AProposPage() {
                                     display: 'block',
                                     border: '1px solid var(--border)',
                                 }}
-                                unoptimized
+                                sizes="(max-width: 900px) 100vw, 50vw"
+                                loading="lazy"
                             />
                         </div>
                     </div>

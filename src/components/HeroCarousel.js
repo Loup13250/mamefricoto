@@ -42,10 +42,10 @@ export default function HeroCarousel({ slides }) {
                             src={slide.image_url}
                             alt={slide.title || 'Bannière Mamé Fricoto'}
                             fill
+                            sizes="100vw"
                             priority={index === 0}
                             loading={index === 0 ? 'eager' : 'lazy'}
                             style={{ objectFit: 'cover' }}
-                            unoptimized
                         />
                     </div>
                 ))}

@@ -56,9 +56,19 @@ export async function getGalleryPosts() {
 }
 
 // --- Carousel ---
+const DEFAULT_CAROUSEL_SLIDES = [
+    { id: 1, image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1600&auto=format&fit=crop', title: 'Cuisine Maison & Produits Frais', subtitle: 'Vos plats du jour mijotés et traiteur sur-mesure à Eyguières' },
+    { id: 2, image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1600&auto=format&fit=crop', title: 'Buffets & Événements Sur-Mesure', subtitle: 'Formules gastronomiques pour vos mariages, anniversaires et cocktails' },
+    { id: 3, image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1600&auto=format&fit=crop', title: 'Savoir-Faire Artisanal', subtitle: 'Des recettes authentiques préparées chaque jour avec passion' }
+];
+
 export async function getCarouselImages() {
     const db = getDb();
-    return await db.prepare('SELECT * FROM carousel_images ORDER BY display_order ASC, id ASC').all();
+    try {
+        const slides = await db.prepare('SELECT * FROM carousel_images ORDER BY display_order ASC, id ASC').all();
+        if (slides && slides.length > 0) return slides;
+    } catch {}
+    return DEFAULT_CAROUSEL_SLIDES;
 }
 
 // --- Services / Prestations ---

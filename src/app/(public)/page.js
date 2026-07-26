@@ -114,7 +114,8 @@ export default async function Home() {
                             height={900}
                             className="about-img"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            unoptimized
+                            sizes="(max-width: 900px) 100vw, 50vw"
+                            loading="lazy"
                         />
                     </div>
                     <div className="about-text-col">

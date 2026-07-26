@@ -128,7 +128,7 @@ export default async function AProposPage() {
 
                         <div className="anim-up delay-2" style={{ position: 'relative' }}>
                             <Image
-                                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"
+                                src={info.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
                                 alt="Cuisine maison Mamé Fricoto"
                                 width={800}
                                 height={900}
@@ -139,6 +139,7 @@ export default async function AProposPage() {
                                     display: 'block',
                                     border: '1px solid var(--border)',
                                 }}
+                                unoptimized
                             />
                         </div>
                     </div>

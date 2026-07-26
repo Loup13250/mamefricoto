@@ -426,7 +426,7 @@ export async function addGalleryPost(formData) {
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type) VALUES (?, ?, ?, ?)').run(
+        await db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, 0)').run(
             title, caption, image_url, media_type
         );
 
@@ -560,22 +560,21 @@ export async function updateMessageNotes(id, notes) {
 export async function reorderGalleryPost(id, direction) {
     await requireAdminAuth();
     const db = getDb();
-    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
+    const posts = await db.prepare('SELECT id FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
     const index = posts.findIndex(p => p.id === id);
     if (index === -1) return { error: 'Post non trouvé' };
 
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= posts.length) return { success: true };
 
-    const currentPost = posts[index];
-    const targetPost = posts[targetIndex];
-
-    const currentOrder = currentPost.display_order || index + 1;
-    const targetOrder = targetPost.display_order || targetIndex + 1;
+    const temp = posts[index];
+    posts[index] = posts[targetIndex];
+    posts[targetIndex] = temp;
 
     const stmt = db.prepare('UPDATE gallery_posts SET display_order = ? WHERE id = ?');
-    await stmt.run(targetOrder, currentPost.id);
-    await stmt.run(currentOrder, targetPost.id);
+    for (let i = 0; i < posts.length; i++) {
+        await stmt.run(i + 1, posts[i].id);
+    }
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/galerie');

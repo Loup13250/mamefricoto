@@ -68,7 +68,7 @@ export default async function Home() {
                     <div className="info-strip-sep" />
                     <div className="info-strip-item">
                         <Phone size={14} />
-                        <a href="tel:0743646411" style={{ color: 'inherit' }}>07 43 64 64 11</a>
+                        <a href="#" style={{ color: 'inherit' }}>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</a>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@ export default async function Home() {
                             <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Le Menu<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Semaine</em></h2>
                         </div>
                         <p className="body-sm" style={{ maxWidth: '300px', textAlign: 'right' }}>
-                            Commandes par téléphone au 07 43 64 64 11. Livraison ou retrait au labo.
+                            Commandes par téléphone au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11. Livraison ou retrait au labo.
                         </p>
                     </div>
 
@@ -156,7 +156,7 @@ export default async function Home() {
                             </div>
                             <div className="about-fact">
                                 <strong>Contact</strong>
-                                <p>{siteInfo.phone || '07 43 64 64 11'}</p>
+                                <p>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</p>
                             </div>
                         </div>
                         <Link href="/a-propos" className="btn-outline" style={{ alignSelf: 'flex-start' }}>
@@ -196,9 +196,9 @@ export default async function Home() {
                         Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.
                     </p>
                     <div className="final-cta-actions">
-                        <a href="tel:0743646411" className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
+                        <a href="#" className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
                             <Phone size={18} />
-                            07 43 64 64 11
+                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                         </a>
                         <Link href="/contact" className="btn-outline">
                             Demander un devis

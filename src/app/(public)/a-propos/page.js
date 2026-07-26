@@ -213,9 +213,9 @@ export default async function AProposPage() {
                         Appelez-nous pour commander ou demander un devis pour vos événements.
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <a href="tel:0743646411" className="btn-terra" style={{ fontSize: '0.95rem', padding: '16px 36px' }}>
+                        <a href="#" className="btn-terra" style={{ fontSize: '0.95rem', padding: '16px 36px' }}>
                             <Phone size={16} />
-                            07 43 64 64 11
+                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                         </a>
                         <Link href="/contact" className="btn-outline">
                             Demander un devis

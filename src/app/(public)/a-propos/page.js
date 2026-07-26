@@ -9,7 +9,7 @@ export const metadata = {
     description: "Découvrez l'histoire de Mamé Fricoto, traiteur maison à Eyguières. Cuisine faite avec soin et produits frais.",
 };
 
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function AProposPage() {
     const info = await getSiteInfo();

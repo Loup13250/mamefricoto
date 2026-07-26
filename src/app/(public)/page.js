@@ -8,7 +8,7 @@ import InstagramGallery from '@/components/InstagramGallery';
 import { Phone, Truck, ArrowRight, Star } from 'lucide-react';
 import './home.css';
 
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function Home() {
     const siteInfo = await getSiteInfo();

@@ -7,7 +7,7 @@ export const metadata = {
     description: 'Contactez Mamé Fricoto pour vos commandes de plats du jour, buffets dînatoires ou événements privés à Eyguières.',
 };
 
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function ContactPage() {
     const info = await getSiteInfo();

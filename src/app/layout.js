@@ -17,8 +17,11 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://mamefricoto.vercel.app');
+
 export const metadata = {
-  metadataBase: new URL('https://mamefricoto.fr'),
+  metadataBase: new URL(baseUrl),
   title: {
     default: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
     template: "%s | Mamé Fricoto"
@@ -42,11 +45,23 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: "https://mamefricoto.fr",
+    url: baseUrl,
     siteName: "Mamé Fricoto",
     title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
     description: "Cuisine familiale généreuse et de saison à Eyguières. Menus hebdomadaires et réceptions sur mesure.",
     images: [
+      {
+        url: "/logo.png",
+        width: 500,
+        height: 500,
+        alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
+      },
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
+      },
       {
         url: "/og-image.jpg",
         width: 1200,
@@ -56,14 +71,18 @@ export const metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Mamé Fricoto | Traiteur & Cuisine Maison",
+    card: "summary",
+    title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
     description: "Cuisine maison et événements à Eyguières et en Provence.",
-    images: ["/og-image.jpg"],
+    images: ["/logo.png", "/og-image.png"],
   },
   icons: {
-    icon: [{ url: "/favicon.ico", sizes: "any" }],
-    shortcut: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

@@ -1,4 +1,5 @@
 import { DM_Sans, Cormorant_Garamond } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -68,7 +69,68 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
+    <html lang="fr" data-theme="light" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
+      <head>
+        <Script
+          id="json-ld-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FoodEstablishment',
+              'name': 'Mamé Fricoto',
+              'image': 'https://mamefricoto.fr/logo.png',
+              '@id': 'https://mamefricoto.fr',
+              'url': 'https://mamefricoto.fr',
+              'telephone': '+33743646411',
+              'address': {
+                '@type': 'PostalAddress',
+                'streetAddress': 'Eyguières',
+                'addressLocality': 'Eyguières',
+                'postalCode': '13820',
+                'addressRegion': 'Bouches-du-Rhône',
+                'addressCountry': 'FR',
+              },
+              'geo': {
+                '@type': 'GeoCoordinates',
+                'latitude': 43.6958,
+                'longitude': 5.0319,
+              },
+              'servesCuisine': 'Cuisine provençale, Fait maison, Traiteur',
+              'priceRange': '€€',
+              'openingHoursSpecification': [
+                {
+                  '@type': 'OpeningHoursSpecification',
+                  'dayOfWeek': ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                  'opens': '08:00',
+                  'closes': '19:00',
+                },
+              ],
+            }),
+          }}
+        />
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var t = localStorage.getItem('mamefricoto-theme');
+                  if (t === 'dark' || t === 'light') {
+                    document.documentElement.setAttribute('data-theme', t);
+                  } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch (e) {
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
         <a href="#main-content" className="sr-only focus:not-sr-only">
           Aller au contenu principal

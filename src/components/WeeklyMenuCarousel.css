@@ -166,6 +166,13 @@
     line-height: 1.6;
 }
 
+.menu-cta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
 .menu-cta-btn {
     width: 100%;
     justify-content: center;

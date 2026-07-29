@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Phone, FileText } from 'lucide-react';
 import './WeeklyMenuCarousel.css';
 
 function isVideoUrl(url) {
@@ -155,10 +156,16 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                 <p className="menu-order-note">
                     Commandes au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11 &mdash; Retrait au labo à Eyguières ou livraison à domicile.
                 </p>
-                <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-terra menu-cta-btn">
-                    <Phone size={16} />
-                    Commander par téléphone
-                </a>
+                <div className="menu-cta-group">
+                    <a href={siteInfo?.phone ? `tel:${siteInfo.phone.replace(/\s+/g, '')}` : '#'} className="btn-terra menu-cta-btn">
+                        <Phone size={16} />
+                        Commander par téléphone
+                    </a>
+                    <Link href="/contact" className="btn-outline menu-cta-btn">
+                        <FileText size={16} />
+                        Demander un devis
+                    </Link>
+                </div>
             </div>
         </div>
     );

@@ -1,0 +1,87 @@
+/* ===========================================
+   THEME TOGGLE — LUXURY GLASSMORPHIC SWITCH
+   =========================================== */
+
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 6px 10px;
+    border-radius: 30px;
+    background: rgba(200, 169, 110, 0.1);
+    border: 1px solid rgba(200, 169, 110, 0.28);
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    user-select: none;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(200, 169, 110, 0.2);
+    border-color: var(--gold);
+    box-shadow: 0 0 16px rgba(200, 169, 110, 0.25);
+    transform: translateY(-1px);
+}
+
+.theme-toggle-track {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    background: rgba(14, 13, 12, 0.5);
+    border: 1px solid rgba(200, 169, 110, 0.25);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.theme-toggle-btn.is-light .theme-toggle-track {
+    background: rgba(230, 215, 195, 0.9);
+    border-color: rgba(184, 139, 70, 0.4);
+}
+
+.theme-toggle-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #0E0D0C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle-btn.is-light .theme-toggle-thumb {
+    transform: translateX(14px);
+    background: var(--gold);
+    color: #FFFFFF;
+}
+
+.theme-icon {
+    transition: transform 0.5s ease;
+}
+
+.theme-toggle-btn:hover .theme-icon {
+    transform: rotate(20deg);
+}
+
+.theme-toggle-label {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-1);
+    white-space: nowrap;
+}
+
+.theme-toggle-placeholder {
+    width: 48px;
+    height: 32px;
+    border-radius: 30px;
+}

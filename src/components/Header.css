@@ -105,9 +105,16 @@
     background: var(--gold);
 }
 
-/* CTA Button */
-.header-cta {
+/* Header Actions Right */
+.header-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
     margin-left: 2rem;
+    flex-shrink: 0;
+}
+
+.header-cta {
     flex-shrink: 0;
 }
 
@@ -367,7 +374,8 @@
 
 @media (max-width: 900px) {
     .site-nav,
-    .header-cta {
+    .header-cta,
+    .header-actions-right .theme-toggle-btn {
         display: none;
     }
 

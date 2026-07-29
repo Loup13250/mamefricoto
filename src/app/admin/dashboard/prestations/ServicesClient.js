@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
 import { addService, editService, deleteService, reorderService } from '@/app/actions';
-import { Plus, Trash2, Edit3, X, CheckCircle2, AlertCircle, ArrowUp, ArrowDown, UtensilsCrossed, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit3, X, CheckCircle2, AlertCircle, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
 
 export default function ServicesClient({ services }) {
     const [isAdding, setIsAdding] = useState(false);

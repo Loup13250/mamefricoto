@@ -55,8 +55,10 @@ export default async function Home() {
                             <span className="label">Du mardi au samedi</span>
                             <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Le Menu<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Semaine</em></h2>
                         </div>
-                        <p className="body-sm" style={{ maxWidth: '300px', textAlign: 'right' }}>
-                            Commandes par téléphone au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11. Livraison ou retrait au labo.
+                        <p className="body-sm" style={{ maxWidth: '440px', textAlign: 'right', lineHeight: '1.6' }}>
+                            <span style={{ whiteSpace: 'nowrap' }}>Commandes par téléphone au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</span>.
+                            <br />
+                            Livraison ou retrait au labo.
                         </p>
                     </div>
 

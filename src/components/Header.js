@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu as MenuIcon, X as XIcon, Phone, Instagram, Facebook, MapPin } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 import './Header.css';
 
 export default function Header() {
@@ -75,11 +76,14 @@ export default function Header() {
                     <Link href="/contact" className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
                 </nav>
 
-                <div className="header-cta">
-                    <a href="tel:#" onClick={(e) => e.preventDefault()} className="cta-phone-btn">
-                        <Phone size={14} />
-                        07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
-                    </a>
+                <div className="header-actions-right">
+                    <div className="header-cta">
+                        <a href="tel:#" onClick={(e) => e.preventDefault()} className="cta-phone-btn">
+                            <Phone size={14} />
+                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
+                        </a>
+                    </div>
+                    <ThemeToggle />
                 </div>
 
                 <button
@@ -137,6 +141,8 @@ export default function Header() {
 
                     {/* Drawer Footer */}
                     <div className="mobile-drawer-footer">
+                        <ThemeToggle showLabel className="drawer-theme-toggle" />
+
                         <a href="tel:#" className="mobile-phone-cta" onClick={(e) => { e.preventDefault(); closeMobileMenu(); }}>
                             <Phone size={16} />
                             <span>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</span>

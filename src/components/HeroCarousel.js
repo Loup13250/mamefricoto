@@ -45,6 +45,8 @@ export default function HeroCarousel({ slides }) {
                             sizes="100vw"
                             priority={index === 0}
                             loading={index === 0 ? 'eager' : 'lazy'}
+                            quality={95}
+                            unoptimized
                             style={{ objectFit: 'cover' }}
                         />
                     </div>

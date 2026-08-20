@@ -3,8 +3,10 @@ import Link from 'next/link';
 import './Footer.css';
 import { Facebook, Instagram, MapPin, Phone, Clock } from 'lucide-react';
 
-export default async function Footer() {
-    const info = await getSiteInfo();
+export default async function Footer({ siteInfo }) {
+    const info = siteInfo || await getSiteInfo();
+    const phone = info.phone || '07 43 64 64 11';
+    const phoneTel = phone.replace(/\s+/g, '');
 
     return (
         <footer className="site-footer">
@@ -59,7 +61,7 @@ export default async function Footer() {
                             </li>
                             <li>
                                 <Phone size={16} />
-                                <a href="#">07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</a>
+                                <a href={`tel:${phoneTel}`}>{phone}</a>
                             </li>
                             <li>
                                 <Clock size={16} />

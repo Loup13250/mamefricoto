@@ -83,8 +83,8 @@ export default async function ContactPage() {
                                         </div>
                                         <div>
                                             <strong style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '0.35rem' }}>Téléphone</strong>
-                                            <a href="#" style={{ color: 'var(--gold-light)', fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: '400' }}>
-                                                07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
+                                            <a href={`tel:${(info.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} style={{ color: 'var(--gold-light)', fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: '400' }}>
+                                                {info.phone || '07 43 64 64 11'}
                                             </a>
                                         </div>
                                     </li>

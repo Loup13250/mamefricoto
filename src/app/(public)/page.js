@@ -17,10 +17,13 @@ export default async function Home() {
     const galleryPosts = await getGalleryPosts();
     const services = await getServices();
 
+    const phone = siteInfo.phone || '07 43 64 64 11';
+    const phoneTel = phone.replace(/\s+/g, '');
+
     return (
         <main id="main-content" tabIndex="-1">
             {/* ===== HERO ===== */}
-            <HeroCarousel slides={carousel} />
+            <HeroCarousel slides={carousel} siteInfo={siteInfo} />
 
             {/* ===== INFO STRIP ===== */}
             <div className="info-strip">
@@ -42,7 +45,7 @@ export default async function Home() {
                     <div className="info-strip-sep" />
                     <div className="info-strip-item">
                         <Phone size={14} />
-                        <a href="#" style={{ color: 'inherit' }}>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</a>
+                        <a href={`tel:${phoneTel}`} style={{ color: 'inherit' }}>{phone}</a>
                     </div>
                 </div>
             </div>
@@ -56,7 +59,7 @@ export default async function Home() {
                             <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>Le Menu<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Semaine</em></h2>
                         </div>
                         <p className="body-sm" style={{ maxWidth: '440px', textAlign: 'right', lineHeight: '1.6' }}>
-                            <span style={{ whiteSpace: 'nowrap' }}>Commandes par téléphone au 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</span>.
+                            <span style={{ whiteSpace: 'nowrap' }}>Commandes par téléphone au {phone}</span>.
                             <br />
                             Livraison ou retrait au labo.
                         </p>
@@ -133,7 +136,7 @@ export default async function Home() {
                             </div>
                             <div className="about-fact">
                                 <strong>Contact</strong>
-                                <p>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</p>
+                                <p><a href={`tel:${phoneTel}`} style={{ color: 'inherit' }}>{phone}</a></p>
                             </div>
                         </div>
                         <Link href="/a-propos" className="btn-outline" style={{ alignSelf: 'flex-start' }}>
@@ -173,9 +176,9 @@ export default async function Home() {
                         Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.
                     </p>
                     <div className="final-cta-actions">
-                        <a href="#" className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
+                        <a href={`tel:${phoneTel}`} className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
                             <Phone size={18} />
-                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
+                            {phone}
                         </a>
                         <Link href="/contact" className="btn-outline">
                             Demander un devis

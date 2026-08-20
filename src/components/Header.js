@@ -7,11 +7,14 @@ import { Menu as MenuIcon, X as XIcon, Phone, Instagram, Facebook, MapPin } from
 import ThemeToggle from './ThemeToggle';
 import './Header.css';
 
-export default function Header() {
+export default function Header({ siteInfo }) {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
     const isHome = pathname === '/';
+
+    const phone = siteInfo?.phone || '07 43 64 64 11';
+    const phoneTel = phone.replace(/\s+/g, '');
 
     useEffect(() => {
         setScrolled(window.scrollY > 60);
@@ -60,7 +63,7 @@ export default function Header() {
             <div className="container header-inner">
                 <Link href="/" className="logo-link" aria-label="Mamé Fricoto — Accueil">
                     <Image
-                        src="/logo.png"
+                        src={siteInfo?.logo || "/logo.png"}
                         alt="Mamé Fricoto"
                         width={130}
                         height={46}
@@ -78,9 +81,9 @@ export default function Header() {
 
                 <div className="header-actions-right">
                     <div className="header-cta">
-                        <a href="tel:#" onClick={(e) => e.preventDefault()} className="cta-phone-btn">
+                        <a href={`tel:${phoneTel}`} className="cta-phone-btn">
                             <Phone size={14} />
-                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
+                            {phone}
                         </a>
                     </div>
                     <ThemeToggle />
@@ -143,23 +146,27 @@ export default function Header() {
                     <div className="mobile-drawer-footer">
                         <ThemeToggle showLabel className="drawer-theme-toggle" />
 
-                        <a href="tel:#" className="mobile-phone-cta" onClick={(e) => { e.preventDefault(); closeMobileMenu(); }}>
+                        <a href={`tel:${phoneTel}`} className="mobile-phone-cta">
                             <Phone size={16} />
-                            <span>07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11</span>
+                            <span>{phone}</span>
                         </a>
 
                         <div className="mobile-location-tag">
                             <MapPin size={13} style={{ color: 'var(--gold)' }} />
-                            <span>Livraison &amp; Retrait à Eyguières (13)</span>
+                            <span>{siteInfo?.address || 'Livraison & Retrait à Eyguières (13)'}</span>
                         </div>
 
                         <div className="mobile-socials">
-                            <a href="https://www.instagram.com/mamefricoto/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                                <Instagram size={18} />
-                            </a>
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                                <Facebook size={18} />
-                            </a>
+                            {siteInfo?.instagram && (
+                                <a href={siteInfo.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                                    <Instagram size={18} />
+                                </a>
+                            )}
+                            {siteInfo?.facebook && (
+                                <a href={siteInfo.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                                    <Facebook size={18} />
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -4,9 +4,12 @@ import { Phone, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import './HeroCarousel.css';
 
-export default function HeroCarousel({ slides }) {
+export default function HeroCarousel({ slides, siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+
+    const phone = siteInfo?.phone || '07 43 64 64 11';
+    const phoneTel = phone.replace(/\s+/g, '');
 
     if (!slides || slides.length === 0) return null;
 
@@ -77,9 +80,9 @@ export default function HeroCarousel({ slides }) {
                         <a href="#menu-semaine" className="btn-gold">
                             Voir le menu
                         </a>
-                        <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-outline">
+                        <a href={`tel:${phoneTel}`} className="btn-outline">
                             <Phone size={15} />
-                            07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
+                            {phone}
                         </a>
                     </div>
                 </div>

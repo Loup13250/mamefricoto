@@ -59,6 +59,9 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
             {/* Left: Media */}
             <div
                 className="menu-media"
+                onClick={() => {
+                    if (images.length > 1) handleNext();
+                }}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
             >
@@ -93,14 +96,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Hotspots */}
-                {images.length > 1 && (
-                    <>
-                        <div className="click-zone zone-left" onClick={(e) => { e.stopPropagation(); handlePrev(); }} />
-                        <div className="click-zone zone-right" onClick={(e) => { e.stopPropagation(); handleNext(); }} />
-                    </>
-                )}
-
                 {/* Counter */}
                 {images.length > 1 && (
                     <div className="menu-counter">{currentIndex + 1} / {images.length}</div>
@@ -113,7 +108,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             type="button"
                             className="menu-arrow menu-arrow-left"
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                            onTouchEnd={(e) => { e.stopPropagation(); handlePrev(); }}
                             aria-label="Photo précédente"
                         >
                             <ChevronLeft size={20} />
@@ -122,7 +116,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             type="button"
                             className="menu-arrow menu-arrow-right"
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                            onTouchEnd={(e) => { e.stopPropagation(); handleNext(); }}
                             aria-label="Photo suivante"
                         >
                             <ChevronRight size={20} />

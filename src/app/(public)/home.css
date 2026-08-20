@@ -361,57 +361,58 @@
 
 .subpage-hero {
     background: var(--bg-2);
-    padding: calc(80px + 1.75rem) 0 2rem;
+    padding: 82px 0 1.5rem;
     border-bottom: 1px solid var(--border);
 }
 
 .subpage-hero .label {
     display: inline-block;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 
 .subpage-title {
     font-family: var(--font-heading);
-    font-size: clamp(2.4rem, 5.5vw, 4.5rem);
+    font-size: clamp(2.2rem, 5vw, 4rem);
     font-weight: 400;
-    margin-top: 0.35rem;
+    margin-top: 0.25rem;
     line-height: 1.05;
     color: var(--text);
 }
 
 .subpage-subtitle {
     max-width: 560px;
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
     color: var(--text-2);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.55;
 }
 
 .subpage-content-section {
-    padding: 2.5rem 0 4rem;
+    padding: 2rem 0 3.5rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .subpage-main {
         padding-top: 0;
     }
     .subpage-hero {
-        padding: calc(64px + 0.5rem) 0 0.85rem !important;
+        padding: 66px 0 0.75rem !important;
     }
     .subpage-hero .label {
-        margin-bottom: 0.15rem;
+        margin-bottom: 0.1rem;
+        font-size: 0.68rem;
     }
     .subpage-title {
-        font-size: clamp(1.75rem, 7vw, 2.3rem) !important;
-        margin-top: 0.2rem !important;
-        margin-bottom: 0.2rem !important;
+        font-size: clamp(1.65rem, 6.5vw, 2.1rem) !important;
+        margin-top: 0.15rem !important;
+        margin-bottom: 0.15rem !important;
     }
     .subpage-subtitle {
-        font-size: 0.88rem !important;
-        margin-top: 0.4rem !important;
-        line-height: 1.5 !important;
+        font-size: 0.85rem !important;
+        margin-top: 0.35rem !important;
+        line-height: 1.45 !important;
     }
     .subpage-content-section {
-        padding: 1rem 0 2rem !important;
+        padding: 0.75rem 0 1.75rem !important;
     }
 }

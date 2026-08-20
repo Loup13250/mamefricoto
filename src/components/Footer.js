@@ -36,10 +36,10 @@ export default async function Footer({ siteInfo }) {
                     <div className="footer-links">
                         <h3>Navigation</h3>
                         <ul>
-                            <li><Link href="/">Accueil</Link></li>
-                            <li><Link href="/realisations">Nos Réalisations</Link></li>
-                            <li><Link href="/a-propos">À Propos</Link></li>
-                            <li><Link href="/contact">Contact</Link></li>
+                            <li><Link href="/" prefetch={true}>Accueil</Link></li>
+                            <li><Link href="/realisations" prefetch={true}>Nos Réalisations</Link></li>
+                            <li><Link href="/a-propos" prefetch={true}>À Propos</Link></li>
+                            <li><Link href="/contact" prefetch={true}>Contact</Link></li>
                         </ul>
                     </div>
 

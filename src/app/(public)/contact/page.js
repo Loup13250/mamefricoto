@@ -13,33 +13,17 @@ export default async function ContactPage() {
     const info = await getSiteInfo();
 
     return (
-        <main style={{ paddingTop: '80px' }}>
+        <main className="subpage-main">
 
             {/* Page header */}
-            <section style={{
-                background: 'var(--bg-2)',
-                padding: '5rem 0 4rem',
-                borderBottom: '1px solid var(--border)',
-            }}>
+            <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">Nous contacter</span>
-                    <h1 style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-                        fontWeight: '400',
-                        marginTop: '0.75rem',
-                        lineHeight: '1.05',
-                    }}>
+                    <h1 className="subpage-title">
                         Contact &amp;<br />
                         <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Demande de Devis</em>
                     </h1>
-                    <p style={{
-                        maxWidth: '500px',
-                        marginTop: '1.5rem',
-                        color: 'var(--text-2)',
-                        fontSize: '0.95rem',
-                        lineHeight: '1.7',
-                    }}>
+                    <p className="subpage-subtitle">
                         Pour commander vos plats de la semaine, organiser un buffet dînatoire ou réserver pour un événement.
                     </p>
                 </div>

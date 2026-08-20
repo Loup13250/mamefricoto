@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { X, Play, Instagram, Phone, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import './InstagramGallery.css';
 
-export default function InstagramGallery({ posts, siteInfo }) {
+export default function InstagramGallery({ posts, siteInfo, showHeader = true }) {
     const [selectedIndex, setSelectedIndex] = useState(null);
 
     const handleKeyDown = useCallback((e) => {
@@ -44,12 +44,14 @@ export default function InstagramGallery({ posts, siteInfo }) {
 
     return (
         <div className="container">
-            <div className="gallery-header anim-up">
-                <span className="label">Nos réalisations</span>
-                <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
-                    Les Coulisses<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Cuisine</em>
-                </h2>
-            </div>
+            {showHeader && (
+                <div className="gallery-header anim-up">
+                    <span className="label">Nos réalisations</span>
+                    <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
+                        Les Coulisses<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Cuisine</em>
+                    </h2>
+                </div>
+            )}
 
             <div className="gallery-grid">
                 {posts.map((post, idx) => (

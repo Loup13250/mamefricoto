@@ -12,7 +12,24 @@ function isVideoUrl(url) {
 
 export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [arrowsVisible, setArrowsVisible] = useState(true);
     const touchStartX = useRef(0);
+    const hideTimerRef = useRef(null);
+
+    const triggerArrowVisibility = useCallback(() => {
+        setArrowsVisible(true);
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(() => {
+            setArrowsVisible(false);
+        }, 2200);
+    }, []);
+
+    useEffect(() => {
+        triggerArrowVisibility();
+        return () => {
+            if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        };
+    }, [currentIndex, triggerArrowVisibility]);
 
     if (!menu) return null;
 
@@ -23,12 +40,14 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const handlePrev = useCallback(() => {
         if (images.length <= 1) return;
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-    }, [images.length]);
+        triggerArrowVisibility();
+    }, [images.length, triggerArrowVisibility]);
 
     const handleNext = useCallback(() => {
         if (images.length <= 1) return;
         setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    }, [images.length]);
+        triggerArrowVisibility();
+    }, [images.length, triggerArrowVisibility]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -117,7 +136,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     <>
                         <button
                             type="button"
-                            className="menu-arrow menu-arrow-left"
+                            className={`menu-arrow menu-arrow-left ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                             aria-label="Photo précédente"
                         >
@@ -125,7 +144,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                         </button>
                         <button
                             type="button"
-                            className="menu-arrow menu-arrow-right"
+                            className={`menu-arrow menu-arrow-right ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
                             aria-label="Photo suivante"
                         >

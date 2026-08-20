@@ -16,33 +16,17 @@ export default async function AProposPage() {
     const services = await getServices();
 
     return (
-        <main style={{ paddingTop: '80px' }}>
+        <main className="subpage-main">
 
             {/* ===== PAGE HERO ===== */}
-            <section style={{
-                background: 'var(--bg-2)',
-                padding: '5rem 0 4rem',
-                borderBottom: '1px solid var(--border)',
-            }}>
+            <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">Notre histoire</span>
-                    <h1 style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-                        fontWeight: '400',
-                        marginTop: '0.75rem',
-                        lineHeight: '1.05',
-                    }}>
+                    <h1 className="subpage-title">
                         À Propos de<br />
                         <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Mamé Fricoto</em>
                     </h1>
-                    <p style={{
-                        maxWidth: '500px',
-                        marginTop: '1.5rem',
-                        color: 'var(--text-2)',
-                        fontSize: '1rem',
-                        lineHeight: '1.7',
-                    }}>
+                    <p className="subpage-subtitle">
                         cuisine · maison · partage
                     </p>
                 </div>

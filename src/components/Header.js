@@ -62,22 +62,23 @@ export default function Header({ siteInfo }) {
         <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
             <div className="container header-inner">
                 <Link href="/" className="logo-link" aria-label="Mamé Fricoto — Accueil">
-                    <Image
-                        src={siteInfo?.logo || "/logo.png"}
-                        alt="Mamé Fricoto"
-                        width={130}
-                        height={46}
-                        className="logo-img"
-                        style={{ width: 'auto', height: '44px' }}
-                        priority
-                    />
+                    <div className="logo-round-wrap">
+                        <Image
+                            src={siteInfo?.logo || "/logo.png"}
+                            alt="Mamé Fricoto"
+                            width={48}
+                            height={48}
+                            className="logo-img"
+                            priority
+                        />
+                    </div>
                 </Link>
 
                 <nav className="site-nav" aria-label="Navigation principale">
-                    <Link href="/" className={pathname === '/' ? 'nav-link active' : 'nav-link'}>Accueil</Link>
-                    <Link href="/realisations" className={pathname === '/realisations' || pathname === '/galerie' ? 'nav-link active' : 'nav-link'}>Nos Réalisations</Link>
-                    <Link href="/a-propos" className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>À Propos</Link>
-                    <Link href="/contact" className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
+                    <Link href="/" prefetch={true} className={pathname === '/' ? 'nav-link active' : 'nav-link'}>Accueil</Link>
+                    <Link href="/realisations" prefetch={true} className={pathname === '/realisations' || pathname === '/galerie' ? 'nav-link active' : 'nav-link'}>Nos Réalisations</Link>
+                    <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>À Propos</Link>
+                    <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
                 </nav>
 
                 <div className="header-actions-right">
@@ -132,16 +133,16 @@ export default function Header({ siteInfo }) {
 
                     {/* Main Nav Links (centered) */}
                     <nav className="mobile-nav-body" aria-label="Navigation mobile">
-                        <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/" prefetch={true} className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             Accueil
                         </Link>
-                        <Link href="/realisations" className={pathname === '/realisations' || pathname === '/galerie' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/realisations" prefetch={true} className={pathname === '/realisations' || pathname === '/galerie' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             Nos Réalisations
                         </Link>
-                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             À Propos
                         </Link>
-                        <Link href="/contact" className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             Contact &amp; Devis
                         </Link>
                     </nav>

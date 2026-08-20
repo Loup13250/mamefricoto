@@ -19,43 +19,27 @@ export default async function RealisationsPage() {
     const phoneTel = phone.replace(/\s+/g, '');
 
     return (
-        <main style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="subpage-main">
             {/* ===== PAGE HERO ===== */}
-            <section style={{
-                background: 'var(--bg-2)',
-                padding: '5rem 0 4rem',
-                borderBottom: '1px solid var(--border)',
-            }}>
+            <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                         <Sparkles size={13} style={{ color: 'var(--gold)' }} /> Galerie Photos &amp; Vidéos
                     </span>
-                    <h1 style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: 'clamp(2.5rem, 5.5vw, 4.5rem)',
-                        fontWeight: '400',
-                        marginTop: '0.75rem',
-                        lineHeight: '1.05',
-                    }}>
+                    <h1 className="subpage-title">
                         Nos Réalisations<br />
                         <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Les Coulisses de la Cuisine</em>
                     </h1>
-                    <p style={{
-                        maxWidth: '560px',
-                        marginTop: '1.5rem',
-                        color: 'var(--text-2)',
-                        fontSize: '1rem',
-                        lineHeight: '1.7',
-                    }}>
+                    <p className="subpage-subtitle">
                         Découvrez en images nos buffets gourmands, réceptions sur mesure, plats mijotés et nos préparations quotidiennes au labo à Eyguières.
                     </p>
                 </div>
             </section>
 
             {/* ===== GALLERY GRID ===== */}
-            <section style={{ padding: '5rem 0 6rem' }}>
+            <section className="subpage-content-section">
                 {galleryPosts && galleryPosts.length > 0 ? (
-                    <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
+                    <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} showHeader={false} />
                 ) : (
                     <div className="container text-center" style={{ padding: '4rem 1rem' }}>
                         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>

@@ -351,3 +351,56 @@
         padding: 4.5rem 0;
     }
 }
+
+/* ===== SUBPAGES LAYOUT (Realisations, A Propos, Contact) ===== */
+.subpage-main {
+    padding-top: 80px;
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+.subpage-hero {
+    background: var(--bg-2);
+    padding: 4.5rem 0 3.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.subpage-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.4rem, 5.5vw, 4.5rem);
+    font-weight: 400;
+    margin-top: 0.75rem;
+    line-height: 1.05;
+    color: var(--text);
+}
+
+.subpage-subtitle {
+    max-width: 560px;
+    margin-top: 1.25rem;
+    color: var(--text-2);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.subpage-content-section {
+    padding: 4.5rem 0 6rem;
+}
+
+@media (max-width: 768px) {
+    .subpage-main {
+        padding-top: 60px;
+    }
+    .subpage-hero {
+        padding: 2rem 0 1.5rem !important;
+    }
+    .subpage-title {
+        font-size: clamp(1.85rem, 7.5vw, 2.5rem) !important;
+    }
+    .subpage-subtitle {
+        font-size: 0.9rem !important;
+        margin-top: 0.6rem !important;
+    }
+    .subpage-content-section {
+        padding: 2.25rem 0 3.5rem !important;
+    }
+}

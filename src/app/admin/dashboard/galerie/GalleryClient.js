@@ -75,8 +75,8 @@ function MediaPreview({ file, onRemove }) {
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
                 padding: '4px 6px',
-                background: 'rgba(14,13,12,0.7)',
-                fontSize: '0.7rem', color: 'rgba(245,240,232,0.6)',
+                background: 'rgba(14,13,12,0.85)',
+                fontSize: '0.7rem', color: '#FDFBF7',
                 textAlign: 'center',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
@@ -185,7 +185,7 @@ export default function GalleryClient({ posts }) {
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
-                <p style={{ color: 'rgba(245,240,232,0.5)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
                     Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page d&apos;accueil dans la section galerie.
                 </p>
                 {!isAdding && (
@@ -198,17 +198,17 @@ export default function GalleryClient({ posts }) {
             {/* Formulaire ajout */}
             {isAdding && (
                 <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Publier une réalisation</h2>
-                        <button type="button" onClick={resetForm} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Publier une réalisation</h2>
+                        <button type="button" onClick={resetForm} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
                             <X size={20} />
                         </button>
                     </div>
 
                     {success ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px' }}>
-                            <CheckCircle2 size={40} style={{ color: '#22c55e', marginBottom: '1rem' }} />
-                            <p style={{ color: '#86efac', fontWeight: '600' }}>Publication réussie !</p>
+                        <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px' }}>
+                            <CheckCircle2 size={40} style={{ color: '#16a34a', marginBottom: '1rem' }} />
+                            <p style={{ color: '#16a34a', fontWeight: '600' }}>Publication réussie !</p>
                         </div>
                     ) : (
                         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -216,7 +216,7 @@ export default function GalleryClient({ posts }) {
                             {/* Prévisualisation du fichier sélectionné */}
                             {selectedFile ? (
                                 <div>
-                                    <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)', marginBottom: '0.75rem' }}>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-gold)', marginBottom: '0.75rem' }}>
                                         Aperçu — Prêt à publier
                                     </p>
                                     <div style={{ maxWidth: '280px' }}>
@@ -235,8 +235,8 @@ export default function GalleryClient({ posts }) {
                                         onDrop={handleDrop}
                                         onClick={() => inputRef.current?.click()}
                                         style={{
-                                            border: `2px dashed ${isDragging ? '#C8A96E' : 'rgba(200,169,110,0.3)'}`,
-                                            background: isDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                                            border: `2px dashed ${isDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                            background: isDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
                                             borderRadius: '6px',
                                             padding: '2.5rem 1rem',
                                             display: 'flex', flexDirection: 'column',
@@ -245,11 +245,11 @@ export default function GalleryClient({ posts }) {
                                             transition: 'all 0.25s ease',
                                         }}
                                     >
-                                        <UploadCloud size={36} style={{ color: isDragging ? '#C8A96E' : 'rgba(200,169,110,0.5)' }} />
-                                        <span style={{ fontWeight: '600', color: '#F5F0E8', fontSize: '0.95rem' }}>
+                                        <UploadCloud size={36} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
+                                        <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.95rem' }}>
                                             Glisser le fichier ici, ou cliquer pour choisir
                                         </span>
-                                        <span style={{ fontSize: '0.8rem', color: 'rgba(245,240,232,0.4)' }}>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-subtle)' }}>
                                             Images (JPG, PNG, WEBP) ou Vidéos (MP4, MOV, WEBM)
                                         </span>
                                         <input
@@ -312,14 +312,14 @@ export default function GalleryClient({ posts }) {
 
                             {/* Erreur */}
                             {error && (
-                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: '0.9rem' }}>
+                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.9rem' }}>
                                     <AlertCircle size={18} style={{ flexShrink: 0 }} />
                                     {error}
                                 </div>
                             )}
 
                             {/* Boutons */}
-                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(200,169,110,0.08)' }}>
+                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
                                 <button type="button" onClick={resetForm} className="admin-btn admin-btn-secondary" disabled={isPending}>
                                     Annuler
                                 </button>
@@ -336,12 +336,12 @@ export default function GalleryClient({ posts }) {
 
             {/* Grille des publications */}
             <div style={{ width: '100%', maxWidth: '760px' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.35)', marginBottom: '1.25rem' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1.25rem' }}>
                     Publications ({posts.length})
                 </h2>
 
                 {posts.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', color: 'rgba(245,240,232,0.35)' }}>
+                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
                         Aucune publication pour le moment.
                     </div>
                 ) : (
@@ -373,7 +373,7 @@ export default function GalleryClient({ posts }) {
                                 {/* Hover overlay with Actions & Reordering */}
                                 <div style={{
                                     position: 'absolute', inset: 0,
-                                    background: 'rgba(14,13,12,0.82)',
+                                    background: 'rgba(14,13,12,0.85)',
                                     display: 'flex', flexDirection: 'column',
                                     alignItems: 'center', justifyContent: 'center',
                                     gap: '0.6rem',
@@ -382,7 +382,7 @@ export default function GalleryClient({ posts }) {
                                 }}
                                     className="gallery-item-overlay"
                                 >
-                                    {post.title && <p style={{ color: '#F5F0E8', fontSize: '0.82rem', fontWeight: '600', textAlign: 'center', margin: 0, lineClamp: 2 }}>{post.title}</p>}
+                                    {post.title && <p style={{ color: '#FDFBF7', fontSize: '0.82rem', fontWeight: '600', textAlign: 'center', margin: 0, lineClamp: 2 }}>{post.title}</p>}
 
                                     {/* Reorder Buttons */}
                                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -394,7 +394,7 @@ export default function GalleryClient({ posts }) {
                                                 width: '30px', height: '30px',
                                                 background: idx === 0 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
                                                 border: '1px solid rgba(200,169,110,0.3)',
-                                                color: idx === 0 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                color: idx === 0 ? 'rgba(255,255,255,0.2)' : 'var(--admin-gold)',
                                                 borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             }}
@@ -409,7 +409,7 @@ export default function GalleryClient({ posts }) {
                                                 width: '30px', height: '30px',
                                                 background: idx === posts.length - 1 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
                                                 border: '1px solid rgba(200,169,110,0.3)',
-                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.2)' : 'var(--admin-gold)',
                                                 borderRadius: '3px', cursor: idx === posts.length - 1 ? 'default' : 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             }}
@@ -452,7 +452,7 @@ export default function GalleryClient({ posts }) {
 
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
-                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: #F5F0E8; margin-bottom: 0.5rem; }
+                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: var(--admin-text); margin-bottom: 0.5rem; }
                 .gallery-item-overlay { opacity: 0 !important; }
                 div:has(> .gallery-item-overlay):hover .gallery-item-overlay { opacity: 1 !important; }
             `}</style>

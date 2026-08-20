@@ -56,9 +56,9 @@ export default function SettingsFormClient({ info }) {
 
             {saved && (
                 <div style={{
-                    padding: '1rem', background: 'rgba(34,197,94,0.1)',
-                    border: '1px solid rgba(34,197,94,0.25)', borderRadius: '6px',
-                    color: '#86efac', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    padding: '1rem', background: 'rgba(34,197,94,0.12)',
+                    border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px',
+                    color: '#16a34a', display: 'flex', alignItems: 'center', gap: '0.5rem',
                     fontSize: '0.9rem', fontWeight: '600'
                 }}>
                     <CheckCircle2 size={18} /> Modifications enregistrées avec succès !
@@ -66,9 +66,9 @@ export default function SettingsFormClient({ info }) {
             )}
 
             {/* Visuels du site */}
-            <div style={{ borderBottom: '1px solid rgba(200,169,110,0.1)', paddingBottom: '1.75rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <ImageIcon size={18} style={{ color: '#C8A96E' }} /> Visuels du Site (Logo &amp; Image À Propos)
+            <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ImageIcon size={18} style={{ color: 'var(--admin-gold)' }} /> Visuels du Site (Logo &amp; Image À Propos)
                 </h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
@@ -107,14 +107,14 @@ export default function SettingsFormClient({ info }) {
                                 onDrop={(e) => { e.preventDefault(); setLogoDragging(false); handleLogoSelect(e.dataTransfer.files?.[0]); }}
                                 onClick={() => logoInputRef.current?.click()}
                                 style={{
-                                    border: `2px dashed ${logoDragging ? '#C8A96E' : 'rgba(200,169,110,0.25)'}`,
-                                    background: logoDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                                    border: `2px dashed ${logoDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                    background: logoDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
                                     borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
                                 }}
                             >
-                                <UploadCloud size={28} style={{ color: 'rgba(200,169,110,0.5)', marginBottom: '0.5rem' }} />
-                                <span style={{ display: 'block', fontSize: '0.85rem', color: '#F5F0E8', fontWeight: '600' }}>Cliquer pour ajouter le logo</span>
-                                <span style={{ fontSize: '0.75rem', color: 'rgba(245,240,232,0.4)' }}>PNG, SVG (Fond transparent)</span>
+                                <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.5rem' }} />
+                                <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter le logo</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>PNG, SVG (Fond transparent)</span>
                             </div>
                         )}
                         <input
@@ -160,14 +160,14 @@ export default function SettingsFormClient({ info }) {
                                 onDrop={(e) => { e.preventDefault(); setAboutDragging(false); handleAboutSelect(e.dataTransfer.files?.[0]); }}
                                 onClick={() => aboutInputRef.current?.click()}
                                 style={{
-                                    border: `2px dashed ${aboutDragging ? '#C8A96E' : 'rgba(200,169,110,0.25)'}`,
-                                    background: aboutDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                                    border: `2px dashed ${aboutDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                    background: aboutDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
                                     borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
                                 }}
                             >
-                                <UploadCloud size={28} style={{ color: 'rgba(200,169,110,0.5)', marginBottom: '0.5rem' }} />
-                                <span style={{ display: 'block', fontSize: '0.85rem', color: '#F5F0E8', fontWeight: '600' }}>Cliquer pour ajouter la photo</span>
-                                <span style={{ fontSize: '0.75rem', color: 'rgba(245,240,232,0.4)' }}>Format portrait ou paysage</span>
+                                <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.5rem' }} />
+                                <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter la photo</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Format portrait ou paysage</span>
                             </div>
                         )}
                         <input
@@ -183,9 +183,9 @@ export default function SettingsFormClient({ info }) {
             </div>
 
             {/* Coordonnées */}
-            <div style={{ borderBottom: '1px solid rgba(200,169,110,0.1)', paddingBottom: '1.75rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Phone size={18} style={{ color: '#C8A96E' }} /> Coordonnées &amp; Contact
+            <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Phone size={18} style={{ color: 'var(--admin-gold)' }} /> Coordonnées &amp; Contact
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     <div>
@@ -210,9 +210,9 @@ export default function SettingsFormClient({ info }) {
             </div>
 
             {/* Réseaux sociaux & Avis */}
-            <div style={{ borderBottom: '1px solid rgba(200,169,110,0.1)', paddingBottom: '1.75rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Globe size={18} style={{ color: '#C8A96E' }} /> Réseaux &amp; Liens
+            <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Globe size={18} style={{ color: 'var(--admin-gold)' }} /> Réseaux &amp; Liens
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     <div>
@@ -231,9 +231,9 @@ export default function SettingsFormClient({ info }) {
             </div>
 
             {/* Descriptions */}
-            <div style={{ borderBottom: '1px solid rgba(200,169,110,0.1)', paddingBottom: '1.75rem' }}>
+            <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
                 <label className="admin-label">Texte de présentation &quot;À Propos&quot;</label>
-                <p style={{ fontSize: '0.78rem', color: 'rgba(245,240,232,0.4)', marginBottom: '0.5rem' }}>
+                <p style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)', marginBottom: '0.5rem' }}>
                     Ce texte s&apos;affiche sur la page d&apos;accueil et sur la page À Propos. Vous pouvez sauter des lignes (Touche Entrée) pour créer plusieurs paragraphes.
                 </p>
                 <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
@@ -241,11 +241,11 @@ export default function SettingsFormClient({ info }) {
 
             {/* Notification Email (Optionnel) */}
             <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#F5F0E8', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Mail size={18} style={{ color: '#C8A96E' }} /> Notifications Email (Formspree)
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Mail size={18} style={{ color: 'var(--admin-gold)' }} /> Notifications Email (Formspree)
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(245,240,232,0.5)', marginBottom: '1rem' }}>
-                    Tous les messages du formulaire sont automatiquement sauvegardés dans votre onglet <strong>Messages</strong>. Si vous souhaitez recevoir un vrai mail en plus, vous pouvez créer un formulaire sur <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" style={{color: '#C8A96E'}}>Formspree.io</a> et coller l&apos;URL ci-dessous.
+                <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1rem' }}>
+                    Tous les messages du formulaire sont automatiquement sauvegardés dans votre onglet <strong>Messages</strong>. Si vous souhaitez recevoir un vrai mail en plus, vous pouvez créer un formulaire sur <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" style={{color: 'var(--admin-gold)'}}>Formspree.io</a> et coller l&apos;URL ci-dessous.
                 </p>
                 <div>
                     <label className="admin-label">URL Endpoint Formspree (ex: https://formspree.io/f/xxxxx)</label>

@@ -125,8 +125,8 @@ function DropZone({ onFiles, isDragging, setIsDragging }) {
             onDrop={handleDrop}
             onClick={() => inputRef.current?.click()}
             style={{
-                border: `2px dashed ${isDragging ? '#C8A96E' : 'rgba(200,169,110,0.3)'}`,
-                background: isDragging ? 'rgba(200,169,110,0.06)' : 'rgba(255,255,255,0.02)',
+                border: `2px dashed ${isDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                background: isDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
                 borderRadius: '6px',
                 padding: '2.5rem 1rem',
                 display: 'flex',
@@ -138,11 +138,11 @@ function DropZone({ onFiles, isDragging, setIsDragging }) {
                 transition: 'all 0.25s ease',
             }}
         >
-            <UploadCloud size={36} style={{ color: isDragging ? '#C8A96E' : 'rgba(200,169,110,0.5)' }} />
-            <span style={{ fontWeight: '600', color: '#F5F0E8', fontSize: '0.95rem' }}>
+            <UploadCloud size={36} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
+            <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.95rem' }}>
                 Glisser les images ici, ou cliquer pour choisir
             </span>
-            <span style={{ fontSize: '0.8rem', color: 'rgba(245,240,232,0.4)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-subtle)' }}>
                 JPG, PNG, WEBP · Plusieurs images possibles
             </span>
             <input
@@ -483,60 +483,52 @@ export default function WeeklyMenuClient({ menus }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-
-            {/* Header */}
-            <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
+            <div style={{ width: '100%', maxWidth: '750px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Menu de la Semaine</h1>
-                <p style={{ color: 'rgba(245,240,232,0.5)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Ajoutez le titre et uploadez les photos du menu. Vous pouvez visualiser et réordonner les images avant de publier.
+                <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                    Créez ou modifiez le menu de la semaine affiché sur le site. Vous pouvez publier plusieurs photos par menu (les clients pourront faire défiler les photos du menu avec des flèches).
                 </p>
                 {!isAdding && !editingId && (
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="admin-btn admin-btn-primary"
-                    >
-                        <Plus size={16} /> Ajouter un Menu
+                    <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
+                        <Plus size={16} /> Créer un nouveau menu
                     </button>
                 )}
             </div>
 
-            {/* Formulaire ajout */}
+            {/* Formulaire Création */}
             {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Nouveau menu</h2>
-                        <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '750px', marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Nouveau menu</h2>
+                        <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
                             <X size={20} />
                         </button>
                     </div>
-                    <MenuForm onCancel={() => setIsAdding(false)} />
+                    <WeeklyMenuForm onCancel={() => setIsAdding(false)} />
                 </div>
             )}
 
-            {/* Formulaire édition */}
+            {/* Formulaire Édition */}
             {editingId && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(200,169,110,0.08)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#F5F0E8' }}>Modifier le menu</h2>
-                        <button type="button" onClick={() => setEditingId(null)} style={{ color: 'rgba(245,240,232,0.4)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '750px', marginBottom: '3rem', border: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Modifier le menu</h2>
+                        <button type="button" onClick={() => setEditingId(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
                             <X size={20} />
                         </button>
                     </div>
-                    <MenuForm
-                        menu={menus.find(m => m.id === editingId)}
-                        onCancel={() => setEditingId(null)}
-                    />
+                    <WeeklyMenuForm initialData={menus.find(m => m.id === editingId)} onCancel={() => setEditingId(null)} />
                 </div>
             )}
 
-            {/* Liste */}
-            <div style={{ width: '100%', maxWidth: '760px' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.35)', marginBottom: '1.25rem' }}>
-                    Tous les menus ({menus.length})
+            {/* Liste des Menus */}
+            <div style={{ width: '100%', maxWidth: '750px' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1.25rem' }}>
+                    Historique des menus ({menus.length})
                 </h2>
 
                 {menus.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', color: 'rgba(245,240,232,0.35)' }}>
+                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
                         Aucun menu publié pour le moment.
                     </div>
                 ) : (
@@ -552,7 +544,7 @@ export default function WeeklyMenuClient({ menus }) {
                                 transition: 'background 0.2s',
                             }}>
                                 {/* Thumbnail */}
-                                <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: 'rgba(255,255,255,0.04)', flexShrink: 0, border: '1px solid rgba(200,169,110,0.1)' }}>
+                                <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: 'var(--admin-surface)', flexShrink: 0, border: '1px solid var(--admin-border)' }}>
                                     {menu.images?.length > 0 ? (
                                         <Image
                                             src={menu.images[0].image_url}
@@ -563,56 +555,54 @@ export default function WeeklyMenuClient({ menus }) {
                                             unoptimized
                                         />
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(245,240,232,0.2)' }}>
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--admin-text-subtle)' }}>
                                             <ImageIcon size={24} />
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Infos */}
+                                {/* Details */}
                                 <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: '#F5F0E8' }}>{menu.title}</h3>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
+                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)' }}>{menu.title}</h3>
                                         {menu.is_current === 1 && (
-                                            <span style={{ fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(34,197,94,0.12)', color: '#22c55e', padding: '2px 8px', borderRadius: '2px', border: '1px solid rgba(34,197,94,0.2)' }}>
-                                                En cours
+                                            <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(34,197,94,0.15)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px' }}>
+                                                En ligne
                                             </span>
                                         )}
-                                        {menu.images?.length > 0 && (
-                                            <span style={{ fontSize: '0.7rem', color: 'rgba(200,169,110,0.6)' }}>
-                                                {menu.images.length} photo{menu.images.length > 1 ? 's' : ''}
+                                        {menu.images?.length > 1 && (
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--admin-gold)' }}>
+                                                📷 {menu.images.length} photos
                                             </span>
                                         )}
                                     </div>
-                                    <p style={{ fontSize: '0.75rem', color: 'rgba(245,240,232,0.3)' }}>
-                                        <CalendarDays size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
-                                        {new Date(menu.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>
+                                        {menu.week_dates ? `Période : ${menu.week_dates}` : `Créé le ${new Date(menu.created_at).toLocaleDateString('fr-FR')}`}
                                     </p>
                                 </div>
 
                                 {/* Actions */}
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <button
                                         onClick={() => { setEditingId(menu.id); setIsAdding(false); }}
-                                        style={{ width: '34px', height: '34px', background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.2)', color: '#C8A96E', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-                                        title="Modifier"
+                                        title="Modifier ce menu"
+                                        style={{ width: '34px', height: '34px', background: 'rgba(200,169,110,0.12)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
                                     >
-                                        <Pencil size={14} />
+                                        <Pencil size={15} />
                                     </button>
 
-                                    {/* Confirm delete */}
                                     {deleteId === menu.id ? (
                                         <div style={{ display: 'flex', gap: '4px' }}>
                                             <button
                                                 onClick={() => handleDelete(menu.id)}
                                                 disabled={isPending}
-                                                style={{ padding: '0 12px', height: '34px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                                                style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
                                             >
                                                 {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
                                             </button>
                                             <button
                                                 onClick={() => setDeleteId(null)}
-                                                style={{ width: '34px', height: '34px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(245,240,232,0.5)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                style={{ width: '34px', height: '34px', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-subtle)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                             >
                                                 <X size={14} />
                                             </button>
@@ -620,10 +610,10 @@ export default function WeeklyMenuClient({ menus }) {
                                     ) : (
                                         <button
                                             onClick={() => setDeleteId(menu.id)}
-                                            style={{ width: '34px', height: '34px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-                                            title="Supprimer"
+                                            title="Supprimer ce menu"
+                                            style={{ width: '34px', height: '34px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                         >
-                                            <Trash2 size={14} />
+                                            <Trash2 size={15} />
                                         </button>
                                     )}
                                 </div>
@@ -635,12 +625,7 @@ export default function WeeklyMenuClient({ menus }) {
 
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
-                .admin-page-title {
-                    font-size: 1.6rem;
-                    font-weight: 700;
-                    color: #F5F0E8;
-                    margin-bottom: 0.5rem;
-                }
+                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: var(--admin-text); margin-bottom: 0.5rem; }
             `}</style>
         </div>
     );

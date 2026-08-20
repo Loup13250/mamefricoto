@@ -244,7 +244,7 @@ function MessageCard({ msg }) {
                         <StickyNote size={14} /> Note &amp; Remarque Interne (ex: raison d&apos;annulation, détails devis...)
                     </label>
                     {savedNotes && (
-                        <span style={{ fontSize: '0.78rem', color: '#4ade80', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                             <Check size={14} /> Enregistré !
                         </span>
                     )}

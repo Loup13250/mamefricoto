@@ -72,7 +72,7 @@ export default function ServicesClient({ services }) {
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Nos Prestations</h1>
-                <p style={{ color: 'rgba(245,240,232,0.5)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
                     Gérez les prestations et services qui apparaissent sur la page d&apos;accueil et sur la page À Propos.
                 </p>
                 {!isAdding && !editingService && (
@@ -84,12 +84,12 @@ export default function ServicesClient({ services }) {
 
             {/* Alerts */}
             {success && (
-                <div style={{ width: '100%', maxWidth: '800px', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#86efac', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '100%', maxWidth: '800px', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <CheckCircle2 size={18} /> {success}
                 </div>
             )}
             {error && (
-                <div style={{ width: '100%', maxWidth: '800px', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '100%', maxWidth: '800px', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertCircle size={18} /> {error}
                 </div>
             )}
@@ -97,9 +97,9 @@ export default function ServicesClient({ services }) {
             {/* Formulaire Ajout */}
             {isAdding && (
                 <div className="admin-card" style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
-                        <h2 style={{ fontSize: '1.1rem', color: '#F5F0E8' }}>Nouvelle prestation</h2>
-                        <button type="button" onClick={() => setIsAdding(false)} style={{ background: 'none', border: 'none', color: 'rgba(245,240,232,0.4)', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.1rem', color: 'var(--admin-text)' }}>Nouvelle prestation</h2>
+                        <button type="button" onClick={() => setIsAdding(false)} style={{ background: 'none', border: 'none', color: 'var(--admin-text-subtle)', cursor: 'pointer' }}>
                             <X size={20} />
                         </button>
                     </div>
@@ -135,9 +135,9 @@ export default function ServicesClient({ services }) {
             {/* Formulaire Édition */}
             {editingService && (
                 <div className="admin-card" style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
-                        <h2 style={{ fontSize: '1.1rem', color: '#F5F0E8' }}>Modifier la prestation</h2>
-                        <button type="button" onClick={() => setEditingService(null)} style={{ background: 'none', border: 'none', color: 'rgba(245,240,232,0.4)', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.1rem', color: 'var(--admin-text)' }}>Modifier la prestation</h2>
+                        <button type="button" onClick={() => setEditingService(null)} style={{ background: 'none', border: 'none', color: 'var(--admin-text-subtle)', cursor: 'pointer' }}>
                             <X size={20} />
                         </button>
                     </div>
@@ -178,22 +178,22 @@ export default function ServicesClient({ services }) {
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
                             <div style={{
                                 width: '42px', height: '42px', borderRadius: '6px',
-                                background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.2)',
+                                background: 'rgba(200,169,110,0.12)', border: '1px solid var(--admin-border)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: '#C8A96E', fontWeight: '700', fontSize: '1rem', flexShrink: 0
+                                color: 'var(--admin-gold)', fontWeight: '700', fontSize: '1rem', flexShrink: 0
                             }}>
                                 {s.num || `0${idx + 1}`}
                             </div>
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
-                                    <h3 style={{ fontSize: '1.05rem', color: '#F5F0E8', margin: 0, fontWeight: '600' }}>{s.title}</h3>
+                                    <h3 style={{ fontSize: '1.05rem', color: 'var(--admin-text)', margin: 0, fontWeight: '600' }}>{s.title}</h3>
                                     {s.badge && (
-                                        <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '2px 8px', borderRadius: '3px', background: 'rgba(200,169,110,0.15)', color: '#C8A96E' }}>
+                                        <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '2px 8px', borderRadius: '3px', background: 'rgba(200,169,110,0.15)', color: 'var(--admin-gold)' }}>
                                             {s.badge}
                                         </span>
                                     )}
                                 </div>
-                                <p style={{ fontSize: '0.85rem', color: 'rgba(245,240,232,0.6)', margin: 0, lineHeight: '1.5' }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', margin: 0, lineHeight: '1.5' }}>
                                     {s.description}
                                 </p>
                             </div>
@@ -205,7 +205,7 @@ export default function ServicesClient({ services }) {
                                 onClick={() => handleReorder(s.id, 'up')}
                                 disabled={idx === 0 || isPending}
                                 title="Monter"
-                                style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(200,169,110,0.2)', color: idx === 0 ? 'rgba(255,255,255,0.15)' : '#C8A96E', borderRadius: '4px', cursor: idx === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{ width: '32px', height: '32px', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', color: idx === 0 ? 'var(--admin-text-subtle)' : 'var(--admin-gold)', borderRadius: '4px', cursor: idx === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 <ArrowUp size={14} />
                             </button>
@@ -213,14 +213,14 @@ export default function ServicesClient({ services }) {
                                 onClick={() => handleReorder(s.id, 'down')}
                                 disabled={idx === services.length - 1 || isPending}
                                 title="Descendre"
-                                style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(200,169,110,0.2)', color: idx === services.length - 1 ? 'rgba(255,255,255,0.15)' : '#C8A96E', borderRadius: '4px', cursor: idx === services.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{ width: '32px', height: '32px', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', color: idx === services.length - 1 ? 'var(--admin-text-subtle)' : 'var(--admin-gold)', borderRadius: '4px', cursor: idx === services.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 <ArrowDown size={14} />
                             </button>
                             <button
                                 onClick={() => setEditingService(s)}
                                 title="Modifier"
-                                style={{ width: '32px', height: '32px', background: 'rgba(200,169,110,0.15)', border: '1px solid rgba(200,169,110,0.3)', color: '#C8A96E', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{ width: '32px', height: '32px', background: 'rgba(200,169,110,0.15)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 <Edit3 size={14} />
                             </button>
@@ -237,7 +237,7 @@ export default function ServicesClient({ services }) {
                                 <button
                                     onClick={() => setDeleteId(s.id)}
                                     title="Supprimer"
-                                    style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     <Trash2 size={14} />
                                 </button>
@@ -248,7 +248,7 @@ export default function ServicesClient({ services }) {
             </div>
 
             <style>{`
-                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: #F5F0E8; margin-bottom: 0.5rem; }
+                .admin-page-title { font-size: 1.6rem; font-weight: 700; color: var(--admin-text); margin-bottom: 0.5rem; }
                 .spin { animation: spin 1s linear infinite; }
                 @keyframes spin { to { transform: rotate(360deg); } }
             `}</style>

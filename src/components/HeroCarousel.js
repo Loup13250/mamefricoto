@@ -7,6 +7,8 @@ import './HeroCarousel.css';
 export default function HeroCarousel({ slides, siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [touchStartX, setTouchStartX] = useState(null);
+    const [touchStartY, setTouchStartY] = useState(null);
 
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
@@ -29,6 +31,10 @@ export default function HeroCarousel({ slides, siteInfo }) {
                 const imgLoader = new window.Image();
                 imgLoader.src = slide.image_url;
             }
+            if (slide?.mobile_image_url) {
+                const imgLoaderMob = new window.Image();
+                imgLoaderMob.src = slide.mobile_image_url;
+            }
         });
     }, [slides]);
 
@@ -40,11 +46,39 @@ export default function HeroCarousel({ slides, siteInfo }) {
         setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
     };
 
+    const handleTouchStart = (e) => {
+        setTouchStartX(e.touches[0].clientX);
+        setTouchStartY(e.touches[0].clientY);
+    };
+
+    const handleTouchEnd = (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const diffX = touchStartX - touchEndX;
+        const diffY = touchStartY - touchEndY;
+
+        // Trigger slide swap if horizontal swipe is dominant and exceeds 35px
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+            if (diffX > 0) {
+                handleNext();
+            } else {
+                handlePrev();
+            }
+        }
+
+        setTouchStartX(null);
+        setTouchStartY(null);
+    };
+
     return (
         <section
             className="hero"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
         >
             <div className="hero-track">
                 {slides.map((slide, index) => (

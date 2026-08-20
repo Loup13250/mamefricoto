@@ -79,8 +79,8 @@ export default function SettingsFormClient({ info }) {
                         {logoPreview ? (
                             <div style={{
                                 position: 'relative',
-                                background: '#161412',
-                                border: '1px solid rgba(200,169,110,0.25)',
+                                background: 'var(--admin-surface)',
+                                border: '1px solid var(--admin-border)',
                                 borderRadius: '6px',
                                 padding: '1rem',
                                 display: 'flex',
@@ -132,8 +132,8 @@ export default function SettingsFormClient({ info }) {
                         {aboutPreview ? (
                             <div style={{
                                 position: 'relative',
-                                background: '#161412',
-                                border: '1px solid rgba(200,169,110,0.25)',
+                                background: 'var(--admin-surface)',
+                                border: '1px solid var(--admin-border)',
                                 borderRadius: '6px',
                                 padding: '0.5rem',
                                 display: 'flex',

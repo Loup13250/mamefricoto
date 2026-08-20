@@ -8,25 +8,25 @@ const STATUS_CONFIG = {
     nouveau: {
         label: 'Nouveau',
         bg: 'rgba(212, 180, 117, 0.15)',
-        color: '#D4B475',
+        color: 'var(--admin-gold-dark)',
         border: 'rgba(212, 180, 117, 0.35)',
     },
     en_cours: {
         label: 'En cours',
         bg: 'rgba(59, 130, 246, 0.15)',
-        color: '#60a5fa',
+        color: '#2563eb',
         border: 'rgba(59, 130, 246, 0.35)',
     },
     effectue: {
         label: 'Effectué',
         bg: 'rgba(34, 197, 94, 0.15)',
-        color: '#4ade80',
+        color: '#16a34a',
         border: 'rgba(34, 197, 94, 0.35)',
     },
     annule: {
         label: 'Annulé',
         bg: 'rgba(217, 103, 72, 0.15)',
-        color: '#fca5a5',
+        color: '#dc2626',
         border: 'rgba(217, 103, 72, 0.35)',
     },
 };

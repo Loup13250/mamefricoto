@@ -16,8 +16,8 @@ function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
     return (
         <div style={{
             position: 'relative',
-            background: '#0E0D0C',
-            border: '1px solid rgba(200,169,110,0.2)',
+            background: 'var(--admin-surface)',
+            border: '1px solid var(--admin-border)',
             borderRadius: '6px',
             overflow: 'hidden',
             aspectRatio: '1 / 1',
@@ -327,10 +327,10 @@ function MenuForm({ menu, onCancel }) {
                     }}>
                         {menu.images.map((img, idx) => (
                             <div key={img.id} style={{
-                                border: '1px solid rgba(200,169,110,0.25)',
+                                border: '1px solid var(--admin-border)',
                                 borderRadius: '6px', overflow: 'hidden',
                                 aspectRatio: '1 / 1', position: 'relative',
-                                background: '#0E0D0C',
+                                background: 'var(--admin-surface)',
                             }}>
                                 <Image
                                     src={img.image_url}
@@ -540,7 +540,7 @@ export default function WeeklyMenuClient({ menus }) {
                         Aucun menu publié pour le moment.
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(200,169,110,0.06)', border: '1px solid rgba(200,169,110,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--admin-border-soft)', border: '1px solid var(--admin-border)', borderRadius: '6px', overflow: 'hidden' }}>
                         {menus.map(menu => (
                             <div key={menu.id} className="admin-menu-item-row" style={{
                                 display: 'grid',
@@ -548,7 +548,7 @@ export default function WeeklyMenuClient({ menus }) {
                                 gap: '1rem',
                                 alignItems: 'center',
                                 padding: '1rem 1.25rem',
-                                background: '#161412',
+                                background: 'var(--admin-card-bg)',
                                 transition: 'background 0.2s',
                             }}>
                                 {/* Thumbnail */}

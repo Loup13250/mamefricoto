@@ -59,6 +59,104 @@
   --admin-glow: 0 0 25px rgba(184, 139, 70, 0.12);
 }
 
+/* Light mode component specific overrides */
+[data-theme="light"] .admin-login-container {
+  background-color: var(--admin-bg);
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(184, 139, 70, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(200, 91, 63, 0.08) 0%, transparent 50%);
+}
+
+[data-theme="light"] .admin-login-box {
+  background: #FFFFFF;
+  border-color: rgba(184, 139, 70, 0.25);
+  box-shadow: 0 20px 60px rgba(36, 30, 25, 0.08);
+}
+
+[data-theme="light"] .admin-mobile-header {
+  background: #F3EDE4;
+  border-bottom-color: rgba(184, 139, 70, 0.2);
+}
+
+[data-theme="light"] .admin-sidebar {
+  background-color: #F3EDE4;
+  border-right-color: rgba(184, 139, 70, 0.2);
+}
+
+[data-theme="light"] .admin-nav-link {
+  color: #52473D;
+}
+
+[data-theme="light"] .admin-nav-link:hover {
+  background-color: rgba(184, 139, 70, 0.12);
+  color: #241E19;
+}
+
+[data-theme="light"] .admin-nav-link.active {
+  background: linear-gradient(90deg, rgba(184, 139, 70, 0.2), rgba(184, 139, 70, 0.05));
+  color: #785520;
+  border-color: rgba(184, 139, 70, 0.3);
+}
+
+[data-theme="light"] .admin-card {
+  background: #FFFFFF;
+  border-color: rgba(184, 139, 70, 0.22);
+  box-shadow: 0 10px 30px rgba(36, 30, 25, 0.05);
+}
+
+[data-theme="light"] .admin-input,
+[data-theme="light"] .admin-textarea,
+[data-theme="light"] .admin-select {
+  background-color: #FFFFFF !important;
+  color: #241E19 !important;
+  border-color: rgba(184, 139, 70, 0.3) !important;
+}
+
+[data-theme="light"] .admin-input::placeholder,
+[data-theme="light"] .admin-textarea::placeholder {
+  color: #85786C !important;
+}
+
+[data-theme="light"] .admin-input:focus,
+[data-theme="light"] .admin-textarea:focus,
+[data-theme="light"] .admin-select:focus {
+  background-color: #FFFFFF !important;
+  border-color: var(--admin-gold) !important;
+  box-shadow: 0 0 0 3px rgba(184, 139, 70, 0.15) !important;
+}
+
+[data-theme="light"] .admin-btn-secondary {
+  background: rgba(36, 30, 25, 0.04);
+  border-color: rgba(36, 30, 25, 0.25);
+  color: #241E19;
+}
+
+[data-theme="light"] .admin-btn-secondary:hover {
+  background: #241E19;
+  color: #FAF7F2;
+  border-color: #241E19;
+}
+
+[data-theme="light"] .admin-btn-primary {
+  background: var(--admin-gold);
+  color: #0E0D0C;
+}
+
+[data-theme="light"] .admin-btn-primary:hover {
+  background: var(--admin-gold-light);
+  color: #0E0D0C;
+}
+
+[data-theme="light"] .admin-dropzone {
+  background-color: #FFFFFF;
+  border-color: rgba(184, 139, 70, 0.3);
+}
+
+[data-theme="light"] .admin-dropzone:hover {
+  background-color: rgba(184, 139, 70, 0.08);
+  border-color: var(--admin-gold);
+}
+
 /* ==========================================================================
    LOGIN PAGE
    ========================================================================== */

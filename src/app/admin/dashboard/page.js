@@ -102,7 +102,7 @@ export default async function DashboardOverview() {
                             <div style={{ padding: '0.75rem', background: 'rgba(200, 169, 110, 0.1)', borderRadius: '10px', color: 'var(--admin-gold)' }}>
                                 <CalendarDays size={24} />
                             </div>
-                            <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
+                            <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#16a34a', fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px', borderRadius: '20px' }}>
                                 MENU ACTIF
                             </span>
                         </div>
@@ -223,7 +223,7 @@ export default async function DashboardOverview() {
                                 <div key={msg.id} style={{
                                     padding: '1rem',
                                     borderRadius: '6px',
-                                    background: msg.is_read ? 'rgba(255,255,255,0.02)' : 'rgba(200,169,110,0.06)',
+                                    background: msg.is_read ? 'var(--admin-surface)' : 'rgba(200,169,110,0.08)',
                                     border: `1px solid ${msg.is_read ? 'var(--admin-border)' : 'rgba(200,169,110,0.25)'}`,
                                     display: 'flex',
                                     justifyContent: 'space-between',

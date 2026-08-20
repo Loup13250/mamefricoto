@@ -17,8 +17,8 @@ function MediaPreview({ file, onRemove }) {
     return (
         <div style={{
             position: 'relative',
-            background: '#0E0D0C',
-            border: '1px solid rgba(200,169,110,0.25)',
+            background: 'var(--admin-surface)',
+            border: '1px solid var(--admin-border)',
             borderRadius: '6px',
             overflow: 'hidden',
             aspectRatio: '1 / 1',
@@ -347,11 +347,11 @@ export default function GalleryClient({ posts }) {
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
                         {posts.map((post, idx) => (
-                            <div key={post.id} style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: '#0E0D0C', borderRadius: '6px', border: '1px solid rgba(200,169,110,0.15)' }}>
+                            <div key={post.id} style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: 'var(--admin-surface)', borderRadius: '6px', border: '1px solid var(--admin-border)' }}>
                                 {post.media_type === 'video' ? (
                                     <>
                                         <video src={post.image_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        <div style={{ position: 'absolute', top: '6px', left: '6px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 7px', borderRadius: '2px', display: 'flex', alignItems: 'center', gap: '3px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                        <div style={{ position: 'absolute', top: '6px', left: '6px', background: 'var(--admin-card-bg)', color: 'var(--admin-gold)', fontSize: '0.65rem', fontWeight: '700', padding: '2px 7px', borderRadius: '2px', display: 'flex', alignItems: 'center', gap: '3px', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid var(--admin-border)' }}>
                                             <Film size={10} /> Vidéo
                                         </div>
                                     </>
@@ -362,10 +362,10 @@ export default function GalleryClient({ posts }) {
                                 {/* Badge position */}
                                 <div style={{
                                     position: 'absolute', top: '6px', right: '6px',
-                                    background: 'rgba(14,13,12,0.85)', color: '#C8A96E',
+                                    background: 'var(--admin-card-bg)', color: 'var(--admin-gold)',
                                     fontSize: '0.65rem', fontWeight: '700',
                                     padding: '2px 7px', borderRadius: '3px',
-                                    border: '1px solid rgba(200,169,110,0.3)',
+                                    border: '1px solid var(--admin-border)',
                                 }}>
                                     #{idx + 1}
                                 </div>

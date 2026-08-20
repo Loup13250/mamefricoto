@@ -138,8 +138,8 @@ function CarouselForm({ onCancel }) {
                 {selectedFile ? (
                     <div style={{
                         position: 'relative',
-                        background: '#0E0D0C',
-                        border: '1px solid rgba(200,169,110,0.3)',
+                        background: 'var(--admin-surface)',
+                        border: '1px solid var(--admin-border)',
                         borderRadius: '6px',
                         overflow: 'hidden',
                         aspectRatio: '16 / 9',
@@ -433,7 +433,7 @@ export default function CarouselClient({ images }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
                         {images.map(img => (
                             <div key={img.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                <div style={{ height: '150px', width: '100%', overflow: 'hidden', position: 'relative', background: '#000' }}>
+                                <div style={{ height: '150px', width: '100%', overflow: 'hidden', position: 'relative', background: 'var(--admin-surface)' }}>
                                     {img.image_url ? (
                                         <Image
                                             src={img.image_url}
@@ -444,7 +444,7 @@ export default function CarouselClient({ images }) {
                                             unoptimized
                                         />
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(245,240,232,0.2)' }}>
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--admin-text-subtle)' }}>
                                             <ImageIcon size={32} />
                                         </div>
                                     )}
@@ -453,7 +453,7 @@ export default function CarouselClient({ images }) {
                                     <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
                                         <button
                                             onClick={() => { setEditingItem(img); setIsAdding(false); }}
-                                            style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'rgba(14,13,12,0.75)', border: '1px solid rgba(200,169,110,0.3)', color: '#C8A96E', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+                                            style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
                                             title="Modifier les textes et l'image"
                                         >
                                             <Pencil size={14} />

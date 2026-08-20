@@ -236,6 +236,18 @@ function CarouselForm({ onCancel }) {
                 )}
             </div>
 
+            <div>
+                <label className="admin-label">Cadrage / Affichage de la photo</label>
+                <select name="fit_mode" defaultValue="cover" className="admin-input" style={{ cursor: 'pointer' }}>
+                    <option value="cover">Plein écran classique (Remplissage paysage)</option>
+                    <option value="top">Cadrage Haut (Recommandé pour personnes &amp; visages)</option>
+                    <option value="contain">Photo entière sans aucune coupure (avec fond de flou d&apos;ambiance)</option>
+                </select>
+                <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)', marginTop: '4px' }}>
+                    Pour les photos verticales ou portraits, choisissez &quot;Cadrage Haut&quot; ou &quot;Photo entière sans aucune coupure&quot;.
+                </p>
+            </div>
+
             {error && (
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.85rem 1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.85rem' }}>
                     <AlertCircle size={16} style={{ flexShrink: 0 }} />
@@ -378,6 +390,18 @@ function EditCarouselForm({ item, onCancel }) {
                     </div>
                 )}
                 <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files?.[0])} />
+            </div>
+
+            <div>
+                <label className="admin-label">Cadrage / Affichage de la photo</label>
+                <select name="fit_mode" defaultValue={item.fit_mode || 'cover'} className="admin-input" style={{ cursor: 'pointer' }}>
+                    <option value="cover">Plein écran classique (Remplissage paysage)</option>
+                    <option value="top">Cadrage Haut (Recommandé pour personnes &amp; visages)</option>
+                    <option value="contain">Photo entière sans aucune coupure (avec fond de flou d&apos;ambiance)</option>
+                </select>
+                <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)', marginTop: '4px' }}>
+                    Pour les photos verticales ou portraits, choisissez &quot;Cadrage Haut&quot; ou &quot;Photo entière sans aucune coupure&quot;.
+                </p>
             </div>
 
             {error && (

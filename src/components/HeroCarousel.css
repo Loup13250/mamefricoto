@@ -21,15 +21,36 @@
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity 1.4s ease-in-out;
+    transition: opacity 1.2s ease-in-out;
     background: #0E0D0C;
     overflow: hidden;
 }
 
-.hero-slide img {
+.hero-slide-backdrop {
+    position: absolute;
+    inset: -35px;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.hero-slide-backdrop img {
     object-fit: cover !important;
-    object-position: center 40% !important;
-    transform: scale(1.04);
+    filter: blur(36px) brightness(0.35) saturate(1.35);
+    transform: scale(1.15);
+}
+
+.hero-slide-main {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-slide-main img {
+    transform: scale(1.02);
     transition: transform 9s cubic-bezier(0.25, 1, 0.5, 1);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
@@ -40,7 +61,7 @@
     z-index: 2;
 }
 
-.hero-slide.active img {
+.hero-slide.active .hero-slide-main img {
     transform: scale(1);
 }
 
@@ -52,11 +73,12 @@
     background: linear-gradient(
         to bottom,
         rgba(14, 13, 12, 0.25) 0%,
-        rgba(14, 13, 12, 0.0) 35%,
+        rgba(14, 13, 12, 0.0) 30%,
         rgba(14, 13, 12, 0.6) 65%,
-        rgba(14, 13, 12, 0.92) 100%
+        rgba(14, 13, 12, 0.94) 100%
     );
-    z-index: 1;
+    z-index: 3;
+    pointer-events: none;
 }
 
 /* Content anchored to bottom */

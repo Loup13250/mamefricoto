@@ -323,6 +323,7 @@ export async function addCarouselImage(formData) {
         const title = (formData.get('title') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
         const display_order = parseInt(formData.get('display_order') || '0', 10);
+        const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
 
         let image_url = (formData.get('image_url') || '').toString().trim();
@@ -336,7 +337,7 @@ export async function addCarouselImage(formData) {
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, display_order) VALUES (?, ?, ?, ?)').run(image_url, title, subtitle, display_order);
+        await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, fit_mode, display_order) VALUES (?, ?, ?, ?, ?)').run(image_url, title, subtitle, fit_mode, display_order);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
@@ -376,11 +377,12 @@ export async function editCarouselImage(formData) {
         const title = (formData.get('title') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
         const display_order = parseInt(formData.get('display_order') || '1', 10);
+        const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
         let image_url = (formData.get('image_url') || '').toString().trim();
 
         const db = getDb();
-        const existing = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
+        const existing = await db.prepare('SELECT image_url, fit_mode FROM carousel_images WHERE id = ?').get(id);
         if (!existing) return { error: 'Photo du carrousel introuvable' };
 
         if (file && file.size > 0) {
@@ -394,9 +396,9 @@ export async function editCarouselImage(formData) {
 
         await db.prepare(`
             UPDATE carousel_images
-            SET title = ?, subtitle = ?, image_url = ?, display_order = ?
+            SET title = ?, subtitle = ?, image_url = ?, fit_mode = ?, display_order = ?
             WHERE id = ?
-        `).run(title, subtitle, image_url, display_order, id);
+        `).run(title, subtitle, image_url, fit_mode, display_order, id);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');

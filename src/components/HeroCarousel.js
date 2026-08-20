@@ -47,24 +47,49 @@ export default function HeroCarousel({ slides, siteInfo }) {
             onMouseLeave={() => setIsHovered(false)}
         >
             <div className="hero-track">
-                {slides.map((slide, index) => (
-                    <div
-                        key={slide.id || index}
-                        className={`hero-slide ${index === currentIndex ? 'active' : ''}`}
-                    >
-                        <Image
-                            src={slide.image_url}
-                            alt={slide.title || 'Bannière Mamé Fricoto'}
-                            fill
-                            sizes="100vw"
-                            priority={index === 0}
-                            loading={index === 0 ? 'eager' : 'lazy'}
-                            quality={95}
-                            unoptimized
-                            style={{ objectFit: 'cover' }}
-                        />
-                    </div>
-                ))}
+                {slides.map((slide, index) => {
+                    const fitMode = slide.fit_mode || 'cover';
+                    const isContain = fitMode === 'contain';
+                    const isTop = fitMode === 'top';
+
+                    return (
+                        <div
+                            key={slide.id || index}
+                            className={`hero-slide ${index === currentIndex ? 'active' : ''} fit-${fitMode}`}
+                        >
+                            {/* Ambient Blurred Backdrop for rich luxury filling on wide screens */}
+                            <div className="hero-slide-backdrop" aria-hidden="true">
+                                <Image
+                                    src={slide.image_url}
+                                    alt=""
+                                    fill
+                                    sizes="100vw"
+                                    quality={40}
+                                    unoptimized
+                                    style={{ objectFit: 'cover' }}
+                                />
+                            </div>
+
+                            {/* Main Sharp Foreground Image */}
+                            <div className="hero-slide-main">
+                                <Image
+                                    src={slide.image_url}
+                                    alt={slide.title || 'Bannière Mamé Fricoto'}
+                                    fill
+                                    sizes="100vw"
+                                    priority={index === 0}
+                                    loading={index === 0 ? 'eager' : 'lazy'}
+                                    quality={95}
+                                    unoptimized
+                                    style={{
+                                        objectFit: isContain ? 'contain' : 'cover',
+                                        objectPosition: isTop ? 'center top' : 'center center'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
             <div className="hero-content container">

@@ -1,0 +1,70 @@
+name: Scheduled Database Backup
+
+on:
+  schedule:
+    # Runs every 3 months on the 1st of the month at 02:00 UTC
+    - cron: '0 2 1 */3 *'
+  workflow_dispatch: # Allows running manually from GitHub Actions tab
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install @libsql/client
+        run: npm install @libsql/client
+
+      - name: Export Turso Database Backup
+        run: |
+          node -e "
+          const { createClient } = require('@libsql/client');
+          const fs = require('fs');
+          const path = require('path');
+
+          const client = createClient({
+            url: process.env.TURSO_DATABASE_URL || 'libsql://mamefricoto-db-loup13250.aws-eu-west-1.turso.io',
+            authToken: process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODQ5Mjc4ODMsImlkIjoiMDE5Zjk1ZmQtZDIwMS03ZjhkLTk2OGEtYmViNDUyYTYxYjVkIiwia2lkIjoiVWhSd2Q2N19CaUVoUTdudEd6WkdhQUdfZndpOEcyZldHeFppd2phOHhtbyIsInJpZCI6Ijg4ODY4NzYwLTIwYTgtNDBmOS05ZjIxLTdmMWViNWQwY2RhYyJ9.26o-n5GBlcsxqwBN8E8kdiG-g0aQQTBX4ttcE5BINf_onthFX-BWrkFbUdiAP029QRIxUvIH5d8RehRzhC8CDQ'
+          });
+
+          async function backup() {
+            const tables = ['site_info', 'services', 'weekly_menus', 'weekly_menu_images', 'gallery_posts', 'carousel_images', 'contact_messages', 'media_storage'];
+            const backupData = {
+              version: '1.0',
+              timestamp: new Date().toISOString(),
+              data: {}
+            };
+
+            for (const table of tables) {
+              try {
+                const res = await client.execute('SELECT * FROM ' + table);
+                backupData.data[table] = res.rows;
+              } catch (e) {
+                console.warn('Could not export table ' + table + ':', e.message);
+                backupData.data[table] = [];
+              }
+            }
+
+            const fileName = 'turso_backup_' + new Date().toISOString().split('T')[0] + '.json';
+            fs.writeFileSync(fileName, JSON.stringify(backupData, null, 2));
+            console.log('Backup written successfully to', fileName);
+          }
+
+          backup().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          "
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mamefricoto-database-backup
+          path: turso_backup_*.json
+          retention-days: 90

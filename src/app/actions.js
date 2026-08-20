@@ -725,3 +725,101 @@ export async function reorderService(id, direction) {
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
 }
+
+// --- DATABASE BACKUP & RESTORE ---
+export async function restoreDatabaseFromBackup(formData) {
+    await requireAdminAuth();
+    const backupFile = formData.get('backup_file');
+    if (!backupFile || backupFile.size === 0) {
+        return { error: 'Veuillez sélectionner un fichier de sauvegarde JSON.' };
+    }
+
+    try {
+        const text = await backupFile.text();
+        const backup = JSON.parse(text);
+
+        if (!backup.data) {
+            return { error: 'Fichier de sauvegarde invalide.' };
+        }
+
+        const db = getDb();
+
+        if (Array.isArray(backup.data.site_info) && backup.data.site_info.length > 0) {
+            for (const item of backup.data.site_info) {
+                await db.prepare(`
+                    INSERT INTO site_info (key, value) VALUES (?, ?)
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                `).run(item.key, item.value);
+            }
+        }
+
+        if (Array.isArray(backup.data.services) && backup.data.services.length > 0) {
+            await db.prepare('DELETE FROM services').run();
+            for (const s of backup.data.services) {
+                await db.prepare('INSERT INTO services (id, num, title, description, badge, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(
+                    s.id, s.num, s.title, s.description, s.badge, s.display_order
+                );
+            }
+        }
+
+        if (Array.isArray(backup.data.weekly_menus) && backup.data.weekly_menus.length > 0) {
+            await db.prepare('DELETE FROM weekly_menu_images').run();
+            await db.prepare('DELETE FROM weekly_menus').run();
+            for (const m of backup.data.weekly_menus) {
+                await db.prepare('INSERT INTO weekly_menus (id, title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?)').run(
+                    m.id, m.title, m.description, m.image_url, m.embed_url || '', m.is_current ? 1 : 0
+                );
+            }
+            if (Array.isArray(backup.data.weekly_menu_images)) {
+                for (const img of backup.data.weekly_menu_images) {
+                    await db.prepare('INSERT INTO weekly_menu_images (id, menu_id, image_url, display_order) VALUES (?, ?, ?, ?)').run(
+                        img.id, img.menu_id, img.image_url, img.display_order
+                    );
+                }
+            }
+        }
+
+        if (Array.isArray(backup.data.gallery_posts) && backup.data.gallery_posts.length > 0) {
+            await db.prepare('DELETE FROM gallery_posts').run();
+            for (const post of backup.data.gallery_posts) {
+                await db.prepare('INSERT INTO gallery_posts (id, title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(
+                    post.id, post.title, post.caption, post.image_url, post.media_type || 'image', post.display_order
+                );
+            }
+        }
+
+        if (Array.isArray(backup.data.carousel_images) && backup.data.carousel_images.length > 0) {
+            await db.prepare('DELETE FROM carousel_images').run();
+            for (const c of backup.data.carousel_images) {
+                await db.prepare('INSERT INTO carousel_images (id, title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?, ?)').run(
+                    c.id, c.title, c.subtitle, c.image_url, c.display_order
+                );
+            }
+        }
+
+        if (Array.isArray(backup.data.media_storage) && backup.data.media_storage.length > 0) {
+            for (const m of backup.data.media_storage) {
+                try {
+                    await db.prepare('INSERT OR REPLACE INTO media_storage (id, mime_type, data) VALUES (?, ?, ?)').run(
+                        m.id, m.mime_type, m.data
+                    );
+                } catch {}
+            }
+        }
+
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/contact');
+        revalidatePath('/admin/dashboard');
+        revalidatePath('/admin/dashboard/settings');
+        revalidatePath('/admin/dashboard/prestations');
+        revalidatePath('/admin/dashboard/menu-semaine');
+        revalidatePath('/admin/dashboard/galerie');
+        revalidatePath('/admin/dashboard/carousel');
+
+        return { success: true };
+    } catch (err) {
+        console.error('Failed to restore backup:', err);
+        return { error: 'Erreur lors de la restauration: ' + err.message };
+    }
+}

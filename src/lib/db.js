@@ -1,5 +1,9 @@
 import path from 'path';
 import fs from 'fs';
+import { createRequire } from 'module';
+import { createClient } from '@libsql/client';
+
+const require = createRequire(import.meta.url);
 
 let dbWrapper;
 let localDbInstance;
@@ -15,7 +19,6 @@ export function getDb() {
 
     if (tursoUrl && (tursoUrl.startsWith('libsql') || tursoUrl.startsWith('https'))) {
         try {
-            const { createClient } = require('@libsql/client');
             const client = createClient({
                 url: tursoUrl,
                 authToken: tursoToken,

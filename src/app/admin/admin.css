@@ -34,6 +34,31 @@
   --admin-transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+[data-theme="light"] {
+  --admin-bg: #FAF7F2;
+  --admin-bg-2: #F3EDE4;
+  --admin-card-bg: #FFFFFF;
+  --admin-surface: #F5EFE6;
+
+  --admin-text: #241E19;
+  --admin-text-muted: #52473D;
+  --admin-text-subtle: #85786C;
+
+  --admin-gold: #B88B46;
+  --admin-gold-light: #9C7232;
+  --admin-gold-dark: #785520;
+  --admin-gold-glow: rgba(184, 139, 70, 0.15);
+
+  --admin-terracotta: #C85B3F;
+  --admin-terra-light: #D96B4F;
+
+  --admin-border: rgba(184, 139, 70, 0.25);
+  --admin-border-soft: rgba(184, 139, 70, 0.12);
+
+  --admin-shadow: 0 10px 40px rgba(36, 30, 25, 0.08);
+  --admin-glow: 0 0 25px rgba(184, 139, 70, 0.12);
+}
+
 /* ==========================================================================
    LOGIN PAGE
    ========================================================================== */

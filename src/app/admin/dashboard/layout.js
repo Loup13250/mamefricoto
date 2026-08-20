@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { adminLogout } from '@/app/actions';
 import { LayoutDashboard, CalendarDays, Image as ImageIcon, Settings, LogOut, ChefHat, Mail, Camera, Menu as MenuIcon, X } from 'lucide-react';
 
+import ThemeToggle from '@/components/ThemeToggle';
+
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,17 +21,20 @@ export default function DashboardLayout({ children }) {
         <div className="admin-dashboard-layout">
             {/* Mobile Header Bar */}
             <header className="admin-mobile-header">
-                <Link href="/" className="brand-title">
+                <a href="/" target="_blank" rel="noopener noreferrer" className="brand-title">
                     <ChefHat size={22} style={{ color: 'var(--admin-gold)' }} />
                     <span>Mamé Fricoto</span>
-                </Link>
-                <button
-                    className="admin-mobile-toggle"
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    aria-label="Toggle navigation"
-                >
-                    {mobileOpen ? <X size={22} /> : <MenuIcon size={22} />}
-                </button>
+                </a>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <ThemeToggle />
+                    <button
+                        className="admin-mobile-toggle"
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        aria-label="Toggle navigation"
+                    >
+                        {mobileOpen ? <X size={22} /> : <MenuIcon size={22} />}
+                    </button>
+                </div>
             </header>
 
             {/* Backdrop Overlay */}
@@ -41,12 +46,12 @@ export default function DashboardLayout({ children }) {
             {/* Sidebar */}
             <aside className={`admin-sidebar ${mobileOpen ? 'open' : ''}`}>
                 <div className="brand">
-                    <Link href="/" className="brand-link">
+                    <a href="/" target="_blank" rel="noopener noreferrer" className="brand-link">
                         <div className="brand-icon">
                             <ChefHat size={20} />
                         </div>
                         <span>Mamé Fricoto</span>
-                    </Link>
+                    </a>
                 </div>
                 <nav className="admin-nav">
                     <Link href="/admin/dashboard" className={`admin-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>
@@ -79,6 +84,10 @@ export default function DashboardLayout({ children }) {
                     </Link>
                 </nav>
                 <div className="admin-sidebar-footer">
+                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0.25rem' }}>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--admin-text-subtle)', fontWeight: '600' }}>Thème</span>
+                        <ThemeToggle showLabel />
+                    </div>
                     <form action={adminLogout}>
                         <button type="submit" className="admin-nav-link" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <LogOut size={18} />

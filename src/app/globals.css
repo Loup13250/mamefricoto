@@ -197,7 +197,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: transparent;
+  background: rgba(253, 251, 247, 0.04);
   color: var(--cream);
   padding: 15px 32px;
   border-radius: 4px;
@@ -206,14 +206,37 @@ img {
   font-size: 0.88rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border: 1px solid rgba(245, 240, 232, 0.4);
+  border: 1.5px solid rgba(245, 240, 232, 0.35);
   transition: var(--transition);
 }
 
 .btn-outline:hover {
-  background: rgba(245, 240, 232, 0.08);
-  border-color: rgba(245, 240, 232, 0.7);
+  background: rgba(245, 240, 232, 0.15);
+  border-color: rgba(245, 240, 232, 0.85);
+  color: #FFFFFF;
   transform: translateY(-2px);
+}
+
+.btn-outline:hover * {
+  color: #FFFFFF;
+}
+
+[data-theme="light"] .btn-outline {
+  color: var(--text-1);
+  background: rgba(36, 30, 25, 0.04);
+  border: 1.5px solid rgba(36, 30, 25, 0.4);
+}
+
+[data-theme="light"] .btn-outline:hover {
+  background: #241E19 !important;
+  color: #FAF7F2 !important;
+  border-color: #241E19 !important;
+  box-shadow: 0 8px 25px rgba(36, 30, 25, 0.2);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .btn-outline:hover * {
+  color: #FAF7F2 !important;
 }
 
 .btn-terra {
@@ -222,7 +245,7 @@ img {
   justify-content: center;
   gap: 0.6rem;
   background: var(--terracotta);
-  color: #0E0D0C;
+  color: #FFFFFF;
   padding: 15px 32px;
   border-radius: 4px;
   font-family: var(--font-body);

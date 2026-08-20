@@ -385,3 +385,37 @@
         justify-content: center;
     }
 }
+
+/* ===========================
+   LIGHT THEME OVERRIDES
+   =========================== */
+[data-theme="light"] .header--solid {
+    background: rgba(250, 247, 242, 0.95);
+    border-bottom-color: rgba(184, 139, 70, 0.2);
+    box-shadow: 0 4px 20px rgba(36, 30, 25, 0.08);
+}
+
+[data-theme="light"] .mobile-drawer {
+    background: var(--bg);
+    border-left-color: var(--border);
+}
+
+[data-theme="light"] .mobile-drawer-title {
+    color: var(--text-1);
+}
+
+[data-theme="light"] .mobile-link {
+    color: var(--text-1);
+}
+
+[data-theme="light"] .mobile-link:hover {
+    color: var(--gold);
+}
+
+[data-theme="light"] .mobile-location-tag {
+    color: var(--text-3);
+}
+
+[data-theme="light"] .cta-phone-btn {
+    border-color: var(--gold-dark);
+}

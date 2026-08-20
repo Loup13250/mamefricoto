@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { adminLogin } from '@/app/actions';
 
+import ThemeToggle from '@/components/ThemeToggle';
+
 export default function AdminLoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,6 +21,9 @@ export default function AdminLoginPage() {
 
     return (
         <div className="admin-login-container">
+            <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
+                <ThemeToggle />
+            </div>
             <div className="admin-login-box animate-fade-up">
                 <div className="admin-login-brand">
                     <h1>Mamé Fricoto</h1>
@@ -52,7 +57,7 @@ export default function AdminLoginPage() {
                     </button>
                 </form>
                 <div style={{ marginTop: '2rem', fontSize: '0.85rem', textAlign: 'center' }}>
-                    <Link href="/" style={{ color: 'var(--admin-text-light)' }}>&larr; Retour au site</Link>
+                    <a href="/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--admin-text-subtle)' }}>&larr; Retour au site</a>
                 </div>
             </div>
         </div>

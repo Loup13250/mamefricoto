@@ -88,7 +88,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr" data-theme="light" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
+    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
       <head>
         <Script
           id="json-ld-schema"
@@ -150,7 +150,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <a href="#main-content" className="sr-only focus:not-sr-only">
           Aller au contenu principal
         </a>

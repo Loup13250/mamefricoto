@@ -18,6 +18,17 @@ export default function HeroCarousel({ slides }) {
         return () => clearInterval(timer);
     }, [isHovered, slides.length]);
 
+    // Preload ALL hero slide images in background immediately on mount
+    useEffect(() => {
+        if (!slides || slides.length <= 1) return;
+        slides.forEach((slide) => {
+            if (slide?.image_url) {
+                const imgLoader = new window.Image();
+                imgLoader.src = slide.image_url;
+            }
+        });
+    }, [slides]);
+
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
     };

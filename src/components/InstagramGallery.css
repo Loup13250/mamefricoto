@@ -111,11 +111,19 @@
     animation: fadeIn 0.3s ease;
 }
 
+.modal-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 880px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .modal-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     width: 100%;
-    max-width: 880px;
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     overflow: hidden;
@@ -154,6 +162,7 @@
     align-items: center;
     justify-content: center;
     max-height: 560px;
+    user-select: none;
 }
 
 .modal-img {
@@ -251,19 +260,25 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgba(200, 169, 110, 0.35);
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    background: rgba(14, 13, 12, 0.65);
-    color: var(--cream);
+    background: rgba(22, 19, 16, 0.85);
+    border: 1.5px solid rgba(200, 169, 110, 0.35);
+    color: var(--gold);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 20;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
+    z-index: 2010;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-nav-icon {
+    width: 26px;
+    height: 26px;
 }
 
 .lightbox-nav-btn:hover {
@@ -271,12 +286,38 @@
     color: #0E0D0C;
     background: var(--gold);
     transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 15px 35px rgba(200, 169, 110, 0.3);
 }
 
 .lightbox-nav-btn.prev {
-    left: 1rem;
+    left: -70px;
 }
 
 .lightbox-nav-btn.next {
-    right: 1rem;
+    right: -70px;
+}
+
+@media (max-width: 1040px) {
+    .modal-backdrop {
+        padding: 1rem;
+    }
+    .modal-wrapper {
+        max-width: 100%;
+    }
+    .lightbox-nav-btn {
+        width: 38px;
+        height: 38px;
+        background: rgba(14, 13, 12, 0.82);
+        border: 1px solid rgba(200, 169, 110, 0.4);
+    }
+    .lightbox-nav-icon {
+        width: 20px;
+        height: 20px;
+    }
+    .lightbox-nav-btn.prev {
+        left: 8px;
+    }
+    .lightbox-nav-btn.next {
+        right: 8px;
+    }
 }

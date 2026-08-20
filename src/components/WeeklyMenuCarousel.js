@@ -39,6 +39,17 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev]);
 
+    // Preload ALL menu images in background immediately on mount for zero-latency image swapping
+    useEffect(() => {
+        if (!images || images.length <= 1) return;
+        images.forEach((img) => {
+            if (img?.image_url && !isVideoUrl(img.image_url)) {
+                const imgLoader = new window.Image();
+                imgLoader.src = img.image_url;
+            }
+        });
+    }, [images]);
+
     const handleTouchStart = (e) => {
         if (e.touches?.[0]) touchStartX.current = e.touches[0].clientX;
     };

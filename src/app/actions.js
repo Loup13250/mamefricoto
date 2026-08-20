@@ -325,6 +325,7 @@ export async function addCarouselImage(formData) {
         const display_order = parseInt(formData.get('display_order') || '0', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
+        const mobileFile = formData.get('mobile_image_file');
 
         let image_url = (formData.get('image_url') || '').toString().trim();
         if (file && file.size > 0) {
@@ -332,12 +333,18 @@ export async function addCarouselImage(formData) {
             if (uploaded) image_url = uploaded;
         }
 
+        let mobile_image_url = (formData.get('mobile_image_url') || '').toString().trim();
+        if (mobileFile && mobileFile.size > 0) {
+            const uploadedMobile = await saveUploadedFile(mobileFile);
+            if (uploadedMobile) mobile_image_url = uploadedMobile;
+        }
+
         if (!image_url) {
-            return { error: 'Veuillez sélectionner une image' };
+            return { error: 'Veuillez sélectionner au moins une photo principale pour grand écran.' };
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, fit_mode, display_order) VALUES (?, ?, ?, ?, ?)').run(image_url, title, subtitle, fit_mode, display_order);
+        await db.prepare('INSERT INTO carousel_images (image_url, mobile_image_url, title, subtitle, fit_mode, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(image_url, mobile_image_url || null, title, subtitle, fit_mode, display_order);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
@@ -355,8 +362,11 @@ export async function deleteCarouselImage(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
-        const img = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
-        if (img) deleteLocalFileIfPresent(img.image_url);
+        const img = await db.prepare('SELECT image_url, mobile_image_url FROM carousel_images WHERE id = ?').get(id);
+        if (img) {
+            deleteLocalFileIfPresent(img.image_url);
+            deleteLocalFileIfPresent(img.mobile_image_url);
+        }
 
         await db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
         revalidatePath('/');
@@ -379,10 +389,14 @@ export async function editCarouselImage(formData) {
         const display_order = parseInt(formData.get('display_order') || '1', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
+        const mobileFile = formData.get('mobile_image_file');
+        const removeMobile = formData.get('remove_mobile_image') === '1';
+
         let image_url = (formData.get('image_url') || '').toString().trim();
+        let mobile_image_url = (formData.get('mobile_image_url') || '').toString().trim();
 
         const db = getDb();
-        const existing = await db.prepare('SELECT image_url, fit_mode FROM carousel_images WHERE id = ?').get(id);
+        const existing = await db.prepare('SELECT image_url, mobile_image_url, fit_mode FROM carousel_images WHERE id = ?').get(id);
         if (!existing) return { error: 'Photo du carrousel introuvable' };
 
         if (file && file.size > 0) {
@@ -394,11 +408,20 @@ export async function editCarouselImage(formData) {
             image_url = existing.image_url;
         }
 
+        if (removeMobile) {
+            mobile_image_url = null;
+        } else if (mobileFile && mobileFile.size > 0) {
+            const uploadedMobile = await saveUploadedFile(mobileFile);
+            if (uploadedMobile) mobile_image_url = uploadedMobile;
+        } else if (!mobile_image_url) {
+            mobile_image_url = existing.mobile_image_url;
+        }
+
         await db.prepare(`
             UPDATE carousel_images
-            SET title = ?, subtitle = ?, image_url = ?, fit_mode = ?, display_order = ?
+            SET title = ?, subtitle = ?, image_url = ?, mobile_image_url = ?, fit_mode = ?, display_order = ?
             WHERE id = ?
-        `).run(title, subtitle, image_url, fit_mode, display_order, id);
+        `).run(title, subtitle, image_url, mobile_image_url, fit_mode, display_order, id);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');

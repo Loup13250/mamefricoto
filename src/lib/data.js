@@ -125,7 +125,8 @@ export async function getCarouselImages() {
         if (slides && slides.length > 0) {
             return Promise.all(slides.map(async slide => ({
                 ...slide,
-                image_url: await normalizeUrl(slide.image_url)
+                image_url: await normalizeUrl(slide.image_url),
+                mobile_image_url: slide.mobile_image_url ? await normalizeUrl(slide.mobile_image_url) : null,
             })));
         }
     } catch {}

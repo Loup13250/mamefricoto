@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS carousel_images (
   title TEXT,
   subtitle TEXT,
   image_url TEXT NOT NULL,
+  mobile_image_url TEXT,
   fit_mode TEXT DEFAULT 'cover',
   display_order INTEGER DEFAULT 0
 );

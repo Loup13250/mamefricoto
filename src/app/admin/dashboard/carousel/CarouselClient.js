@@ -72,46 +72,67 @@ async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
 }
 
 function CarouselForm({ onCancel }) {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [isDragging, setIsDragging] = useState(false);
+    const [desktopFile, setDesktopFile] = useState(null);
+    const [mobileFile, setMobileFile] = useState(null);
+    const [desktopDragging, setDesktopDragging] = useState(false);
+    const [mobileDragging, setMobileDragging] = useState(false);
+
     const [isPending, startTransition] = useTransition();
+    const [isCompressing, setIsCompressing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const inputRef = useRef(null);
+
+    const desktopInputRef = useRef(null);
+    const mobileInputRef = useRef(null);
     const formRef = useRef(null);
 
-    const handleFileSelect = (file) => {
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            setError('Format non supporté. Veuillez choisir une image (JPG, PNG, WEBP).');
+    const handleDesktopSelect = (file) => {
+        if (!file || !file.type.startsWith('image/')) {
+            setError('Format non supporté pour la photo principale.');
             return;
         }
         setError('');
-        setSelectedFile(file);
+        setDesktopFile(file);
     };
 
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-        const file = e.dataTransfer.files?.[0];
-        if (file) handleFileSelect(file);
+    const handleMobileSelect = (file) => {
+        if (!file || !file.type.startsWith('image/')) {
+            setError('Format non supporté pour la photo mobile.');
+            return;
+        }
+        setError('');
+        setMobileFile(file);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        const formData = new FormData(e.target);
-
-        formData.delete('image_file');
-        if (selectedFile) {
-            const compressed = await compressImageFile(selectedFile, 2048, 0.85);
-            formData.append('image_file', compressed);
+        if (!desktopFile && !e.target.image_url?.value) {
+            setError('Veuillez sélectionner au moins la photo principale pour grand écran.');
+            return;
         }
 
-        if (!selectedFile && !formData.get('image_url')) {
-            setError('Veuillez sélectionner une image ou fournir une URL.');
-            return;
+        const formData = new FormData(e.target);
+        formData.delete('image_file');
+        formData.delete('mobile_image_file');
+
+        setIsCompressing(true);
+        try {
+            if (desktopFile) {
+                const compressedDesktop = await compressImageFile(desktopFile, 2048, 0.85);
+                formData.append('image_file', compressedDesktop);
+            }
+            if (mobileFile) {
+                const compressedMobile = await compressImageFile(mobileFile, 2048, 0.85);
+                formData.append('mobile_image_file', compressedMobile);
+            }
+        } catch (err) {
+            console.warn('Compression error:', err);
+            if (desktopFile) formData.append('image_file', desktopFile);
+            if (mobileFile) formData.append('mobile_image_file', mobileFile);
+        } finally {
+            setIsCompressing(false);
         }
 
         startTransition(async () => {
@@ -140,7 +161,7 @@ function CarouselForm({ onCancel }) {
     }
 
     return (
-        <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
                     <label className="admin-label">Titre principal *</label>
@@ -152,100 +173,128 @@ function CarouselForm({ onCancel }) {
                 </div>
             </div>
 
-            <div>
-                <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Photo de bannière *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                {/* 1. Desktop Photo Upload */}
+                <div>
+                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>🖥️ Photo Grand Écran (Ordinateur) *</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)' }}>Paysage (16:9)</span>
+                    </label>
 
-                {selectedFile ? (
-                    <div style={{
-                        position: 'relative',
-                        background: 'var(--admin-surface)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '6px',
-                        overflow: 'hidden',
-                        aspectRatio: '16 / 9',
-                        maxHeight: '260px',
-                    }}>
-                        <Image
-                            src={URL.createObjectURL(selectedFile)}
-                            alt="Aperçu carrousel"
-                            width={1200}
-                            height={675}
-                            style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
-                            unoptimized
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setSelectedFile(null)}
-                            title="Retirer"
+                    {desktopFile ? (
+                        <div style={{
+                            position: 'relative',
+                            background: 'var(--admin-surface)',
+                            border: '1px solid var(--admin-border)',
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            aspectRatio: '16 / 9',
+                            maxHeight: '200px',
+                        }}>
+                            <Image
+                                src={URL.createObjectURL(desktopFile)}
+                                alt="Aperçu grand écran"
+                                width={800}
+                                height={450}
+                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                unoptimized
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setDesktopFile(null)}
+                                title="Retirer"
+                                style={{
+                                    position: 'absolute', top: '8px', right: '8px',
+                                    width: '28px', height: '28px',
+                                    background: 'rgba(239,68,68,0.9)',
+                                    border: 'none', borderRadius: '4px', color: 'white',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ) : (
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setDesktopDragging(true); }}
+                            onDragLeave={() => setDesktopDragging(false)}
+                            onDrop={(e) => { e.preventDefault(); setDesktopDragging(false); handleDesktopSelect(e.dataTransfer.files?.[0]); }}
+                            onClick={() => desktopInputRef.current?.click()}
                             style={{
-                                position: 'absolute', top: '10px', right: '10px',
-                                width: '32px', height: '32px',
-                                background: 'rgba(239,68,68,0.9)',
-                                border: 'none', borderRadius: '4px', color: 'white',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer',
+                                border: `2px dashed ${desktopDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                background: desktopDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
+                                borderRadius: '6px', padding: '1.75rem 1rem', textAlign: 'center', cursor: 'pointer'
                             }}
                         >
-                            <X size={16} />
-                        </button>
-                    </div>
-                ) : (
-                    <div
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleDrop}
-                        onClick={() => inputRef.current?.click()}
-                        style={{
-                            border: `2px dashed ${isDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
-                            background: isDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
+                            <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.4rem' }} />
+                            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour la photo grand écran</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Affichée sur ordinateur et tablette</span>
+                        </div>
+                    )}
+                    <input ref={desktopInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleDesktopSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                </div>
+
+                {/* 2. Mobile Photo Upload */}
+                <div>
+                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>📱 Photo Format Mobile (Optionnelle)</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Portrait (9:16)</span>
+                    </label>
+
+                    {mobileFile ? (
+                        <div style={{
+                            position: 'relative',
+                            background: 'var(--admin-surface)',
+                            border: '1px solid var(--admin-border)',
                             borderRadius: '6px',
-                            padding: '2.5rem 1rem',
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                            gap: '0.5rem', cursor: 'pointer',
-                            transition: 'all 0.25s ease',
-                        }}
-                    >
-                        <UploadCloud size={36} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
-                        <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.95rem' }}>
-                            Glisser la photo ici, ou cliquer pour choisir
-                        </span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-subtle)' }}>
-                            Optimisation automatique pour affichage ultra-rapide
-                        </span>
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            name="image_file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleFileSelect(file);
-                                e.target.value = '';
+                            overflow: 'hidden',
+                            aspectRatio: '16 / 9',
+                            maxHeight: '200px',
+                        }}>
+                            <Image
+                                src={URL.createObjectURL(mobileFile)}
+                                alt="Aperçu mobile"
+                                width={800}
+                                height={450}
+                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                unoptimized
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setMobileFile(null)}
+                                title="Retirer"
+                                style={{
+                                    position: 'absolute', top: '8px', right: '8px',
+                                    width: '28px', height: '28px',
+                                    background: 'rgba(239,68,68,0.9)',
+                                    border: 'none', borderRadius: '4px', color: 'white',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ) : (
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setMobileDragging(true); }}
+                            onDragLeave={() => setMobileDragging(false)}
+                            onDrop={(e) => { e.preventDefault(); setMobileDragging(false); handleMobileSelect(e.dataTransfer.files?.[0]); }}
+                            onClick={() => mobileInputRef.current?.click()}
+                            style={{
+                                border: `2px dashed ${mobileDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                background: mobileDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
+                                borderRadius: '6px', padding: '1.75rem 1rem', textAlign: 'center', cursor: 'pointer'
                             }}
-                        />
-                    </div>
-                )}
-
-                {!selectedFile && (
-                    <div style={{ marginTop: '0.75rem' }}>
-                        <label className="admin-label" style={{ marginBottom: '0.35rem', display: 'block' }}>Ou URL d&apos;image web</label>
-                        <input type="url" name="image_url" placeholder="https://..." className="admin-input" />
-                    </div>
-                )}
-            </div>
-
-            <div>
-                <label className="admin-label">Cadrage / Affichage de la photo</label>
-                <select name="fit_mode" defaultValue="cover" className="admin-input" style={{ cursor: 'pointer' }}>
-                    <option value="cover">Plein écran classique (Remplissage paysage)</option>
-                    <option value="top">Cadrage Haut (Recommandé pour personnes &amp; visages)</option>
-                    <option value="contain">Photo entière sans aucune coupure (avec fond de flou d&apos;ambiance)</option>
-                </select>
-                <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)', marginTop: '4px' }}>
-                    Pour les photos verticales ou portraits, choisissez &quot;Cadrage Haut&quot; ou &quot;Photo entière sans aucune coupure&quot;.
-                </p>
+                        >
+                            <UploadCloud size={28} style={{ color: 'var(--admin-text-subtle)', marginBottom: '0.4rem' }} />
+                            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour la photo mobile</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Si vide, la photo grand écran est utilisée</span>
+                        </div>
+                    )}
+                    <input ref={mobileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleMobileSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                </div>
             </div>
 
             {error && (
@@ -256,12 +305,12 @@ function CarouselForm({ onCancel }) {
             )}
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
-                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending || isCompressing}>
                     Annuler
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '150px' }}>
-                    {isPending ? (
-                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Publication...</>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending || isCompressing} style={{ minWidth: '150px' }}>
+                    {isPending || isCompressing ? (
+                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Traitement...</>
                     ) : 'Publier la photo'}
                 </button>
             </div>
@@ -270,23 +319,40 @@ function CarouselForm({ onCancel }) {
 }
 
 function EditCarouselForm({ item, onCancel }) {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(null);
+    const [desktopFile, setDesktopFile] = useState(null);
+    const [desktopPreview, setDesktopPreview] = useState(null);
+
+    const [mobileFile, setMobileFile] = useState(null);
+    const [mobilePreview, setMobilePreview] = useState(null);
+    const [removeMobile, setRemoveMobile] = useState(false);
+
     const [isPending, startTransition] = useTransition();
     const [isCompressing, setIsCompressing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const inputRef = useRef(null);
 
-    const handleFileSelect = (file) => {
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            setError('Format non supporté. Veuillez choisir une image (JPG, PNG, WEBP).');
+    const desktopInputRef = useRef(null);
+    const mobileInputRef = useRef(null);
+
+    const handleDesktopSelect = (file) => {
+        if (!file || !file.type.startsWith('image/')) {
+            setError('Format non supporté pour la photo principale.');
             return;
         }
         setError('');
-        setSelectedFile(file);
-        setPreviewUrl(URL.createObjectURL(file));
+        setDesktopFile(file);
+        setDesktopPreview(URL.createObjectURL(file));
+    };
+
+    const handleMobileSelect = (file) => {
+        if (!file || !file.type.startsWith('image/')) {
+            setError('Format non supporté pour la photo mobile.');
+            return;
+        }
+        setError('');
+        setMobileFile(file);
+        setMobilePreview(URL.createObjectURL(file));
+        setRemoveMobile(false);
     };
 
     const handleSubmit = async (e) => {
@@ -295,19 +361,26 @@ function EditCarouselForm({ item, onCancel }) {
 
         const formData = new FormData(e.target);
         formData.delete('image_file');
+        formData.delete('mobile_image_file');
         formData.set('id', item.id);
+        if (removeMobile) formData.set('remove_mobile_image', '1');
 
-        if (selectedFile) {
-            setIsCompressing(true);
-            try {
-                const compressed = await compressImageFile(selectedFile, 2048, 0.85);
-                formData.append('image_file', compressed);
-            } catch (err) {
-                console.warn('Compression fallback to original file', err);
-                formData.append('image_file', selectedFile);
-            } finally {
-                setIsCompressing(false);
+        setIsCompressing(true);
+        try {
+            if (desktopFile) {
+                const compressedDesktop = await compressImageFile(desktopFile, 2048, 0.85);
+                formData.append('image_file', compressedDesktop);
             }
+            if (mobileFile) {
+                const compressedMobile = await compressImageFile(mobileFile, 2048, 0.85);
+                formData.append('mobile_image_file', compressedMobile);
+            }
+        } catch (err) {
+            console.warn('Compression fallback', err);
+            if (desktopFile) formData.append('image_file', desktopFile);
+            if (mobileFile) formData.append('mobile_image_file', mobileFile);
+        } finally {
+            setIsCompressing(false);
         }
 
         startTransition(async () => {
@@ -330,8 +403,11 @@ function EditCarouselForm({ item, onCancel }) {
         );
     }
 
+    const currentDesktopImg = desktopPreview || item.image_url;
+    const currentMobileImg = !removeMobile ? (mobilePreview || item.mobile_image_url) : null;
+
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
                     <label className="admin-label">Titre principal *</label>
@@ -343,65 +419,105 @@ function EditCarouselForm({ item, onCancel }) {
                 </div>
             </div>
 
-            <div>
-                <label className="admin-label">Image de la bannière</label>
-                
-                {previewUrl ? (
-                    <div style={{
-                        position: 'relative',
-                        background: 'var(--admin-surface)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '6px',
-                        overflow: 'hidden',
-                        aspectRatio: '16 / 9',
-                        maxHeight: '220px',
-                        marginBottom: '0.5rem',
-                    }}>
-                        <Image
-                            src={previewUrl}
-                            alt="Nouvel aperçu"
-                            width={800}
-                            height={450}
-                            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                            unoptimized
-                        />
-                        <button
-                            type="button"
-                            onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
-                            title="Annuler le changement d'image"
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                {/* 1. Desktop Photo */}
+                <div>
+                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>🖥️ Photo Grand Écran (Ordinateur)</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)' }}>Paysage</span>
+                    </label>
+
+                    {currentDesktopImg ? (
+                        <div style={{
+                            position: 'relative',
+                            background: 'var(--admin-surface)',
+                            border: '1px solid var(--admin-border)',
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            aspectRatio: '16 / 9',
+                            maxHeight: '180px',
+                        }}>
+                            <Image
+                                src={currentDesktopImg}
+                                alt="Grand écran"
+                                width={600}
+                                height={337}
+                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                unoptimized
+                            />
+                            <button
+                                type="button"
+                                onClick={() => desktopInputRef.current?.click()}
+                                className="admin-btn admin-btn-secondary"
+                                style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: '0.75rem', padding: '5px 10px', backdropFilter: 'blur(4px)' }}
+                            >
+                                Remplacer
+                            </button>
+                        </div>
+                    ) : null}
+                    <input ref={desktopInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleDesktopSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                </div>
+
+                {/* 2. Mobile Photo */}
+                <div>
+                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>📱 Photo Format Mobile (Smartphone)</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Portrait (Optionnel)</span>
+                    </label>
+
+                    {currentMobileImg ? (
+                        <div style={{
+                            position: 'relative',
+                            background: 'var(--admin-surface)',
+                            border: '1px solid var(--admin-border)',
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            aspectRatio: '16 / 9',
+                            maxHeight: '180px',
+                        }}>
+                            <Image
+                                src={currentMobileImg}
+                                alt="Mobile spécifique"
+                                width={600}
+                                height={337}
+                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                unoptimized
+                            />
+                            <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => mobileInputRef.current?.click()}
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{ fontSize: '0.75rem', padding: '5px 10px', backdropFilter: 'blur(4px)' }}
+                                >
+                                    Remplacer
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setMobileFile(null); setMobilePreview(null); setRemoveMobile(true); }}
+                                    style={{ padding: '5px 8px', background: 'rgba(239,68,68,0.9)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer' }}
+                                    title="Supprimer la photo mobile spécifique"
+                                >
+                                    <X size={13} />
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            onClick={() => mobileInputRef.current?.click()}
                             style={{
-                                position: 'absolute', top: '8px', right: '8px',
-                                width: '28px', height: '28px',
-                                background: 'rgba(239,68,68,0.9)',
-                                border: 'none', borderRadius: '4px', color: 'white',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer',
+                                border: '2px dashed var(--admin-border)',
+                                background: 'var(--admin-surface)',
+                                borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
                             }}
                         >
-                            <X size={14} />
-                        </button>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <button type="button" onClick={() => inputRef.current?.click()} className="admin-btn admin-btn-secondary" style={{ fontSize: '0.8rem', padding: '8px 14px' }}>
-                            <UploadCloud size={15} /> Remplacer l&apos;image
-                        </button>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>Image actuelle conservée si aucun fichier sélectionné</span>
-                    </div>
-                )}
-                <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files?.[0])} />
-            </div>
-
-            <div>
-                <label className="admin-label">Cadrage / Affichage de la photo</label>
-                <select name="fit_mode" defaultValue={item.fit_mode || 'cover'} className="admin-input" style={{ cursor: 'pointer' }}>
-                    <option value="cover">Plein écran classique (Remplissage paysage)</option>
-                    <option value="top">Cadrage Haut (Recommandé pour personnes &amp; visages)</option>
-                    <option value="contain">Photo entière sans aucune coupure (avec fond de flou d&apos;ambiance)</option>
-                </select>
-                <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)', marginTop: '4px' }}>
-                    Pour les photos verticales ou portraits, choisissez &quot;Cadrage Haut&quot; ou &quot;Photo entière sans aucune coupure&quot;.
-                </p>
+                            <UploadCloud size={24} style={{ color: 'var(--admin-text-subtle)', marginBottom: '0.3rem' }} />
+                            <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--admin-text)', fontWeight: '600' }}>Ajouter une photo dédiée mobile</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-subtle)' }}>Par exemple votre photo portrait verticale</span>
+                        </div>
+                    )}
+                    <input ref={mobileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleMobileSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                </div>
             </div>
 
             {error && (
@@ -547,6 +663,18 @@ export default function CarouselClient({ images }) {
                                             </button>
                                         )}
                                     </div>
+
+                                    {img.mobile_image_url && (
+                                        <div style={{
+                                            position: 'absolute', bottom: '8px', left: '8px',
+                                            background: 'rgba(14,13,12,0.85)',
+                                            border: '1px solid rgba(200,169,110,0.4)',
+                                            color: '#C8A96E', fontSize: '0.68rem', fontWeight: '700',
+                                            padding: '2px 7px', borderRadius: '3px',
+                                        }}>
+                                            📱 Photo Mobile incluse
+                                        </div>
+                                    )}
                                 </div>
                                 <div style={{ padding: '0.85rem 1rem' }}>
                                     <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--admin-text)' }}>{img.title}</h3>

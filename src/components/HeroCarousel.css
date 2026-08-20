@@ -197,8 +197,9 @@
 
 @media (max-width: 768px) {
     .hero {
-        height: 100svh;
-        min-height: 560px;
+        height: 76svh;
+        min-height: 520px;
+        max-height: 640px;
     }
 
     .hero-layer-desktop.has-mobile-alt {

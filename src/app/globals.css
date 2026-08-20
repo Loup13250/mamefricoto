@@ -402,54 +402,6 @@ img {
   color: #FFFFFF !important;
 }
 
-/* Hero Carousel */
-[data-theme="light"] .hero-slide::after {
-  background: linear-gradient(
-      to bottom,
-      rgba(250, 247, 242, 0.45) 0%,
-      rgba(250, 247, 242, 0.15) 30%,
-      rgba(250, 247, 242, 0.85) 65%,
-      rgba(250, 247, 242, 0.98) 100%
-  );
-}
-
-[data-theme="light"] .hero-title {
-  color: #1A1612 !important;
-  text-shadow: 0 2px 14px rgba(250, 247, 242, 0.95);
-}
-
-[data-theme="light"] .hero-title em {
-  color: #9C7232 !important;
-}
-
-[data-theme="light"] .hero-subtitle {
-  color: #4A4036 !important;
-  font-weight: 500;
-}
-
-[data-theme="light"] .hero-eyebrow {
-  color: #8C6527 !important;
-}
-
-[data-theme="light"] .hero-eyebrow::before {
-  background: #8C6527 !important;
-}
-
-[data-theme="light"] .hero-arrow {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text-1);
-  border-color: rgba(184, 139, 70, 0.35);
-}
-
-[data-theme="light"] .hero-arrow:hover {
-  background: var(--gold);
-  color: #FFFFFF;
-}
-
-[data-theme="light"] .hero-dot {
-  background: rgba(36, 30, 25, 0.25);
-}
-
 /* Weekly Menu Card */
 [data-theme="light"] .menu-card {
   box-shadow: 0 16px 40px -10px rgba(36, 30, 25, 0.07);

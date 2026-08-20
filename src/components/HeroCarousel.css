@@ -64,10 +64,10 @@
     inset: 0;
     background: linear-gradient(
         to bottom,
-        rgba(14, 13, 12, 0.25) 0%,
-        rgba(14, 13, 12, 0.0) 30%,
-        rgba(14, 13, 12, 0.6) 65%,
-        rgba(14, 13, 12, 0.92) 100%
+        rgba(14, 13, 12, 0.35) 0%,
+        rgba(14, 13, 12, 0.1) 30%,
+        rgba(14, 13, 12, 0.7) 65%,
+        rgba(14, 13, 12, 0.96) 100%
     );
     z-index: 3;
     pointer-events: none;
@@ -88,10 +88,11 @@
 .hero-eyebrow {
     font-family: var(--font-body);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: #F0D5A3 !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.95);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -103,7 +104,7 @@
     display: block;
     width: 30px;
     height: 1px;
-    background: var(--gold);
+    background: #F0D5A3;
     flex-shrink: 0;
 }
 
@@ -113,20 +114,23 @@
     font-weight: 400;
     line-height: 1.0;
     letter-spacing: -0.02em;
-    color: var(--cream);
+    color: #FFFFFF !important;
     margin-bottom: 1.5rem;
-    text-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 3px 25px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.95);
 }
 
 .hero-title em {
     font-style: italic;
-    color: var(--gold-light);
+    color: #F8E3BA !important;
+    text-shadow: 0 3px 25px rgba(0, 0, 0, 0.95);
 }
 
 .hero-subtitle {
     font-size: 1rem;
     line-height: 1.7;
-    color: rgba(245, 240, 232, 0.75);
+    color: #F7F2EB !important;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+    font-weight: 500;
     max-width: 480px;
     margin-bottom: 2.5rem;
 }
@@ -220,10 +224,10 @@
     .hero-slide::after {
         background: linear-gradient(
             to bottom,
-            rgba(14, 13, 12, 0.15) 0%,
-            rgba(14, 13, 12, 0.0) 35%,
-            rgba(14, 13, 12, 0.65) 65%,
-            rgba(14, 13, 12, 0.95) 100%
+            rgba(14, 13, 12, 0.35) 0%,
+            rgba(14, 13, 12, 0.05) 30%,
+            rgba(14, 13, 12, 0.75) 60%,
+            rgba(14, 13, 12, 0.98) 100%
         ) !important;
     }
 
@@ -243,19 +247,21 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        background: linear-gradient(to top, rgba(14, 13, 12, 0.7) 0%, rgba(14, 13, 12, 0.3) 70%, transparent 100%);
-        padding: 1rem 1rem 0.5rem;
+        background: linear-gradient(to top, rgba(14, 13, 12, 0.78) 0%, rgba(14, 13, 12, 0.45) 75%, transparent 100%);
+        padding: 1.25rem 1rem 0.5rem;
         border-radius: 12px;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
     }
 
     .hero-eyebrow {
         justify-content: center;
-        margin-bottom: 0.5rem;
-        color: #E2C792;
-        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+        margin-bottom: 0.4rem;
+        color: #F0D5A3 !important;
+        text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95);
         font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
     }
 
     .hero-eyebrow::before {
@@ -265,23 +271,23 @@
     .hero-title {
         font-size: clamp(2rem, 7.5vw, 3.2rem);
         text-align: center;
-        margin-bottom: 0.75rem;
-        color: #FFFFFF;
-        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.95);
+        margin-bottom: 0.65rem;
+        color: #FFFFFF !important;
+        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.98), 0 1px 4px rgba(0, 0, 0, 0.98);
         font-weight: 500;
     }
 
     .hero-title em {
-        color: #F3E0B5;
-        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95);
+        color: #F8E3BA !important;
+        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.98);
     }
 
     .hero-subtitle {
         text-align: center;
         margin: 0 auto 1.25rem;
-        font-size: 0.95rem;
-        color: #F5F0E8;
-        text-shadow: 0 1px 12px rgba(0, 0, 0, 0.95);
+        font-size: 0.92rem;
+        color: #F5EFE6 !important;
+        text-shadow: 0 1px 14px rgba(0, 0, 0, 0.98);
         font-weight: 500;
         line-height: 1.5;
     }
@@ -289,5 +295,12 @@
     .hero-actions {
         justify-content: center;
         width: 100%;
+    }
+
+    .hero-actions .btn-outline {
+        border-color: rgba(240, 213, 163, 0.5);
+        color: #F5EFE6;
+        background: rgba(14, 13, 12, 0.45);
+        backdrop-filter: blur(8px);
     }
 }

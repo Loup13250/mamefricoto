@@ -162,10 +162,62 @@ function DropZone({ onFiles, isDragging, setIsDragging }) {
 }
 
 /* =====================================================
+/* =====================================================
+   COMPRESSION IMAGE 2K WEBP
+   ===================================================== */
+async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
+    if (!file || typeof file === 'string' || !file.type?.startsWith('image/')) return file;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    },
+                    'image/webp',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
+/* =====================================================
    FORM AJOUT / ÉDITION
    ===================================================== */
-function MenuForm({ menu, onCancel }) {
-    const isEdit = !!menu;
+function WeeklyMenuForm({ menu, initialData, onCancel }) {
+    const activeMenu = menu || initialData;
+    const isEdit = !!activeMenu;
     const [files, setFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [isPending, startTransition] = useTransition();
@@ -202,15 +254,18 @@ function MenuForm({ menu, onCancel }) {
         e.preventDefault();
         setError('');
 
-        const formData = new FormData(e.target);
-
-        // On supprime les fichiers natifs du form et on ajoute les nôtres dans l'ordre choisi
-        formData.delete('image_files');
-        for (const file of files) {
-            formData.append('image_files', file);
-        }
-
         startTransition(async () => {
+            const formData = new FormData(e.target);
+            formData.delete('image_files');
+
+            const compressedFiles = await Promise.all(
+                files.map(f => compressImageFile(f, 2048, 0.85))
+            );
+
+            for (const file of compressedFiles) {
+                formData.append('image_files', file);
+            }
+
             const action = isEdit ? editWeeklyMenu : addWeeklyMenu;
             const result = await action(formData);
             if (result?.error) {
@@ -240,7 +295,7 @@ function MenuForm({ menu, onCancel }) {
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {isEdit && <input type="hidden" name="id" value={menu.id} />}
+            {isEdit && <input type="hidden" name="id" value={activeMenu.id} />}
 
             {/* Titre */}
             <div>
@@ -250,7 +305,7 @@ function MenuForm({ menu, onCancel }) {
                     name="title"
                     className="admin-input"
                     placeholder="Ex : Menu du 15 au 18 Juillet"
-                    defaultValue={menu?.title || ''}
+                    defaultValue={activeMenu?.title || ''}
                     required
                 />
             </div>
@@ -263,7 +318,7 @@ function MenuForm({ menu, onCancel }) {
                     className="admin-input"
                     rows="3"
                     placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
-                    defaultValue={menu?.description || ''}
+                    defaultValue={activeMenu?.description || ''}
                 />
             </div>
 
@@ -311,21 +366,21 @@ function MenuForm({ menu, onCancel }) {
             )}
 
             {/* Images existantes (édition) */}
-            {isEdit && menu?.images?.length > 0 && (
+            {isEdit && activeMenu?.images?.length > 0 && (
                 <div>
                     <p style={{
                         fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em',
                         textTransform: 'uppercase', color: 'rgba(200,169,110,0.85)',
                         marginBottom: '0.75rem',
                     }}>
-                        Photos actuelles du menu ({menu.images.length}) — Gérez l&apos;ordre ou supprimez des photos :
+                        Photos actuelles du menu ({activeMenu.images.length}) — Gérez l&apos;ordre ou supprimez des photos :
                     </p>
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
                         gap: '10px',
                     }}>
-                        {menu.images.map((img, idx) => (
+                        {activeMenu.images.map((img, idx) => (
                             <div key={img.id} style={{
                                 border: '1px solid var(--admin-border)',
                                 borderRadius: '6px', overflow: 'hidden',
@@ -374,14 +429,14 @@ function MenuForm({ menu, onCancel }) {
                                     <button
                                         type="button"
                                         onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
-                                        disabled={idx === menu.images.length - 1 || isPending}
+                                        disabled={idx === activeMenu.images.length - 1 || isPending}
                                         title="Déplacer vers le bas"
                                         style={{
                                             width: '26px', height: '26px',
                                             background: 'rgba(14,13,12,0.85)',
                                             border: '1px solid rgba(200,169,110,0.3)',
-                                            color: idx === menu.images.length - 1 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
-                                            borderRadius: '3px', cursor: idx === menu.images.length - 1 ? 'default' : 'pointer',
+                                            color: idx === activeMenu.images.length - 1 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
+                                            borderRadius: '3px', cursor: idx === activeMenu.images.length - 1 ? 'default' : 'pointer',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         }}
                                     >
@@ -390,7 +445,7 @@ function MenuForm({ menu, onCancel }) {
                                 </div>
 
                                 {/* Delete image button */}
-                                {menu.images.length > 1 && (
+                                {activeMenu.images.length > 1 && (
                                     <button
                                         type="button"
                                         onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
@@ -425,11 +480,11 @@ function MenuForm({ menu, onCancel }) {
                 <input
                     type="checkbox"
                     name="is_current"
-                    id={`is_current_${menu?.id || 'new'}`}
-                    defaultChecked={menu ? !!menu.is_current : true}
+                    id={`is_current_${activeMenu?.id || 'new'}`}
+                    defaultChecked={activeMenu ? !!activeMenu.is_current : true}
                     style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
                 />
-                <label htmlFor={`is_current_${menu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
+                <label htmlFor={`is_current_${activeMenu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
                     Afficher comme menu en cours sur la page d&apos;accueil
                 </label>
             </div>

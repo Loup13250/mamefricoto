@@ -143,16 +143,7 @@ const DEFAULT_SERVICES = [
 export async function getServices() {
     const db = getDb();
     try {
-        let services = await db.prepare('SELECT * FROM services ORDER BY display_order ASC, id ASC').all();
-        if (!services || services.length === 0) {
-            for (let i = 0; i < DEFAULT_SERVICES.length; i++) {
-                const s = DEFAULT_SERVICES[i];
-                await db.prepare('INSERT INTO services (num, title, description, badge, display_order) VALUES (?, ?, ?, ?, ?)').run(
-                    s.num, s.title, s.description, s.badge, i + 1
-                );
-            }
-            services = await db.prepare('SELECT * FROM services ORDER BY display_order ASC, id ASC').all();
-        }
+        const services = await db.prepare('SELECT * FROM services ORDER BY display_order ASC, id ASC').all();
         if (services && services.length > 0) {
             return services;
         }

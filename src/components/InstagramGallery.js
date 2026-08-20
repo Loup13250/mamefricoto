@@ -92,39 +92,57 @@ export default function InstagramGallery({ posts, siteInfo }) {
             {/* Lightbox */}
             {selectedPost && (
                 <div className="modal-backdrop" onClick={() => setSelectedIndex(null)}>
-                    <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+                    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
                         
-                        {/* Navigation Buttons */}
-                        {posts.length > 1 && (
-                            <>
-                                <button
-                                    className="lightbox-nav-btn prev"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : posts.length - 1));
-                                    }}
-                                    aria-label="Précédent"
-                                >
-                                    <ChevronLeft size={28} />
-                                </button>
-                                <button
-                                    className="lightbox-nav-btn next"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
-                                    }}
-                                    aria-label="Suivant"
-                                >
-                                    <ChevronRight size={28} />
-                                </button>
-                            </>
-                        )}
-
                         <button type="button" className="modal-close" onClick={() => setSelectedIndex(null)} aria-label="Fermer">
                             <X size={18} />
                         </button>
-                        
-                        <div className="modal-img-box">
+
+                        <div
+                            className="modal-img-box"
+                            onClick={() => {
+                                if (posts.length > 1) {
+                                    setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
+                                }
+                            }}
+                            style={{ cursor: posts.length > 1 ? 'pointer' : 'default', position: 'relative' }}
+                            title={posts.length > 1 ? "Cliquer pour passer à la photo suivante" : ""}
+                        >
+                            {/* Counter badge */}
+                            {posts.length > 1 && (
+                                <div className="lightbox-counter">
+                                    {selectedIndex + 1} / {posts.length}
+                                </div>
+                            )}
+
+                            {/* Nav Buttons overlaying image */}
+                            {posts.length > 1 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="lightbox-nav-btn prev"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedIndex((prev) => (prev > 0 ? prev - 1 : posts.length - 1));
+                                        }}
+                                        aria-label="Photo précédente"
+                                    >
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="lightbox-nav-btn next"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
+                                        }}
+                                        aria-label="Photo suivante"
+                                    >
+                                        <ChevronRight size={24} />
+                                    </button>
+                                </>
+                            )}
+
                             {selectedPost.media_type === 'video' ? (
                                 <video src={selectedPost.image_url} controls autoPlay loop style={{ width: '100%', maxHeight: '560px' }} />
                             ) : (
@@ -136,7 +154,7 @@ export default function InstagramGallery({ posts, siteInfo }) {
                                     className="modal-img"
                                     style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                                     sizes="(max-width: 768px) 100vw, 800px"
-                                    key={selectedPost.image_url} /* Force re-render on change */
+                                    key={selectedPost.image_url}
                                 />
                             )}
                         </div>
@@ -145,13 +163,13 @@ export default function InstagramGallery({ posts, siteInfo }) {
                                 <Image src="/logo.png" alt="Mamé Fricoto" width={36} height={36} style={{ borderRadius: '2px', objectFit: 'cover' }} />
                                 <div className="modal-meta-text">
                                     <strong>Mamé Fricoto</strong>
-                                    <span>Eyguières</span>
+                                    <span>Eyguières · Les Coulisses</span>
                                 </div>
                             </div>
                             {selectedPost.title && <h3 className="modal-title">{selectedPost.title}</h3>}
                             {selectedPost.caption && <p className="modal-caption">{selectedPost.caption}</p>}
                             <div className="modal-cta">
-                                <a href="tel:#" onClick={(e) => e.preventDefault()} className="btn-terra modal-cta-btn">
+                                <a href={siteInfo?.phone ? `tel:${siteInfo.phone.replace(/\s+/g, '')}` : 'tel:#'} className="btn-terra modal-cta-btn">
                                     <Phone size={15} />
                                     Commander — 07 43 <span style={{ filter: 'blur(4px)', userSelect: 'none', opacity: 0.8 }}>64 64</span> 11
                                 </a>

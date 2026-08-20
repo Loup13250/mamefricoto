@@ -702,9 +702,10 @@ export async function deleteService(idOrFormData) {
 
 export async function reorderService(id, direction) {
     await requireAdminAuth();
+    const targetId = Number(id);
     const db = getDb();
     const services = await db.prepare('SELECT id FROM services ORDER BY display_order ASC, id ASC').all();
-    const index = services.findIndex(s => s.id === id);
+    const index = services.findIndex(s => Number(s.id) === targetId);
     if (index === -1) return { error: 'Prestation non trouvée' };
 
     const targetIndex = direction === 'up' ? index - 1 : index + 1;

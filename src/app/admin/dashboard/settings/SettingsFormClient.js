@@ -279,7 +279,7 @@ export default function SettingsFormClient({ info }) {
                         <Mail size={18} style={{ color: 'var(--admin-gold)' }} /> Notifications Email (Formspree)
                     </h3>
                     <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1rem' }}>
-                        Tous les messages du formulaire sont automatiquement sauvegardés dans votre onglet <strong>Messages</strong>. Si vous souhaitez recevoir un vrai mail en plus, vous pouvez créer un formulaire sur <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" style={{color: 'var(--admin-gold)'}}>Formspree.io</a> et coller l&apos;URL ci-dessous.
+                        Tous les messages du formulaire sont automatiquement sauvegardés dans votre onglet <strong>Messages</strong>. Si vous souhaitez recevoir un vrai mail en plus, vous pouvez créer un formulaire sur <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--admin-gold)' }}>Formspree.io</a> et coller l&apos;URL ci-dessous.
                     </p>
                     <div>
                         <label className="admin-label">URL Endpoint Formspree (ex: https://formspree.io/f/xxxxx)</label>
@@ -311,7 +311,7 @@ export default function SettingsFormClient({ info }) {
                     </h3>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-                    Téléchargez un fichier de sauvegarde complet (menus, prestations, galerie, messages et paramètres). Ce fichier est ultra-léger (~100 Ko) et ne consomme aucun espace payant sur Vercel. Vous pouvez également restaurer une sauvegarde précédente en 1 clic.
+                    Téléchargez un fichier de sauvegarde complet (menus, prestations, galerie, messages et paramètres). Ce fichier est ultra-léger (~100 Ko). Vous pouvez également restaurer une sauvegarde précédente en 1 clic.
                 </p>
 
                 {restoreStatus.success && (

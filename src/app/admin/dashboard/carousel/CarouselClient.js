@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { addCarouselImage, deleteCarouselImage, editCarouselImage } from '@/app/actions';
 import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-async function compressImageFile(file, maxWidth = 1200, quality = 0.75) {
+async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -24,21 +24,37 @@ async function compressImageFile(file, maxWidth = 1200, quality = 0.75) {
                 canvas.height = height;
 
                 const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
+                // Use WebP for supreme visual quality with ~30-40% smaller file size
                 canvas.toBlob(
                     (blob) => {
                         if (!blob) {
-                            resolve(file);
+                            canvas.toBlob(
+                                (jpegBlob) => {
+                                    if (!jpegBlob) {
+                                        resolve(file);
+                                        return;
+                                    }
+                                    resolve(new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    }));
+                                },
+                                'image/jpeg',
+                                quality
+                            );
                             return;
                         }
-                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                            type: 'image/jpeg',
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
                             lastModified: Date.now()
                         });
                         resolve(compressedFile);
                     },
-                    'image/jpeg',
+                    'image/webp',
                     quality
                 );
             };
@@ -84,7 +100,7 @@ function CarouselForm({ onCancel }) {
 
         formData.delete('image_file');
         if (selectedFile) {
-            const compressed = await compressImageFile(selectedFile, 1200, 0.75);
+            const compressed = await compressImageFile(selectedFile, 2048, 0.85);
             formData.append('image_file', compressed);
         }
 
@@ -261,7 +277,7 @@ function EditCarouselForm({ item, onCancel }) {
         formData.append('id', item.id);
 
         if (selectedFile) {
-            const compressed = await compressImageFile(selectedFile, 1200, 0.75);
+            const compressed = await compressImageFile(selectedFile, 2048, 0.85);
             formData.set('image_file', compressed);
         }
 

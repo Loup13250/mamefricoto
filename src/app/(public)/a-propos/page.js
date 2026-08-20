@@ -33,7 +33,7 @@ export default async function AProposPage() {
             </section>
 
             {/* ===== STORY ===== */}
-            <section style={{ background: 'var(--bg)', padding: '7rem 0' }}>
+            <section className="subpage-content-section" style={{ background: 'var(--bg)' }}>
                 <div className="container">
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6rem', alignItems: 'center' }}
                         className="about-story-grid">

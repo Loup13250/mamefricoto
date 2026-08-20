@@ -30,7 +30,7 @@ export default async function ContactPage() {
             </section>
 
             {/* Main content */}
-            <section style={{ background: 'var(--bg)', padding: '7rem 0' }}>
+            <section className="subpage-content-section" style={{ background: 'var(--bg)' }}>
                 <div className="container">
                     <div style={{
                         display: 'grid',

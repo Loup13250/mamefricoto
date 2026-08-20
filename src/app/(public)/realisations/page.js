@@ -1,6 +1,6 @@
 import { getSiteInfo, getGalleryPosts } from '@/lib/data';
 import Link from 'next/link';
-import { Phone, Instagram, ArrowRight, Sparkles } from 'lucide-react';
+import { Phone, Instagram, ArrowRight } from 'lucide-react';
 import InstagramGallery from '@/components/InstagramGallery';
 import '../home.css';
 
@@ -23,8 +23,8 @@ export default async function RealisationsPage() {
             {/* ===== PAGE HERO ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
-                    <span className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Sparkles size={13} style={{ color: 'var(--gold)' }} /> Galerie Photos &amp; Vidéos
+                    <span className="label">
+                        Galerie Photos &amp; Vidéos
                     </span>
                     <h1 className="subpage-title">
                         Nos Réalisations<br />

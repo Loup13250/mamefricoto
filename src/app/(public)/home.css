@@ -361,29 +361,34 @@
 
 .subpage-hero {
     background: var(--bg-2);
-    padding: calc(80px + 3.5rem) 0 3rem;
+    padding: calc(80px + 1.75rem) 0 2rem;
     border-bottom: 1px solid var(--border);
+}
+
+.subpage-hero .label {
+    display: inline-block;
+    margin-bottom: 0.25rem;
 }
 
 .subpage-title {
     font-family: var(--font-heading);
     font-size: clamp(2.4rem, 5.5vw, 4.5rem);
     font-weight: 400;
-    margin-top: 0.75rem;
+    margin-top: 0.35rem;
     line-height: 1.05;
     color: var(--text);
 }
 
 .subpage-subtitle {
     max-width: 560px;
-    margin-top: 1.25rem;
+    margin-top: 0.75rem;
     color: var(--text-2);
     font-size: 1rem;
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
 .subpage-content-section {
-    padding: 3.5rem 0 5rem;
+    padding: 2.5rem 0 4rem;
 }
 
 @media (max-width: 768px) {
@@ -391,16 +396,22 @@
         padding-top: 0;
     }
     .subpage-hero {
-        padding: calc(64px + 1.25rem) 0 1.25rem !important;
+        padding: calc(64px + 0.5rem) 0 0.85rem !important;
+    }
+    .subpage-hero .label {
+        margin-bottom: 0.15rem;
     }
     .subpage-title {
-        font-size: clamp(1.85rem, 7.5vw, 2.5rem) !important;
+        font-size: clamp(1.75rem, 7vw, 2.3rem) !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.2rem !important;
     }
     .subpage-subtitle {
-        font-size: 0.9rem !important;
-        margin-top: 0.5rem !important;
+        font-size: 0.88rem !important;
+        margin-top: 0.4rem !important;
+        line-height: 1.5 !important;
     }
     .subpage-content-section {
-        padding: 1.5rem 0 2.5rem !important;
+        padding: 1rem 0 2rem !important;
     }
 }

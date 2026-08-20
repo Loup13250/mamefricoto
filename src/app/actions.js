@@ -471,6 +471,8 @@ export async function addGalleryPost(formData) {
         }
 
         revalidatePath('/');
+        revalidatePath('/realisations');
+        revalidatePath('/galerie');
         revalidatePath('/admin/dashboard/galerie');
         return { success: true };
     } catch (err) {
@@ -490,6 +492,38 @@ export async function deleteGalleryPost(idOrFormData) {
 
     await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
     revalidatePath('/');
+    revalidatePath('/realisations');
+    revalidatePath('/galerie');
+    revalidatePath('/admin/dashboard/galerie');
+    return { success: true };
+}
+
+export async function reorderGalleryPost(idOrFormData, direction) {
+    await requireAdminAuth();
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
+    const db = getDb();
+    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, id ASC').all();
+    const index = posts.findIndex(p => p.id === id);
+    if (index === -1) return { error: 'Photo introuvable' };
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= posts.length) return { success: true };
+
+    const currentPost = posts[index];
+    const targetPost = posts[targetIndex];
+
+    const currentOrder = currentPost.display_order || index + 1;
+    const targetOrder = targetPost.display_order || targetIndex + 1;
+
+    const stmt = db.prepare('UPDATE gallery_posts SET display_order = ? WHERE id = ?');
+    await stmt.run(targetOrder, currentPost.id);
+    await stmt.run(currentOrder, targetPost.id);
+
+    revalidatePath('/');
+    revalidatePath('/realisations');
+    revalidatePath('/galerie');
     revalidatePath('/admin/dashboard/galerie');
     return { success: true };
 }
@@ -587,29 +621,6 @@ export async function updateMessageNotes(id, notes) {
     return { success: true };
 }
 
-export async function reorderGalleryPost(id, direction) {
-    await requireAdminAuth();
-    const db = getDb();
-    const posts = await db.prepare('SELECT id FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
-    const index = posts.findIndex(p => p.id === id);
-    if (index === -1) return { error: 'Post non trouvé' };
-
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= posts.length) return { success: true };
-
-    const temp = posts[index];
-    posts[index] = posts[targetIndex];
-    posts[targetIndex] = temp;
-
-    const stmt = db.prepare('UPDATE gallery_posts SET display_order = ? WHERE id = ?');
-    for (let i = 0; i < posts.length; i++) {
-        await stmt.run(i + 1, posts[i].id);
-    }
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/galerie');
-    return { success: true };
-}
 
 export async function deleteWeeklyMenuImage(imageId) {
     await requireAdminAuth();

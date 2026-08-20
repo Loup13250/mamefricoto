@@ -184,9 +184,9 @@ export default function GalleryClient({ posts }) {
 
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
-                <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
+                <h1 className="admin-page-title">Nos Réalisations — Photos &amp; Vidéos</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page d&apos;accueil dans la section galerie.
+                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page publique dédiée <strong>Nos Réalisations (Les Coulisses de la Cuisine)</strong>.
                 </p>
                 {!isAdding && (
                     <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">

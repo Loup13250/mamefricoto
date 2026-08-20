@@ -75,6 +75,7 @@ export default function Header({ siteInfo }) {
 
                 <nav className="site-nav" aria-label="Navigation principale">
                     <Link href="/" className={pathname === '/' ? 'nav-link active' : 'nav-link'}>Accueil</Link>
+                    <Link href="/realisations" className={pathname === '/realisations' || pathname === '/galerie' ? 'nav-link active' : 'nav-link'}>Nos Réalisations</Link>
                     <Link href="/a-propos" className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>À Propos</Link>
                     <Link href="/contact" className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
                 </nav>
@@ -133,6 +134,9 @@ export default function Header({ siteInfo }) {
                     <nav className="mobile-nav-body" aria-label="Navigation mobile">
                         <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             Accueil
+                        </Link>
+                        <Link href="/realisations" className={pathname === '/realisations' || pathname === '/galerie' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            Nos Réalisations
                         </Link>
                         <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             À Propos

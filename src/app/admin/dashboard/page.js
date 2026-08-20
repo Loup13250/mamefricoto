@@ -118,7 +118,7 @@ export default async function DashboardOverview() {
                     </Link>
                 </div>
 
-                {/* 3. Galerie Instagram */}
+                {/* 3. Nos Réalisations */}
                 <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -130,14 +130,14 @@ export default async function DashboardOverview() {
                             </span>
                         </div>
                         <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.2rem' }}>
-                            Galerie & Réalisations
+                            Nos Réalisations &amp; Coulisses
                         </h3>
                         <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
-                            Photos et vidéos affichées dans la galerie du site.
+                            Photos et vidéos publiées sur la page Réalisations.
                         </p>
                     </div>
                     <Link href="/admin/dashboard/galerie" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-gold)', textDecoration: 'none' }}>
-                        Ajouter / Modifier des visuels <ArrowRight size={14} />
+                        Gérer les réalisations <ArrowRight size={14} />
                     </Link>
                 </div>
 
@@ -174,8 +174,8 @@ export default async function DashboardOverview() {
                             <Camera size={20} />
                         </div>
                         <div>
-                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Galerie Insta</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Publier une photo</span>
+                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Nos Réalisations</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Publier une photo / vidéo</span>
                         </div>
                     </Link>
 

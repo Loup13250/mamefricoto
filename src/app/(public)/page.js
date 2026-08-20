@@ -1,10 +1,9 @@
 import React from 'react';
-import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getGalleryPosts, getServices } from '@/lib/data';
+import { getSiteInfo, getCarouselImages, getCurrentWeeklyMenu, getServices } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
-import InstagramGallery from '@/components/InstagramGallery';
 import { Phone, Truck, ArrowRight, Star } from 'lucide-react';
 import './home.css';
 
@@ -14,7 +13,6 @@ export default async function Home() {
     const siteInfo = await getSiteInfo();
     const carousel = await getCarouselImages();
     const weeklyMenu = await getCurrentWeeklyMenu();
-    const galleryPosts = await getGalleryPosts();
     const services = await getServices();
 
     const phone = siteInfo.phone || '07 43 64 64 11';
@@ -80,13 +78,6 @@ export default async function Home() {
                     )}
                 </div>
             </section>
-
-            {/* ===== GALLERY ===== */}
-            {galleryPosts && galleryPosts.length > 0 && (
-                <section className="gallery-section">
-                    <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} />
-                </section>
-            )}
 
             {/* ===== NOS PRESTATIONS ===== */}
             <section className="services-section">

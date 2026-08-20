@@ -37,6 +37,7 @@ export default async function Footer({ siteInfo }) {
                         <h3>Navigation</h3>
                         <ul>
                             <li><Link href="/">Accueil</Link></li>
+                            <li><Link href="/realisations">Nos Réalisations</Link></li>
                             <li><Link href="/a-propos">À Propos</Link></li>
                             <li><Link href="/contact">Contact</Link></li>
                         </ul>

@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }) {
                     </Link>
                     <Link href="/admin/dashboard/galerie" className={`admin-nav-link ${pathname === '/admin/dashboard/galerie' ? 'active' : ''}`}>
                         <Camera size={18} />
-                        <span>Galerie Instagram</span>
+                        <span>Nos Réalisations</span>
                     </Link>
                     <Link href="/admin/dashboard/carousel" className={`admin-nav-link ${pathname === '/admin/dashboard/carousel' ? 'active' : ''}`}>
                         <ImageIcon size={18} />

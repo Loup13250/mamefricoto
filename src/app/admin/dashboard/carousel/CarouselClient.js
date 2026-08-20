@@ -254,7 +254,9 @@ function CarouselForm({ onCancel }) {
 
 function EditCarouselForm({ item, onCancel }) {
     const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
     const [isPending, startTransition] = useTransition();
+    const [isCompressing, setIsCompressing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const inputRef = useRef(null);
@@ -262,11 +264,12 @@ function EditCarouselForm({ item, onCancel }) {
     const handleFileSelect = (file) => {
         if (!file) return;
         if (!file.type.startsWith('image/')) {
-            setError('Format non supporté. Veuillez choisir une image.');
+            setError('Format non supporté. Veuillez choisir une image (JPG, PNG, WEBP).');
             return;
         }
         setError('');
         setSelectedFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
     };
 
     const handleSubmit = async (e) => {
@@ -274,11 +277,20 @@ function EditCarouselForm({ item, onCancel }) {
         setError('');
 
         const formData = new FormData(e.target);
-        formData.append('id', item.id);
+        formData.delete('image_file');
+        formData.set('id', item.id);
 
         if (selectedFile) {
-            const compressed = await compressImageFile(selectedFile, 2048, 0.85);
-            formData.set('image_file', compressed);
+            setIsCompressing(true);
+            try {
+                const compressed = await compressImageFile(selectedFile, 2048, 0.85);
+                formData.append('image_file', compressed);
+            } catch (err) {
+                console.warn('Compression fallback to original file', err);
+                formData.append('image_file', selectedFile);
+            } finally {
+                setIsCompressing(false);
+            }
         }
 
         startTransition(async () => {
@@ -315,29 +327,68 @@ function EditCarouselForm({ item, onCancel }) {
             </div>
 
             <div>
-                <label className="admin-label">Changer l&apos;image (optionnel)</label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    {selectedFile ? (
-                        <div style={{ fontSize: '0.85rem', color: 'var(--admin-gold)' }}>Fichier sélectionné : {selectedFile.name}</div>
-                    ) : (
-                        <button type="button" onClick={() => inputRef.current?.click()} className="admin-btn admin-btn-secondary" style={{ fontSize: '0.8rem', padding: '8px 14px' }}>
-                            Choisir une nouvelle image
+                <label className="admin-label">Image de la bannière</label>
+                
+                {previewUrl ? (
+                    <div style={{
+                        position: 'relative',
+                        background: 'var(--admin-surface)',
+                        border: '1px solid var(--admin-border)',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        aspectRatio: '16 / 9',
+                        maxHeight: '220px',
+                        marginBottom: '0.5rem',
+                    }}>
+                        <Image
+                            src={previewUrl}
+                            alt="Nouvel aperçu"
+                            width={800}
+                            height={450}
+                            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                            unoptimized
+                        />
+                        <button
+                            type="button"
+                            onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
+                            title="Annuler le changement d'image"
+                            style={{
+                                position: 'absolute', top: '8px', right: '8px',
+                                width: '28px', height: '28px',
+                                background: 'rgba(239,68,68,0.9)',
+                                border: 'none', borderRadius: '4px', color: 'white',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <X size={14} />
                         </button>
-                    )}
-                    <input ref={inputRef} type="file" name="image_file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files?.[0])} />
-                </div>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <button type="button" onClick={() => inputRef.current?.click()} className="admin-btn admin-btn-secondary" style={{ fontSize: '0.8rem', padding: '8px 14px' }}>
+                            <UploadCloud size={15} /> Remplacer l&apos;image
+                        </button>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>Image actuelle conservée si aucun fichier sélectionné</span>
+                    </div>
+                )}
+                <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files?.[0])} />
             </div>
 
             {error && (
-                <div style={{ color: '#dc2626', fontSize: '0.85rem' }}>{error}</div>
+                <div style={{ color: '#dc2626', fontSize: '0.85rem', background: 'rgba(239,68,68,0.1)', padding: '8px 12px', borderRadius: '4px' }}>
+                    {error}
+                </div>
             )}
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending || isCompressing}>
                     Annuler
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending}>
-                    {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Enregistrer'}
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending || isCompressing}>
+                    {isPending || isCompressing ? (
+                        <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Enregistrement...</>
+                    ) : 'Enregistrer'}
                 </button>
             </div>
         </form>

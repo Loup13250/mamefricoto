@@ -328,78 +328,93 @@ export async function toggleWeeklyMenuCurrent(idOrFormData) {
 
 // --- HERO CAROUSEL ---
 export async function addCarouselImage(formData) {
-    await requireAdminAuth();
-    const title = (formData.get('title') || '').toString().trim();
-    const subtitle = (formData.get('subtitle') || '').toString().trim();
-    const display_order = parseInt(formData.get('display_order') || '0', 10);
-    const file = formData.get('image_file');
+    try {
+        await requireAdminAuth();
+        const title = (formData.get('title') || '').toString().trim();
+        const subtitle = (formData.get('subtitle') || '').toString().trim();
+        const display_order = parseInt(formData.get('display_order') || '0', 10);
+        const file = formData.get('image_file');
 
-    let image_url = (formData.get('image_url') || '').toString().trim();
-    if (file && file.size > 0) {
-        const uploaded = await saveUploadedFile(file);
-        if (uploaded) image_url = uploaded;
+        let image_url = (formData.get('image_url') || '').toString().trim();
+        if (file && file.size > 0) {
+            const uploaded = await saveUploadedFile(file);
+            if (uploaded) image_url = uploaded;
+        }
+
+        if (!image_url) {
+            return { error: 'Veuillez sélectionner une image' };
+        }
+
+        const db = getDb();
+        await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, display_order) VALUES (?, ?, ?, ?)').run(image_url, title, subtitle, display_order);
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/carousel');
+        return { success: true };
+    } catch (err) {
+        console.error('addCarouselImage error:', err);
+        return { error: err.message || "Erreur lors de l'ajout de la photo." };
     }
-
-    if (!image_url) {
-        return { error: 'Veuillez sélectionner une image' };
-    }
-
-    const db = getDb();
-    await db.prepare('INSERT INTO carousel_images (image_url, title, subtitle, display_order) VALUES (?, ?, ?, ?)').run(image_url, title, subtitle, display_order);
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/carousel');
-    return { success: true };
 }
 
 export async function deleteCarouselImage(idOrFormData) {
-    await requireAdminAuth();
-    const id = extractId(idOrFormData);
-    if (!id) return { error: 'ID invalide' };
+    try {
+        await requireAdminAuth();
+        const id = extractId(idOrFormData);
+        if (!id) return { error: 'ID invalide' };
 
-    const db = getDb();
-    const img = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
-    if (img) deleteLocalFileIfPresent(img.image_url);
+        const db = getDb();
+        const img = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
+        if (img) deleteLocalFileIfPresent(img.image_url);
 
-    await db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/carousel');
-    return { success: true };
+        await db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/carousel');
+        return { success: true };
+    } catch (err) {
+        console.error('deleteCarouselImage error:', err);
+        return { error: err.message || 'Erreur lors de la suppression.' };
+    }
 }
 
 export async function editCarouselImage(formData) {
-    await requireAdminAuth();
-    const id = parseInt(formData.get('id') || '0', 10);
-    if (!id) return { error: 'ID de la photo invalide' };
+    try {
+        await requireAdminAuth();
+        const id = parseInt(formData.get('id') || '0', 10);
+        if (!id) return { error: 'ID de la photo invalide' };
 
-    const title = (formData.get('title') || '').toString().trim();
-    const subtitle = (formData.get('subtitle') || '').toString().trim();
-    const display_order = parseInt(formData.get('display_order') || '1', 10);
-    const file = formData.get('image_file');
-    let image_url = (formData.get('image_url') || '').toString().trim();
+        const title = (formData.get('title') || '').toString().trim();
+        const subtitle = (formData.get('subtitle') || '').toString().trim();
+        const display_order = parseInt(formData.get('display_order') || '1', 10);
+        const file = formData.get('image_file');
+        let image_url = (formData.get('image_url') || '').toString().trim();
 
-    const db = getDb();
-    const existing = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
-    if (!existing) return { error: 'Photo du carrousel introuvable' };
+        const db = getDb();
+        const existing = await db.prepare('SELECT image_url FROM carousel_images WHERE id = ?').get(id);
+        if (!existing) return { error: 'Photo du carrousel introuvable' };
 
-    if (file && file.size > 0) {
-        const uploaded = await saveUploadedFile(file);
-        if (uploaded) image_url = uploaded;
+        if (file && file.size > 0) {
+            const uploaded = await saveUploadedFile(file);
+            if (uploaded) image_url = uploaded;
+        }
+
+        if (!image_url) {
+            image_url = existing.image_url;
+        }
+
+        await db.prepare(`
+            UPDATE carousel_images
+            SET title = ?, subtitle = ?, image_url = ?, display_order = ?
+            WHERE id = ?
+        `).run(title, subtitle, image_url, display_order, id);
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/carousel');
+        return { success: true };
+    } catch (err) {
+        console.error('editCarouselImage error:', err);
+        return { error: err.message || 'Erreur lors de la modification de la bannière.' };
     }
-
-    if (!image_url) {
-        image_url = existing.image_url;
-    }
-
-    await db.prepare(`
-        UPDATE carousel_images
-        SET title = ?, subtitle = ?, image_url = ?, display_order = ?
-        WHERE id = ?
-    `).run(title, subtitle, image_url, display_order, id);
-
-    revalidatePath('/');
-    revalidatePath('/admin/dashboard/carousel');
-    return { success: true };
 }
 
 // --- GALLERY ---

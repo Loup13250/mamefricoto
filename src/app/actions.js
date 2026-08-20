@@ -61,7 +61,7 @@ export async function adminLogout() {
 }
 
 // --- SECURE FILE UPLOAD HELPER ---
-const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg', '.jfif', '.heic', '.heif', '.avif', '.bmp']);
 
 async function saveUploadedFile(file) {
     if (!file || typeof file === 'string' || !file.name || file.size === 0) return null;
@@ -70,17 +70,18 @@ async function saveUploadedFile(file) {
     const maxSize = isVercel ? 4.5 * 1024 * 1024 : 50 * 1024 * 1024;
 
     if (file.size > maxSize) {
-        throw new Error(isVercel
-            ? "Le fichier dépasse la limite d'upload direct de 4.5 Mo sur Vercel. Veuillez utiliser une vidéo/image plus légère ou coller un lien URL."
-            : 'Fichier trop volumineux (50 Mo maximum).'
-        );
+        throw new Error("L'image sélectionnée est trop volumineuse (max 4.5 Mo). Veuillez choisir une autre photo ou la compresser.");
     }
 
-    const rawExt = path.extname(file.name).toLowerCase();
-    const ext = rawExt || '.jpg';
-
-    if (!ALLOWED_EXTENSIONS.has(ext)) {
-        throw new Error(`Format de fichier non autorisé (${ext}). Acceptés : JPG, PNG, WEBP, GIF, MP4, WEBM, MOV.`);
+    let ext = path.extname(file.name || '').toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
+        if (file.type && file.type.startsWith('image/')) {
+            ext = '.webp';
+        } else if (file.type && file.type.startsWith('video/')) {
+            ext = '.mp4';
+        } else {
+            ext = '.jpg';
+        }
     }
 
     try {
@@ -105,17 +106,6 @@ async function saveUploadedFile(file) {
         const db = getDb();
         await db.prepare('INSERT INTO media_storage (id, mime_type, data) VALUES (?, ?, ?)').run(mediaId, mimeType, buffer);
         return `/api/media/${mediaId}`;
-
-        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
-        const filePath = path.join(uploadsDir, fileName);
-
-        fs.writeFileSync(filePath, buffer);
-        return `/uploads/${fileName}`;
     } catch (err) {
         console.error("Erreur enregistrement fichier :", err);
         throw new Error(err.message || "Impossible d'enregistrer le fichier.");

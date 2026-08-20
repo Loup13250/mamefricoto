@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { addCarouselImage, deleteCarouselImage, editCarouselImage } from '@/app/actions';
 import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
+async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -15,9 +15,14 @@ async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
                 let width = img.width;
                 let height = img.height;
 
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
                 }
 
                 canvas.width = width;

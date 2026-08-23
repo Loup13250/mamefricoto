@@ -58,6 +58,21 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev]);
 
+    const handleTouchStart = (e) => {
+        if (e.touches?.[0]) touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+        const touchEnd = e.changedTouches?.[0]?.clientX;
+        if (!touchEnd || !touchStartX.current) return;
+        const diff = touchStartX.current - touchEnd;
+        if (Math.abs(diff) > 20) {
+            if (diff > 0) handleNext();
+            else handlePrev();
+        }
+        touchStartX.current = 0;
+    };
+
     const currentMedia = images[currentIndex]?.image_url || menu.image_url;
     const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
 

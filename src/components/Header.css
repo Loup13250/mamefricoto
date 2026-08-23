@@ -195,28 +195,32 @@
 /* Mobile Backdrop */
 .mobile-backdrop {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(14, 13, 12, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1040;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.35s ease;
-    z-index: 1045;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
 }
 
 .mobile-backdrop.open {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
 }
 
-/* Mobile Drawer — FULL LUXURY CENTERED OVERLAY */
+/* Mobile Drawer (side menu) */
 .mobile-drawer {
     position: fixed;
     top: 0;
     right: 0;
-    width: min(380px, 100vw);
-    height: 100vh;
+    width: min(88vw, 380px);
     height: 100dvh;
     background: linear-gradient(180deg, #0E0D0C 0%, #171513 100%);
     border-left: 1px solid rgba(200, 169, 110, 0.2);
@@ -224,8 +228,9 @@
     z-index: 1050;
     transform: translateX(100%);
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.4s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -236,6 +241,7 @@
 .mobile-drawer.open {
     transform: translateX(0);
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
 }
 

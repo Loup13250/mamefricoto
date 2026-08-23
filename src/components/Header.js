@@ -114,6 +114,7 @@ export default function Header({ siteInfo }) {
                     role="dialog"
                     aria-modal="true"
                     aria-hidden={!mobileMenuOpen}
+                    inert={!mobileMenuOpen ? '' : undefined}
                 >
                     {/* Drawer Header */}
                     <div className="mobile-drawer-header">

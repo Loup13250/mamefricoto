@@ -81,7 +81,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
                                 sizes="100vw"
                                 priority={index === 0}
                                 loading={index === 0 ? 'eager' : 'lazy'}
-                                quality={80}
+                                unoptimized
                             />
                         </div>
 
@@ -95,7 +95,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
                                     sizes="100vw"
                                     priority={index === 0}
                                     loading={index === 0 ? 'eager' : 'lazy'}
-                                    quality={80}
+                                    unoptimized
                                 />
                             </div>
                         )}

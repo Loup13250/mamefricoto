@@ -112,6 +112,7 @@ export default async function Home() {
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             sizes="(max-width: 900px) 100vw, 50vw"
                             loading="lazy"
+                            unoptimized
                         />
                     </div>
                     <div className="about-text-col">

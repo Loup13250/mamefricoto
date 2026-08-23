@@ -100,6 +100,7 @@ export default async function AProposPage() {
                                 }}
                                 sizes="(max-width: 900px) 100vw, 50vw"
                                 loading="lazy"
+                                unoptimized
                             />
                         </div>
                     </div>

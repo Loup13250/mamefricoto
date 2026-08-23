@@ -93,7 +93,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                             loading="lazy"
-                            quality={80}
+                            unoptimized
                             draggable={false}
                         />
                     )

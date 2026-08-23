@@ -11,23 +11,30 @@
     z-index: 1000;
     display: flex;
     align-items: center;
-    transition: background 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease;
-    border-bottom: 1px solid transparent;
+    background: rgba(14, 13, 12, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(200, 169, 110, 0.16);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.45);
+    transition: background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease, height 0.3s ease;
 }
 
-/* Over hero — transparent */
+/* Over hero */
 .header--hero {
-    background: transparent;
-    border-bottom-color: transparent;
+    background: rgba(14, 13, 12, 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom-color: rgba(200, 169, 110, 0.15);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.35);
 }
 
 /* Scrolled or non-home pages */
 .header--solid {
-    background: rgba(14, 13, 12, 0.94);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom-color: rgba(200, 169, 110, 0.12);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.45);
+    background: rgba(14, 13, 12, 0.96);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border-bottom-color: rgba(200, 169, 110, 0.24);
+    box-shadow: 0 6px 35px rgba(0, 0, 0, 0.6);
 }
 
 .header-inner {
@@ -414,10 +421,44 @@
 /* ===========================
    LIGHT THEME OVERRIDES
    =========================== */
-[data-theme="light"] .header--solid {
-    background: rgba(250, 247, 242, 0.95);
+[data-theme="light"] .site-header {
+    background: rgba(250, 247, 242, 0.94);
     border-bottom-color: rgba(184, 139, 70, 0.2);
-    box-shadow: 0 4px 20px rgba(36, 30, 25, 0.08);
+    box-shadow: 0 4px 25px rgba(36, 30, 25, 0.08);
+}
+
+[data-theme="light"] .header--hero {
+    background: rgba(250, 247, 242, 0.92);
+    border-bottom-color: rgba(184, 139, 70, 0.2);
+    box-shadow: 0 4px 25px rgba(36, 30, 25, 0.08);
+}
+
+[data-theme="light"] .header--solid {
+    background: rgba(250, 247, 242, 0.98);
+    border-bottom-color: rgba(184, 139, 70, 0.28);
+    box-shadow: 0 6px 30px rgba(36, 30, 25, 0.12);
+}
+
+[data-theme="light"] .nav-link {
+    color: #241E19;
+}
+
+[data-theme="light"] .nav-link:hover {
+    color: #9C7232;
+}
+
+[data-theme="light"] .nav-link.active {
+    color: #9C7232;
+}
+
+[data-theme="light"] .nav-link.active::after {
+    background: #9C7232;
+}
+
+[data-theme="light"] .mobile-toggle {
+    color: #9C7232;
+    background: rgba(184, 139, 70, 0.12);
+    border-color: rgba(184, 139, 70, 0.35);
 }
 
 [data-theme="light"] .mobile-drawer {

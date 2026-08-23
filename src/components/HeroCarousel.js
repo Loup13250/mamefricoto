@@ -129,12 +129,12 @@ export default function HeroCarousel({ slides, siteInfo }) {
                         <p className="hero-subtitle">{slides[currentIndex].subtitle}</p>
                     )}
                     <div className="hero-actions">
-                        <a href="#menu-semaine" className="btn-gold">
+                        <a href="#menu-semaine" className="btn-gold hero-btn-menu">
                             Voir le menu
                         </a>
-                        <a href={`tel:${phoneTel}`} className="btn-outline">
-                            <Phone size={15} />
-                            {phone}
+                        <a href={`tel:${phoneTel}`} className="btn-outline hero-btn-phone" aria-label={`Appeler le ${phone}`}>
+                            <Phone size={16} />
+                            <span>{phone}</span>
                         </a>
                     </div>
                 </div>

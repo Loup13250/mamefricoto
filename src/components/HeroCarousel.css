@@ -137,9 +137,108 @@
 
 .hero-actions {
     display: flex;
-    gap: 1rem;
+    gap: 1.15rem;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.hero-actions .hero-btn-menu {
+    box-shadow: 0 6px 25px rgba(212, 180, 117, 0.35);
+}
+
+.hero-actions .hero-btn-phone,
+.hero-actions .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 15px 28px;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #FFFFFF !important;
+    background: rgba(14, 13, 12, 0.65) !important;
+    border: 1.5px solid rgba(212, 180, 117, 0.8) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    transition: all 0.3s var(--ease);
+}
+
+.hero-actions .hero-btn-phone svg,
+.hero-actions .btn-outline svg {
+    color: #F0D5A3 !important;
+    stroke: #F0D5A3 !important;
+    flex-shrink: 0;
+    transition: transform 0.3s ease, color 0.3s ease, stroke 0.3s ease;
+}
+
+.hero-actions .hero-btn-phone span,
+.hero-actions .btn-outline span {
+    color: #FFFFFF !important;
+    font-weight: 700;
+}
+
+.hero-actions .hero-btn-phone:hover,
+.hero-actions .btn-outline:hover {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: #0E0D0C !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 180, 117, 0.45) !important;
+}
+
+.hero-actions .hero-btn-phone:hover svg,
+.hero-actions .btn-outline:hover svg {
+    color: #0E0D0C !important;
+    stroke: #0E0D0C !important;
+    transform: scale(1.1);
+}
+
+.hero-actions .hero-btn-phone:hover span,
+.hero-actions .btn-outline:hover span {
+    color: #0E0D0C !important;
+}
+
+/* Guarantee visibility in Light Mode (since hero background is always dark) */
+[data-theme="light"] .hero-actions .hero-btn-phone,
+[data-theme="light"] .hero-actions .btn-outline {
+    color: #FFFFFF !important;
+    background: rgba(14, 13, 12, 0.72) !important;
+    border: 1.5px solid rgba(212, 180, 117, 0.85) !important;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="light"] .hero-actions .hero-btn-phone svg,
+[data-theme="light"] .hero-actions .btn-outline svg {
+    color: #F0D5A3 !important;
+    stroke: #F0D5A3 !important;
+}
+
+[data-theme="light"] .hero-actions .hero-btn-phone span,
+[data-theme="light"] .hero-actions .btn-outline span {
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .hero-actions .hero-btn-phone:hover,
+[data-theme="light"] .hero-actions .btn-outline:hover {
+    background: #B88B46 !important;
+    border-color: #B88B46 !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .hero-actions .hero-btn-phone:hover svg,
+[data-theme="light"] .hero-actions .btn-outline:hover svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+[data-theme="light"] .hero-actions .hero-btn-phone:hover span,
+[data-theme="light"] .hero-actions .btn-outline:hover span {
+    color: #FFFFFF !important;
 }
 
 /* Arrow controls */
@@ -297,10 +396,14 @@
         width: 100%;
     }
 
-    .hero-actions .btn-outline {
-        border-color: rgba(240, 213, 163, 0.5);
-        color: #F5EFE6;
-        background: rgba(14, 13, 12, 0.45);
-        backdrop-filter: blur(8px);
+    .hero-actions .btn-outline,
+    .hero-actions .hero-btn-phone {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .hero-actions .hero-btn-menu {
+        width: 100%;
+        max-width: 320px;
     }
 }

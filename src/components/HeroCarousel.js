@@ -95,6 +95,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
                                             fill
                                             sizes="100vw"
                                             priority={index === 0}
+                                            fetchPriority={index === 0 ? 'high' : 'low'}
                                             loading={index === 0 ? 'eager' : 'lazy'}
                                             unoptimized
                                         />
@@ -109,6 +110,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
                                                 fill
                                                 sizes="100vw"
                                                 priority={index === 0}
+                                                fetchPriority={index === 0 ? 'high' : 'low'}
                                                 loading={index === 0 ? 'eager' : 'lazy'}
                                                 unoptimized
                                             />

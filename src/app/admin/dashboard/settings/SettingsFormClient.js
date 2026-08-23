@@ -8,6 +8,59 @@ import {
     AlertCircle, Loader2
 } from 'lucide-react';
 
+async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
+    if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    },
+                    'image/webp',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
 export default function SettingsFormClient({ info }) {
     const [logoPreview, setLogoPreview] = useState(info.logo || null);
     const [aboutPreview, setAboutPreview] = useState(info.about_image || null);
@@ -50,8 +103,14 @@ export default function SettingsFormClient({ info }) {
         formData.delete('logo_file');
         formData.delete('about_file');
 
-        if (logoFile) formData.append('logo_file', logoFile);
-        if (aboutFile) formData.append('about_file', aboutFile);
+        if (logoFile) {
+            const compressedLogo = await compressImageFile(logoFile, 800, 0.9);
+            formData.append('logo_file', compressedLogo);
+        }
+        if (aboutFile) {
+            const compressedAbout = await compressImageFile(aboutFile, 2048, 0.85);
+            formData.append('about_file', compressedAbout);
+        }
 
         await updateSiteInfo(formData);
         setLoading(false);

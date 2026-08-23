@@ -58,34 +58,11 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev]);
 
-    // Preload ALL menu images in background immediately on mount for zero-latency image swapping
-    useEffect(() => {
-        if (!images || images.length <= 1) return;
-        images.forEach((img) => {
-            if (img?.image_url && !isVideoUrl(img.image_url)) {
-                const imgLoader = new window.Image();
-                imgLoader.src = img.image_url;
-            }
-        });
-    }, [images]);
-
-    const handleTouchStart = (e) => {
-        if (e.touches?.[0]) touchStartX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = (e) => {
-        const touchEnd = e.changedTouches?.[0]?.clientX;
-        if (!touchEnd || !touchStartX.current) return;
-        const diff = touchStartX.current - touchEnd;
-        if (Math.abs(diff) > 20) diff > 0 ? handleNext() : handlePrev();
-        touchStartX.current = 0;
-    };
-
     const currentMedia = images[currentIndex]?.image_url || menu.image_url;
     const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
 
     return (
-        <div className="menu-card anim-up">
+        <div className="menu-card anim-up" role="region" aria-label="Menu de la semaine">
             {/* Left: Media */}
             <div
                 className="menu-media"
@@ -109,14 +86,14 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     ) : (
                         <Image
                             src={currentMedia}
-                            alt={`${menu.title} — photo ${currentIndex + 1}`}
+                            alt={`${menu.title} — photo ${currentIndex + 1} sur ${images.length || 1}`}
                             width={900}
                             height={1100}
                             className="menu-img"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-                            priority={currentIndex === 0}
-                            loading={currentIndex === 0 ? 'eager' : 'lazy'}
+                            loading="lazy"
+                            quality={80}
                             draggable={false}
                         />
                     )
@@ -128,7 +105,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
                 {/* Counter */}
                 {images.length > 1 && (
-                    <div className="menu-counter">{currentIndex + 1} / {images.length}</div>
+                    <div className="menu-counter" aria-live="polite">{currentIndex + 1} / {images.length}</div>
                 )}
 
                 {/* Arrows */}
@@ -138,31 +115,33 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             type="button"
                             className={`menu-arrow menu-arrow-left ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                            aria-label="Photo précédente"
+                            aria-label="Plat précédent"
                         >
-                            <ChevronLeft size={20} />
+                            <ChevronLeft size={22} />
                         </button>
                         <button
                             type="button"
                             className={`menu-arrow menu-arrow-right ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                            aria-label="Photo suivante"
+                            aria-label="Plat suivant"
                         >
-                            <ChevronRight size={20} />
+                            <ChevronRight size={22} />
                         </button>
                     </>
                 )}
 
                 {/* Dots */}
                 {images.length > 1 && (
-                    <div className="menu-dots">
+                    <div className="menu-dots" role="tablist" aria-label="Sélection du plat">
                         {images.map((img, idx) => (
                             <button
                                 key={img.id || idx}
                                 type="button"
+                                role="tab"
+                                aria-selected={idx === currentIndex}
                                 className={`menu-dot ${idx === currentIndex ? 'active' : ''}`}
                                 onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                                aria-label={`Photo ${idx + 1}`}
+                                aria-label={`Plat ${idx + 1} sur ${images.length}`}
                             />
                         ))}
                     </div>

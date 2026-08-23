@@ -23,21 +23,6 @@ export default function HeroCarousel({ slides, siteInfo }) {
         return () => clearInterval(timer);
     }, [isHovered, slides.length]);
 
-    // Preload ALL hero slide images in background immediately on mount
-    useEffect(() => {
-        if (!slides || slides.length <= 1) return;
-        slides.forEach((slide) => {
-            if (slide?.image_url) {
-                const imgLoader = new window.Image();
-                imgLoader.src = slide.image_url;
-            }
-            if (slide?.mobile_image_url) {
-                const imgLoaderMob = new window.Image();
-                imgLoaderMob.src = slide.mobile_image_url;
-            }
-        });
-    }, [slides]);
-
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
     };
@@ -75,6 +60,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
     return (
         <section
             className="hero"
+            aria-label="Bannières de présentation"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onTouchStart={handleTouchStart}
@@ -90,13 +76,12 @@ export default function HeroCarousel({ slides, siteInfo }) {
                         <div className={`hero-slide-layer hero-layer-desktop ${slide.mobile_image_url ? 'has-mobile-alt' : ''}`}>
                             <Image
                                 src={slide.image_url}
-                                alt={slide.title || 'Bannière Mamé Fricoto'}
+                                alt={slide.title || 'Traiteur Maison Mamé Fricoto à Eyguières'}
                                 fill
                                 sizes="100vw"
                                 priority={index === 0}
                                 loading={index === 0 ? 'eager' : 'lazy'}
-                                quality={95}
-                                unoptimized
+                                quality={80}
                             />
                         </div>
 
@@ -105,13 +90,12 @@ export default function HeroCarousel({ slides, siteInfo }) {
                             <div className="hero-slide-layer hero-layer-mobile">
                                 <Image
                                     src={slide.mobile_image_url}
-                                    alt={slide.title || 'Bannière Mamé Fricoto (mobile)'}
+                                    alt={slide.title || 'Traiteur Maison Mamé Fricoto à Eyguières'}
                                     fill
                                     sizes="100vw"
                                     priority={index === 0}
                                     loading={index === 0 ? 'eager' : 'lazy'}
-                                    quality={95}
-                                    unoptimized
+                                    quality={80}
                                 />
                             </div>
                         )}
@@ -143,21 +127,23 @@ export default function HeroCarousel({ slides, siteInfo }) {
             {slides.length > 1 && (
                 <>
                     <div className="hero-arrows">
-                        <button type="button" onClick={handlePrev} className="hero-arrow" aria-label="Précédent">
-                            <ChevronLeft size={20} />
+                        <button type="button" onClick={handlePrev} className="hero-arrow" aria-label="Diapositive précédente">
+                            <ChevronLeft size={22} />
                         </button>
-                        <button type="button" onClick={handleNext} className="hero-arrow" aria-label="Suivant">
-                            <ChevronRight size={20} />
+                        <button type="button" onClick={handleNext} className="hero-arrow" aria-label="Diapositive suivante">
+                            <ChevronRight size={22} />
                         </button>
                     </div>
-                    <div className="hero-dots">
+                    <div className="hero-dots" role="tablist" aria-label="Sélection des diapositives">
                         {slides.map((_, idx) => (
                             <button
                                 key={idx}
                                 type="button"
+                                role="tab"
+                                aria-selected={idx === currentIndex}
                                 onClick={() => setCurrentIndex(idx)}
                                 className={`hero-dot ${idx === currentIndex ? 'active' : ''}`}
-                                aria-label={`Bannière ${idx + 1}`}
+                                aria-label={`Diapositive ${idx + 1} sur ${slides.length}`}
                             />
                         ))}
                     </div>

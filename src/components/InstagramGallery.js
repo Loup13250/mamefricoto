@@ -27,17 +27,6 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
         };
     }, [selectedIndex, handleKeyDown]);
 
-    // Preload ALL gallery images in background for zero-latency lightbox navigation
-    useEffect(() => {
-        if (!posts || posts.length === 0) return;
-        posts.forEach((post) => {
-            if (post?.image_url && post?.media_type !== 'video') {
-                const imgLoader = new window.Image();
-                imgLoader.src = post.image_url;
-            }
-        });
-    }, [posts]);
-
     if (!posts || posts.length === 0) return null;
 
     const selectedPost = selectedIndex !== null ? posts[selectedIndex] : null;
@@ -71,13 +60,14 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                         ) : (
                             <Image
                                 src={post.image_url}
-                                alt={post.title || 'Mamé Fricoto'}
+                                alt={post.title || post.caption || 'Réalisation traiteur Mamé Fricoto à Eyguières'}
                                 width={500}
                                 height={500}
                                 className="gallery-img"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                 loading="lazy"
+                                quality={80}
                             />
                         )}
                         <div className="gallery-overlay">

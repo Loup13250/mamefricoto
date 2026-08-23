@@ -67,12 +67,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border: 1px solid var(--border);
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text-1);
     transition: all 0.3s ease;
+    touch-action: manipulation;
 }
 
 .social-links a:hover {

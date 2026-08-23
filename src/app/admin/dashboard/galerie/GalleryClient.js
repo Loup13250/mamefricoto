@@ -89,6 +89,59 @@ function MediaPreview({ file, onRemove }) {
 /* =====================================================
    COMPOSANT PRINCIPAL
    ===================================================== */
+async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
+    if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    },
+                    'image/webp',
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
 export default function GalleryClient({ posts }) {
     const [isAdding, setIsAdding] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -108,9 +161,9 @@ export default function GalleryClient({ posts }) {
             return;
         }
 
-        const maxMB = 4.5;
+        const maxMB = 15;
         if (file.size > maxMB * 1024 * 1024) {
-            setError(`Ce fichier fait ${(file.size / (1024 * 1024)).toFixed(1)} Mo. Sur Vercel, les uploads directs sont limités à ${maxMB} Mo maximum. Veuillez compacter votre vidéo ou coller son URL ci-dessous.`);
+            setError(`Ce fichier fait ${(file.size / (1024 * 1024)).toFixed(1)} Mo. Veuillez choisir un fichier de moins de 15 Mo.`);
             setSelectedFile(null);
             return;
         }
@@ -135,7 +188,12 @@ export default function GalleryClient({ posts }) {
         // On supprime les champs natifs du file input et on injecte notre fichier proprement
         formData.delete('image_file');
         if (selectedFile) {
-            formData.append('image_file', selectedFile);
+            if (selectedFile.type.startsWith('image/')) {
+                const compressed = await compressImageFile(selectedFile, 2048, 0.85);
+                formData.append('image_file', compressed);
+            } else {
+                formData.append('image_file', selectedFile);
+            }
         }
 
         // S'assurer que media_type est correct selon le fichier

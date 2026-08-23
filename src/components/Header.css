@@ -173,10 +173,14 @@
     background: rgba(200, 169, 110, 0.08);
     border: 1px solid rgba(200, 169, 110, 0.25);
     border-radius: 4px;
-    padding: 8px;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
     z-index: 1001;
     cursor: pointer;
     transition: all 0.25s ease;
+    touch-action: manipulation;
 }
 
 .mobile-toggle:hover {
@@ -263,8 +267,8 @@
 }
 
 .mobile-drawer-close {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 4px;
     background: rgba(200, 169, 110, 0.08);
     border: 1px solid rgba(200, 169, 110, 0.25);
@@ -274,6 +278,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.25s ease;
+    touch-action: manipulation;
 }
 
 .mobile-drawer-close:hover {
@@ -377,8 +382,8 @@
 }
 
 .mobile-socials a {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: rgba(200, 169, 110, 0.08);
     border: 1px solid rgba(200, 169, 110, 0.2);
@@ -387,6 +392,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.25s ease;
+    touch-action: manipulation;
 }
 
 .mobile-socials a:hover {

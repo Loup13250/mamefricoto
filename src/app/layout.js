@@ -20,6 +20,16 @@ const cormorant = Cormorant_Garamond({
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://mamefricoto.vercel.app');
 
+export const viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0E0D0C' },
+    { media: '(prefers-color-scheme: light)', color: '#FAF7F2' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
   metadataBase: new URL(baseUrl),
   title: {

@@ -252,11 +252,11 @@
 }
 
 .hero-arrow {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     border: 1px solid rgba(200, 169, 110, 0.35);
     border-radius: 2px;
-    background: rgba(14, 13, 12, 0.4);
+    background: rgba(14, 13, 12, 0.5);
     color: var(--cream);
     display: flex;
     align-items: center;
@@ -264,6 +264,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     backdrop-filter: blur(8px);
+    touch-action: manipulation;
 }
 
 .hero-arrow:hover {
@@ -272,25 +273,38 @@
     color: #0E0D0C;
 }
 
-/* Dots */
+/* Dots with min 48px touch target */
 .hero-dots {
     position: absolute;
     bottom: 2.5rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 6px;
+    gap: 8px;
+    align-items: center;
     z-index: 10;
 }
 
 .hero-dot {
+    position: relative;
     width: 24px;
-    height: 2px;
-    background: rgba(245, 240, 232, 0.3);
+    height: 3px;
+    background: rgba(245, 240, 232, 0.35);
     border: none;
     cursor: pointer;
     transition: all 0.4s ease;
-    border-radius: 1px;
+    border-radius: 2px;
+    touch-action: manipulation;
+    padding: 0;
+}
+
+.hero-dot::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    bottom: -20px;
+    left: -6px;
+    right: -6px;
 }
 
 .hero-dot.active {

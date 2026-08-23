@@ -382,6 +382,16 @@ img {
   box-shadow: 0 0 8px rgba(156, 114, 50, 0.4) !important;
 }
 
+[data-theme="light"] .label {
+  color: #8A5C12 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .service-badge {
+  color: #8A5C12 !important;
+  font-weight: 700 !important;
+}
+
 [data-theme="light"] .mobile-location-tag {
   color: #52473D !important;
   font-weight: 500 !important;

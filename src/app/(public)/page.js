@@ -89,7 +89,7 @@ export default async function Home() {
                     <div className="services-grid">
                         {services.map((s, idx) => (
                             <div key={s.id || s.num || idx} className="service-card">
-                                <div className="service-num">{s.num || `0${idx + 1}`}</div>
+                                <div className="service-num" aria-hidden="true">{s.num || `0${idx + 1}`}</div>
                                 {s.badge && <span className="service-badge">{s.badge}</span>}
                                 <h3>{s.title}</h3>
                                 <p>{s.description}</p>

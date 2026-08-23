@@ -54,8 +54,8 @@
 }
 
 .logo-round-wrap {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     overflow: hidden;
     display: flex;
@@ -65,6 +65,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
     background: #0E0D0C;
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    touch-action: manipulation;
 }
 
 .logo-link:hover .logo-round-wrap {
@@ -96,8 +97,11 @@
     text-transform: uppercase;
     color: var(--text-1);
     position: relative;
-    padding-bottom: 2px;
+    padding: 8px 4px;
+    display: inline-flex;
+    align-items: center;
     transition: color 0.3s ease;
+    touch-action: manipulation;
 }
 
 .nav-link::after {

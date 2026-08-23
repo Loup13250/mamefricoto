@@ -28,6 +28,14 @@
     color: var(--text-2);
 }
 
+.info-strip-item a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 6px;
+    touch-action: manipulation;
+}
+
 .info-strip-item svg {
     color: var(--gold);
     flex-shrink: 0;
@@ -42,7 +50,7 @@
 
 @media (max-width: 600px) {
     .info-strip-sep { display: none; }
-    .info-strip-inner { gap: 1rem; }
+    .info-strip-inner { gap: 0.75rem; }
     .info-strip-item { font-size: 0.8rem; }
 }
 
@@ -242,6 +250,13 @@
 .about-fact p {
     font-size: 0.9rem;
     color: var(--text-2);
+}
+
+.about-fact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    touch-action: manipulation;
 }
 
 @media (max-width: 900px) {

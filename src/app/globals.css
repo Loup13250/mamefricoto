@@ -37,6 +37,20 @@
 
   --font-heading: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   --font-body:    var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  --header-h:     80px;
+}
+
+@media (max-width: 1040px) {
+  :root,
+  [data-theme="light"],
+  [data-theme="dark"] {
+    --header-h: 64px;
+  }
+}
+
+.public-page-wrapper {
+  padding-top: var(--header-h);
+  min-height: calc(100vh - var(--header-h));
 }
 
 * {

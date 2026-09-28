@@ -9,11 +9,25 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
   user-select: none;
+  cursor: pointer;
+  font: inherit;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .lang-toggle-wrap:hover {
-  border-color: rgba(148, 104, 30, 0.4);
-  background: rgba(148, 104, 30, 0.12);
+  border-color: rgba(148, 104, 30, 0.45);
+  background: rgba(148, 104, 30, 0.14);
+  transform: translateY(-1px);
+}
+
+.lang-toggle-wrap:active {
+  transform: scale(0.97);
+}
+
+.lang-toggle-wrap:focus-visible {
+  outline: 2px solid var(--gold, #94681E);
+  outline-offset: 2px;
 }
 
 .lang-toggle-btn {
@@ -30,13 +44,9 @@
   background: transparent;
   border: none;
   border-radius: 9999px;
-  cursor: pointer;
+  pointer-events: none;
   transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   line-height: 1;
-}
-
-.lang-toggle-btn:hover {
-  color: var(--gold, #94681E);
 }
 
 .lang-toggle-btn.is-active {

@@ -9,7 +9,7 @@
     overflow: hidden;
     display: flex;
     align-items: flex-end;
-    margin-top: -80px;
+    margin-top: calc(-1 * var(--header-h, 80px));
     touch-action: pan-y;
     user-select: none;
 }
@@ -347,9 +347,10 @@
 
 @media (max-width: 768px) {
     .hero {
-        height: 76svh;
+        margin-top: 0 !important;
+        height: calc(100svh - 64px);
         min-height: 520px;
-        max-height: 640px;
+        max-height: 700px;
     }
 
     .hero-layer-desktop.has-mobile-alt {
@@ -362,8 +363,9 @@
 
     /* Framing optimized for mobile portraits — head, subject & buffet remain fully in view */
     .hero-slide img,
-    .hero-layer-mobile img {
-        object-position: center 15% !important;
+    .hero-layer-mobile img,
+    .hero-slide-layer img {
+        object-position: center top !important;
     }
 
     /* Enhanced gradient overlay to guarantee 100% text contrast on any photo */

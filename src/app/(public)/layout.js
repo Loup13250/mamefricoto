@@ -10,7 +10,7 @@ export default async function PublicLayout({ children }) {
     return (
         <>
             <Header siteInfo={siteInfo} />
-            <div style={{ paddingTop: '80px', minHeight: 'calc(100vh - 80px)' }}>
+            <div className="public-page-wrapper">
                 {children}
             </div>
             <Footer siteInfo={siteInfo} />

@@ -4,65 +4,58 @@ import { Globe } from 'lucide-react';
 import './LanguageToggle.css';
 
 export default function LanguageToggle({ className = '', showLabel = false }) {
-    const { lang, setLang } = useLanguage();
+    const { lang, toggleLang } = useLanguage();
+
+    const toggleTitle = lang === 'fr' 
+        ? 'Passer le site en anglais (Switch to English)' 
+        : 'Passer le site en français (Switch to French)';
 
     if (showLabel) {
         return (
-            <div className={`drawer-lang-toggle ${className}`}>
+            <div 
+                className={`drawer-lang-toggle ${className}`}
+                onClick={toggleLang}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleLang();
+                    }
+                }}
+                title={toggleTitle}
+                aria-label={toggleTitle}
+            >
                 <span className="drawer-lang-label">
                     <Globe size={16} style={{ color: 'var(--gold)' }} />
                     <span>{lang === 'fr' ? 'Langue / Language' : 'Language / Langue'}</span>
                 </span>
-                <div className="lang-toggle-wrap" role="radiogroup" aria-label="Choisir la langue">
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={lang === 'fr'}
-                        className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}
-                        onClick={() => setLang('fr')}
-                        title="Passer le site en Français"
-                    >
+                <div className="lang-toggle-wrap" aria-hidden="true">
+                    <span className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}>
                         <span className="lang-flag">🇫🇷</span> FR
-                    </button>
-                    <button
-                        type="button"
-                        role="radio"
-                        aria-checked={lang === 'en'}
-                        className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}
-                        onClick={() => setLang('en')}
-                        title="Switch website to English"
-                    >
+                    </span>
+                    <span className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}>
                         <span className="lang-flag">🇬🇧</span> EN
-                    </button>
+                    </span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={`lang-toggle-wrap ${className}`} role="radiogroup" aria-label="Langue du site / Website language">
-            <button
-                type="button"
-                role="radio"
-                aria-checked={lang === 'fr'}
-                className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}
-                onClick={() => setLang('fr')}
-                title="Afficher en Français"
-                aria-label="Français"
-            >
+        <button
+            type="button"
+            className={`lang-toggle-wrap ${className}`}
+            onClick={toggleLang}
+            title={toggleTitle}
+            aria-label={toggleTitle}
+        >
+            <span className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}>
                 FR
-            </button>
-            <button
-                type="button"
-                role="radio"
-                aria-checked={lang === 'en'}
-                className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}
-                onClick={() => setLang('en')}
-                title="Switch to English"
-                aria-label="English"
-            >
+            </span>
+            <span className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}>
                 EN
-            </button>
-        </div>
+            </span>
+        </button>
     );
 }

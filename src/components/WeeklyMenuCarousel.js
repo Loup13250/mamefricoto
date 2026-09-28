@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Phone, Receipt } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import './WeeklyMenuCarousel.css';
 
@@ -206,7 +206,6 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                         <span>{t('menu.orderBtn')}</span>
                     </a>
                     <Link href="/tarifs" className="menu-cta-btn menu-cta-btn--secondary">
-                        <Receipt size={15} />
                         <span>{t('menu.tarifsBtn')}</span>
                     </Link>
                 </div>

@@ -347,10 +347,9 @@
 
 @media (max-width: 768px) {
     .hero {
-        margin-top: 0 !important;
-        height: calc(100svh - 64px);
+        height: 100svh;
         min-height: 520px;
-        max-height: 700px;
+        max-height: 800px;
     }
 
     .hero-layer-desktop.has-mobile-alt {

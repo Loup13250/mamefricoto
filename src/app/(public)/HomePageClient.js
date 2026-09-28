@@ -93,9 +93,11 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
                             return (
                                 <div key={s.id || s.num || idx} className="service-card">
                                     <div className="service-num" aria-hidden="true">{s.num || `0${idx + 1}`}</div>
-                                    {badge && <span className="service-badge">{badge}</span>}
-                                    <h3>{trans(s, 'title')}</h3>
-                                    <p>{trans(s, 'description')}</p>
+                                    <div className="service-body">
+                                        {badge && <span className="service-badge">{badge}</span>}
+                                        <h3>{trans(s, 'title')}</h3>
+                                        <p>{trans(s, 'description')}</p>
+                                    </div>
                                 </div>
                             );
                         })}

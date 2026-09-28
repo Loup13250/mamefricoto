@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useTransition, useCallback } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
 import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost } from '@/app/actions';
 import {
@@ -31,7 +31,7 @@ function MediaPreview({ file, onRemove }) {
                         loop
                         muted
                         playsInline
-                        style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
                     <div style={{
                         position: 'absolute', top: '8px', left: '8px',
@@ -51,7 +51,7 @@ function MediaPreview({ file, onRemove }) {
                     alt="Aperçu"
                     width={300}
                     height={300}
-                    style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     unoptimized
                 />
             )}
@@ -87,7 +87,7 @@ function MediaPreview({ file, onRemove }) {
 }
 
 /* =====================================================
-   COMPOSANT PRINCIPAL
+   COMPRESSION IMAGE
    ===================================================== */
 async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
@@ -199,7 +199,6 @@ export default function GalleryClient({ posts }) {
             }
         }
 
-        // S'assurer que media_type est correct selon le fichier
         if (selectedFile?.type.startsWith('video/')) {
             formData.set('media_type', 'video');
         }
@@ -238,7 +237,7 @@ export default function GalleryClient({ posts }) {
                 setTimeout(() => {
                     setEditSuccess(false);
                     setEditingPost(null);
-                }, 1000);
+                }, 900);
             }
         });
     };
@@ -262,10 +261,10 @@ export default function GalleryClient({ posts }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
 
             {/* Header */}
-            <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
+            <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page publique dédiée <strong>Galerie (Les Coulisses de la Cuisine)</strong>.
+                    Ajoutez et gérez vos photos et vidéos de cuisine. Modifiez leurs titres et légendes en français et en anglais pour la page publique <strong>Galerie</strong>.
                 </p>
                 {!isAdding && !editingPost && (
                     <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
@@ -274,95 +273,158 @@ export default function GalleryClient({ posts }) {
                 )}
             </div>
 
-            {/* Formulaire Édition */}
+            {/* MODAL ÉDITION FR / EN */}
             {editingPost && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem', border: '1px solid var(--admin-gold)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
-                        <h2 style={{ fontSize: '1.15rem', fontWeight: '600', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Pencil size={18} /> Modifier les titres &amp; légendes (Bilingue FR / EN)
-                        </h2>
-                        <button type="button" onClick={() => setEditingPost(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
-                            <X size={20} />
-                        </button>
-                    </div>
-
-                    {editSuccess ? (
-                        <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(34,197,94,0.08)', borderRadius: '6px' }}>
-                            <CheckCircle2 size={36} style={{ color: '#16a34a', marginBottom: '0.5rem' }} />
-                            <p style={{ color: '#16a34a', fontWeight: '600' }}>Modifications enregistrées avec succès !</p>
+                <div
+                    className="admin-modal-backdrop"
+                    onClick={() => setEditingPost(null)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        backdropFilter: 'blur(6px)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '1.5rem',
+                    }}
+                >
+                    <div
+                        className="admin-modal-card"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'var(--admin-surface, #1e1b18)',
+                            border: '1px solid var(--admin-gold, #C8A96E)',
+                            borderRadius: '8px',
+                            width: '100%',
+                            maxWidth: '720px',
+                            maxHeight: '90vh',
+                            overflowY: 'auto',
+                            padding: '2rem',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                            position: 'relative',
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft, #332d27)' }}>
+                            <h2 style={{ fontSize: '1.15rem', fontWeight: '600', color: 'var(--admin-gold, #C8A96E)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                                <Pencil size={18} /> Modifier les textes (FR / EN)
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={() => setEditingPost(null)}
+                                style={{ color: 'var(--admin-text-subtle, #888)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                aria-label="Fermer"
+                            >
+                                <X size={20} />
+                            </button>
                         </div>
-                    ) : (
-                        <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <input type="hidden" name="id" value={editingPost.id} />
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-                                <div>
-                                    <label className="admin-label">🇫🇷 Titre / Nom du plat (Français)</label>
-                                    <input
-                                        type="text"
-                                        name="title"
-                                        defaultValue={editingPost.title || ''}
-                                        className="admin-input"
-                                        placeholder="Ex : Risotto crémeux aux gambas"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="admin-label">🇬🇧 Title / Dish (English)</label>
-                                    <input
-                                        type="text"
-                                        name="title_en"
-                                        defaultValue={editingPost.title_en || ''}
-                                        className="admin-input"
-                                        placeholder="e.g. Creamy King Prawn Risotto"
-                                    />
-                                </div>
+                        {editSuccess ? (
+                            <div style={{ padding: '2.5rem', textAlign: 'center', background: 'rgba(34,197,94,0.08)', borderRadius: '6px' }}>
+                                <CheckCircle2 size={40} style={{ color: '#16a34a', marginBottom: '0.75rem' }} />
+                                <p style={{ color: '#16a34a', fontWeight: '600', fontSize: '1.05rem', margin: 0 }}>Modifications enregistrées avec succès !</p>
                             </div>
+                        ) : (
+                            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                <input type="hidden" name="id" value={editingPost.id} />
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-                                <div>
-                                    <label className="admin-label">🇫🇷 Légende (Français)</label>
-                                    <textarea
-                                        name="caption"
-                                        defaultValue={editingPost.caption || ''}
-                                        className="admin-input"
-                                        rows="2"
-                                        placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
-                                    />
+                                {/* Thumbnail preview */}
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', padding: '0.75rem', background: 'rgba(0,0,0,0.25)', borderRadius: '6px', border: '1px solid var(--admin-border, #332d27)' }}>
+                                    <div style={{ width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, position: 'relative', background: '#000' }}>
+                                        {editingPost.media_type === 'video' ? (
+                                            <video src={editingPost.image_url} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <Image src={editingPost.image_url} alt="Photo" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)' }}>
+                                            {editingPost.title || 'Publication sans titre'}
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle, #999)', marginTop: '2px' }}>
+                                            {editingPost.media_type === 'video' ? 'Vidéo' : 'Photo'} — Modification des textes en français et en anglais
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="admin-label">🇬🇧 Caption (English)</label>
-                                    <textarea
-                                        name="caption_en"
-                                        defaultValue={editingPost.caption_en || ''}
-                                        className="admin-input"
-                                        rows="2"
-                                        placeholder="e.g. Freshly prepared buffet live from our kitchen..."
-                                    />
-                                </div>
-                            </div>
 
-                            {editError && (
-                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.85rem' }}>
-                                    <AlertCircle size={16} /> {editError}
+                                {/* Titres FR / EN */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                    <div>
+                                        <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-gold, #C8A96E)' }}>
+                                            FR — Titre / Plat (Français)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="title"
+                                            defaultValue={editingPost.title || ''}
+                                            className="admin-input"
+                                            placeholder="Ex : Risotto crémeux aux gambas"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-gold, #C8A96E)' }}>
+                                            EN — Title / Dish (English)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="title_en"
+                                            defaultValue={editingPost.title_en || ''}
+                                            className="admin-input"
+                                            placeholder="e.g. Creamy King Prawn Risotto"
+                                        />
+                                    </div>
                                 </div>
-                            )}
 
-                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
-                                <button type="button" onClick={() => setEditingPost(null)} className="admin-btn admin-btn-secondary" disabled={isPending}>
-                                    Annuler
-                                </button>
-                                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending}>
-                                    {isPending ? <Loader2 size={16} className="spin" /> : 'Enregistrer'}
-                                </button>
-                            </div>
-                        </form>
-                    )}
+                                {/* Légendes FR / EN */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                    <div>
+                                        <label className="admin-label">FR — Légende / Description (Français)</label>
+                                        <textarea
+                                            name="caption"
+                                            defaultValue={editingPost.caption || ''}
+                                            className="admin-input"
+                                            rows="3"
+                                            placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">EN — Caption / Description (English)</label>
+                                        <textarea
+                                            name="caption_en"
+                                            defaultValue={editingPost.caption_en || ''}
+                                            className="admin-input"
+                                            rows="3"
+                                            placeholder="e.g. Freshly prepared buffet live from our kitchen..."
+                                        />
+                                    </div>
+                                </div>
+
+                                {editError && (
+                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.85rem' }}>
+                                        <AlertCircle size={16} /> {editError}
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid var(--admin-border-soft, #332d27)' }}>
+                                    <button type="button" onClick={() => setEditingPost(null)} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                                        Annuler
+                                    </button>
+                                    <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '160px' }}>
+                                        {isPending ? (
+                                            <><Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Enregistrement...</>
+                                        ) : 'Enregistrer les textes'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
                 </div>
             )}
 
-            {/* Formulaire ajout */}
+            {/* FORMULAIRE AJOUT */}
             {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem' }}>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '900px', marginBottom: '3rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Publier une réalisation</h2>
                         <button type="button" onClick={resetForm} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
@@ -378,7 +440,7 @@ export default function GalleryClient({ posts }) {
                     ) : (
                         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                            {/* Prévisualisation du fichier sélectionné */}
+                            {/* Dropzone / Preview */}
                             {selectedFile ? (
                                 <div>
                                     <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-gold)', marginBottom: '0.75rem' }}>
@@ -389,7 +451,6 @@ export default function GalleryClient({ posts }) {
                                     </div>
                                 </div>
                             ) : (
-                                /* Dropzone */
                                 <div>
                                     <label className="admin-label" style={{ marginBottom: '0.75rem', display: 'block' }}>
                                         Fichier (image ou vidéo) *
@@ -453,11 +514,10 @@ export default function GalleryClient({ posts }) {
                                 value={selectedFile?.type.startsWith('video/') ? 'video' : 'image'}
                             />
 
-                            {/* Titre */}
                             {/* Titres FR / EN */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                 <div>
-                                    <label className="admin-label">🇫🇷 Titre / Plat (Français)</label>
+                                    <label className="admin-label">FR — Titre / Plat (Français)</label>
                                     <input
                                         type="text"
                                         name="title"
@@ -466,7 +526,7 @@ export default function GalleryClient({ posts }) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="admin-label">🇬🇧 Title / Dish (English)</label>
+                                    <label className="admin-label">EN — Title / Dish (English)</label>
                                     <input
                                         type="text"
                                         name="title_en"
@@ -479,7 +539,7 @@ export default function GalleryClient({ posts }) {
                             {/* Légendes FR / EN */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                 <div>
-                                    <label className="admin-label">🇫🇷 Légende (Français)</label>
+                                    <label className="admin-label">FR — Légende (Français)</label>
                                     <textarea
                                         name="caption"
                                         className="admin-input"
@@ -488,7 +548,7 @@ export default function GalleryClient({ posts }) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="admin-label">🇬🇧 Caption (English)</label>
+                                    <label className="admin-label">EN — Caption (English)</label>
                                     <textarea
                                         name="caption_en"
                                         className="admin-input"
@@ -498,7 +558,6 @@ export default function GalleryClient({ posts }) {
                                 </div>
                             </div>
 
-                            {/* Erreur */}
                             {error && (
                                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.9rem' }}>
                                     <AlertCircle size={18} style={{ flexShrink: 0 }} />
@@ -506,7 +565,6 @@ export default function GalleryClient({ posts }) {
                                 </div>
                             )}
 
-                            {/* Boutons */}
                             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
                                 <button type="button" onClick={resetForm} className="admin-btn admin-btn-secondary" disabled={isPending}>
                                     Annuler
@@ -522,118 +580,168 @@ export default function GalleryClient({ posts }) {
                 </div>
             )}
 
-            {/* Grille des publications */}
-            <div style={{ width: '100%', maxWidth: '760px' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1.25rem' }}>
-                    Publications ({posts.length})
-                </h2>
+            {/* GRILLE DES PUBLICATIONS */}
+            <div style={{ width: '100%', maxWidth: '900px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                    <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', margin: 0 }}>
+                        Publications ({posts.length})
+                    </h2>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>
+                        Cliquez sur &quot;Modifier&quot; pour éditer les textes FR et EN
+                    </span>
+                </div>
 
                 {posts.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
                         Aucune publication pour le moment.
                     </div>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
                         {posts.map((post, idx) => (
-                            <div key={post.id} style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: 'var(--admin-surface)', borderRadius: '6px', border: '1px solid var(--admin-border)' }}>
-                                {post.media_type === 'video' ? (
-                                    <>
-                                        <video src={post.image_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        <div style={{ position: 'absolute', top: '6px', left: '6px', background: 'var(--admin-card-bg)', color: 'var(--admin-gold)', fontSize: '0.65rem', fontWeight: '700', padding: '2px 7px', borderRadius: '2px', display: 'flex', alignItems: 'center', gap: '3px', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid var(--admin-border)' }}>
-                                            <Film size={10} /> Vidéo
-                                        </div>
-                                    </>
-                                ) : (
-                                    <Image src={post.image_url} alt={post.title || ''} width={400} height={400} style={{ width: '100%', height: 'auto', objectFit: 'cover' }} unoptimized />
-                                )}
+                            <div
+                                key={post.id}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    background: 'var(--admin-surface, #1e1b18)',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--admin-border, #332d27)',
+                                    overflow: 'hidden',
+                                    transition: 'border-color 0.2s ease',
+                                }}
+                            >
+                                {/* Media Thumbnail */}
+                                <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#000' }}>
+                                    {post.media_type === 'video' ? (
+                                        <>
+                                            <video src={post.image_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.7)', color: 'var(--admin-gold, #C8A96E)', fontSize: '0.65rem', fontWeight: '700', padding: '3px 8px', borderRadius: '3px', display: 'flex', alignItems: 'center', gap: '4px', letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(200,169,110,0.3)' }}>
+                                                <Film size={11} /> Vidéo
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <Image
+                                            src={post.image_url}
+                                            alt={post.title || 'Photo galerie'}
+                                            width={400}
+                                            height={300}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            unoptimized
+                                        />
+                                    )}
 
-                                {/* Badge position */}
-                                <div style={{
-                                    position: 'absolute', top: '6px', right: '6px',
-                                    background: 'var(--admin-card-bg)', color: 'var(--admin-gold)',
-                                    fontSize: '0.65rem', fontWeight: '700',
-                                    padding: '2px 7px', borderRadius: '3px',
-                                    border: '1px solid var(--admin-border)',
-                                }}>
-                                    #{idx + 1}
+                                    {/* Badge position */}
+                                    <div style={{
+                                        position: 'absolute', top: '8px', right: '8px',
+                                        background: 'rgba(0,0,0,0.75)', color: 'var(--admin-gold, #C8A96E)',
+                                        fontSize: '0.7rem', fontWeight: '700',
+                                        padding: '2px 8px', borderRadius: '3px',
+                                        border: '1px solid rgba(200,169,110,0.3)',
+                                    }}>
+                                        #{idx + 1}
+                                    </div>
                                 </div>
 
-                                {/* Hover overlay with Actions & Reordering */}
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    background: 'rgba(14,13,12,0.85)',
-                                    display: 'flex', flexDirection: 'column',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    gap: '0.6rem',
-                                    opacity: 0, transition: 'opacity 0.25s',
-                                    padding: '0.5rem',
-                                }}
-                                    className="gallery-item-overlay"
-                                >
-                                    {post.title && <p style={{ color: '#FDFBF7', fontSize: '0.82rem', fontWeight: '600', textAlign: 'center', margin: 0, lineClamp: 2 }}>{post.title}</p>}
+                                {/* Text content preview */}
+                                <div style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)', display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                                        <span style={{ fontSize: '0.7rem', padding: '1px 5px', borderRadius: '2px', background: 'rgba(200,169,110,0.15)', color: 'var(--admin-gold)', fontWeight: '700' }}>FR</span>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {post.title ? post.title : <em style={{ color: 'var(--admin-text-subtle)', fontWeight: '400' }}>Sans titre</em>}
+                                        </span>
+                                    </div>
 
-                                    {/* Reorder Buttons */}
-                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)', display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                                        <span style={{ fontSize: '0.7rem', padding: '1px 5px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', color: 'var(--admin-text-subtle)', fontWeight: '700' }}>EN</span>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {post.title_en ? post.title_en : <em style={{ color: 'var(--admin-text-subtle)', fontWeight: '400' }}>No English title</em>}
+                                        </span>
+                                    </div>
+
+                                    {(post.caption || post.caption_en) && (
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted, #aaa)', lineHeight: '1.4', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                            {post.caption || post.caption_en}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Card Actions bar */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '0.6rem 0.8rem',
+                                    background: 'rgba(0,0,0,0.2)',
+                                    borderTop: '1px solid var(--admin-border-soft, #332d27)',
+                                }}>
+                                    {/* Reorder Left/Right */}
+                                    <div style={{ display: 'flex', gap: '4px' }}>
                                         <button
                                             onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'up'))}
                                             disabled={idx === 0 || isDeleting}
-                                            title="Déplacer vers la gauche / plus haut"
+                                            title="Déplacer vers la gauche"
                                             style={{
-                                                width: '30px', height: '30px',
-                                                background: idx === 0 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
-                                                border: '1px solid rgba(200,169,110,0.3)',
-                                                color: idx === 0 ? 'rgba(255,255,255,0.2)' : 'var(--admin-gold)',
+                                                width: '28px', height: '28px',
+                                                background: idx === 0 ? 'transparent' : 'rgba(200,169,110,0.15)',
+                                                border: '1px solid rgba(200,169,110,0.25)',
+                                                color: idx === 0 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
                                                 borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             }}
                                         >
-                                            <ArrowLeft size={14} />
+                                            <ArrowLeft size={13} />
                                         </button>
                                         <button
                                             onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'down'))}
                                             disabled={idx === posts.length - 1 || isDeleting}
-                                            title="Déplacer vers la droite / plus bas"
+                                            title="Déplacer vers la droite"
                                             style={{
-                                                width: '30px', height: '30px',
-                                                background: idx === posts.length - 1 ? 'rgba(255,255,255,0.05)' : 'rgba(200,169,110,0.2)',
-                                                border: '1px solid rgba(200,169,110,0.3)',
-                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.2)' : 'var(--admin-gold)',
+                                                width: '28px', height: '28px',
+                                                background: idx === posts.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
+                                                border: '1px solid rgba(200,169,110,0.25)',
+                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
                                                 borderRadius: '3px', cursor: idx === posts.length - 1 ? 'default' : 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             }}
                                         >
-                                            <ArrowRight size={14} />
+                                            <ArrowRight size={13} />
                                         </button>
                                     </div>
 
+                                    {/* Edit & Delete */}
                                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                                         <button
                                             onClick={() => setEditingPost(post)}
-                                            title="Modifier les textes FR &amp; EN"
                                             style={{
-                                                width: '32px', height: '32px',
-                                                background: 'rgba(200,169,110,0.3)',
+                                                padding: '4px 10px',
+                                                background: 'rgba(200,169,110,0.2)',
                                                 border: '1px solid var(--admin-gold)',
                                                 color: 'var(--admin-gold)',
-                                                borderRadius: '3px', cursor: 'pointer',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
                                             }}
+                                            title="Modifier les textes FR &amp; EN"
                                         >
-                                            <Pencil size={14} />
+                                            <Pencil size={12} /> Modifier
                                         </button>
 
                                         {deleteId === post.id ? (
-                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                            <div style={{ display: 'flex', gap: '3px' }}>
                                                 <button
                                                     onClick={() => handleDelete(post.id)}
                                                     disabled={isDeleting}
-                                                    style={{ padding: '5px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                    style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
                                                 >
-                                                    {isDeleting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer ?'}
+                                                    {isDeleting ? <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} /> : 'Oui'}
                                                 </button>
                                                 <button
                                                     onClick={() => setDeleteId(null)}
-                                                    style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    style={{ width: '24px', height: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                 >
                                                     <X size={12} />
                                                 </button>
@@ -641,10 +749,10 @@ export default function GalleryClient({ posts }) {
                                         ) : (
                                             <button
                                                 onClick={() => setDeleteId(post.id)}
-                                                style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.85)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                style={{ width: '28px', height: '28px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                 title="Supprimer"
                                             >
-                                                <Trash2 size={15} />
+                                                <Trash2 size={13} />
                                             </button>
                                         )}
                                     </div>
@@ -658,8 +766,6 @@ export default function GalleryClient({ posts }) {
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
                 .admin-page-title { font-size: 1.6rem; font-weight: 700; color: var(--admin-text); margin-bottom: 0.5rem; }
-                .gallery-item-overlay { opacity: 0 !important; }
-                div:has(> .gallery-item-overlay):hover .gallery-item-overlay { opacity: 1 !important; }
             `}</style>
         </div>
     );

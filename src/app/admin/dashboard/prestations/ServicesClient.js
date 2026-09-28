@@ -267,22 +267,22 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                             <form ref={docFormRef} onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Titre de la carte / document (Français) *</label>
+                                        <label className="admin-label">FR — Titre de la carte / document (Français) *</label>
                                         <input type="text" name="title" required placeholder="Ex: Carte des Buffets & Cocktails 2026" className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Document Title (English)</label>
+                                        <label className="admin-label">EN — Document Title (English)</label>
                                         <input type="text" name="title_en" placeholder="Ex: Catering Menu & Cocktail Rates 2026" className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Description (Français)</label>
+                                        <label className="admin-label">FR — Description (Français)</label>
                                         <textarea name="description" rows="2" placeholder="Ex: Détail de nos formules, pièces salées et sucrées..." className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Description (English)</label>
+                                        <label className="admin-label">EN — Description (English)</label>
                                         <textarea name="description_en" rows="2" placeholder="Ex: Details of our catering menus and cocktails..." className="admin-input" />
                                     </div>
                                 </div>
@@ -290,7 +290,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', background: 'var(--admin-surface)', padding: '1rem', borderRadius: '8px' }}>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: 600 }}>
-                                            🇫🇷 Fichier Français (PDF, JPG, PNG, WEBP) *
+                                            FR — Fichier Français (PDF, JPG, PNG, WEBP) *
                                         </label>
                                         <input
                                             type="file"
@@ -306,7 +306,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                     </div>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: 600 }}>
-                                            🇬🇧 Fichier Anglais (PDF, JPG, PNG, WEBP)
+                                            EN — Fichier Anglais (PDF, JPG, PNG, WEBP)
                                         </label>
                                         <input
                                             type="file"
@@ -345,22 +345,22 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Titre (Français) *</label>
+                                        <label className="admin-label">FR — Titre (Français) *</label>
                                         <input type="text" name="title" defaultValue={editingDoc.title || ''} required className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Title (English)</label>
+                                        <label className="admin-label">EN — Title (English)</label>
                                         <input type="text" name="title_en" defaultValue={editingDoc.title_en || ''} className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Description (Français)</label>
+                                        <label className="admin-label">FR — Description (Français)</label>
                                         <textarea name="description" defaultValue={editingDoc.description || ''} rows="2" className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Description (English)</label>
+                                        <label className="admin-label">EN — Description (English)</label>
                                         <textarea name="description_en" defaultValue={editingDoc.description_en || ''} rows="2" className="admin-input" />
                                     </div>
                                 </div>
@@ -368,7 +368,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', background: 'var(--admin-surface)', padding: '1rem', borderRadius: '8px' }}>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: 600 }}>
-                                            🇫🇷 Remplacer le Fichier FR (Optionnel)
+                                            FR — Remplacer le Fichier FR (Optionnel)
                                         </label>
                                         <input
                                             type="file"
@@ -387,7 +387,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                     </div>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: 600 }}>
-                                            🇬🇧 Remplacer le Fichier EN (Optionnel)
+                                            EN — Remplacer le Fichier EN (Optionnel)
                                         </label>
                                         <input
                                             type="file"
@@ -466,7 +466,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                                     </h3>
                                                     {doc.title_en && (
                                                         <span style={{ fontSize: '0.85rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                                                            🇬🇧 {doc.title_en}
+                                                            EN — {doc.title_en}
                                                         </span>
                                                     )}
                                                     <span style={{
@@ -583,33 +583,33 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Badge / Catégorie (Français)</label>
+                                        <label className="admin-label">FR — Badge / Catégorie (Français)</label>
                                         <input type="text" name="badge" placeholder="Ex: Sur-mesure, Pro, Cocktails..." className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Badge / Category (English)</label>
+                                        <label className="admin-label">EN — Badge / Category (English)</label>
                                         <input type="text" name="badge_en" placeholder="Ex: Tailor-made, Corporate, Cocktails..." className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Titre de la prestation (Français) *</label>
+                                        <label className="admin-label">FR — Titre de la prestation (Français) *</label>
                                         <input type="text" name="title" required placeholder="Ex: Buffets Dînatoires" className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Service Title (English)</label>
+                                        <label className="admin-label">EN — Service Title (English)</label>
                                         <input type="text" name="title_en" placeholder="Ex: Cocktail Receptions & Buffets" className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Description détaillée (Français) *</label>
+                                        <label className="admin-label">FR — Description détaillée (Français) *</label>
                                         <textarea name="description" required rows="3" placeholder="Description courte et attrayante..." className="admin-input" style={{ lineHeight: '1.6' }} />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Detailed Description (English)</label>
+                                        <label className="admin-label">EN — Detailed Description (English)</label>
                                         <textarea name="description_en" rows="3" placeholder="Appealing short description in English..." className="admin-input" style={{ lineHeight: '1.6' }} />
                                     </div>
                                 </div>
@@ -642,33 +642,33 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Badge / Catégorie (Français)</label>
+                                        <label className="admin-label">FR — Badge / Catégorie (Français)</label>
                                         <input type="text" name="badge" defaultValue={editingService.badge || ''} className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Badge / Category (English)</label>
+                                        <label className="admin-label">EN — Badge / Category (English)</label>
                                         <input type="text" name="badge_en" defaultValue={editingService.badge_en || ''} className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Titre (Français) *</label>
+                                        <label className="admin-label">FR — Titre (Français) *</label>
                                         <input type="text" name="title" defaultValue={editingService.title || ''} required className="admin-input" />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Title (English)</label>
+                                        <label className="admin-label">EN — Title (English)</label>
                                         <input type="text" name="title_en" defaultValue={editingService.title_en || ''} className="admin-input" />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">🇫🇷 Description (Français) *</label>
+                                        <label className="admin-label">FR — Description (Français) *</label>
                                         <textarea name="description" defaultValue={editingService.description || ''} required rows="3" className="admin-input" style={{ lineHeight: '1.6' }} />
                                     </div>
                                     <div>
-                                        <label className="admin-label">🇬🇧 Description (English)</label>
+                                        <label className="admin-label">EN — Description (English)</label>
                                         <textarea name="description_en" defaultValue={editingService.description_en || ''} rows="3" className="admin-input" style={{ lineHeight: '1.6' }} />
                                     </div>
                                 </div>
@@ -701,7 +701,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                             <h3 style={{ fontSize: '1.05rem', color: 'var(--admin-text)', margin: 0, fontWeight: '600' }}>{s.title}</h3>
                                             {s.title_en && (
                                                 <span style={{ fontSize: '0.85rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                                                    🇬🇧 {s.title_en}
+                                                    EN — {s.title_en}
                                                 </span>
                                             )}
                                             {s.badge && (

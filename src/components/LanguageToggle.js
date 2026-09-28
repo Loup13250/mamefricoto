@@ -4,17 +4,31 @@ import { Globe } from 'lucide-react';
 import './LanguageToggle.css';
 
 export default function LanguageToggle({ className = '', showLabel = false }) {
-    const { lang, toggleLang } = useLanguage();
+    const { lang, toggleLang, setLang } = useLanguage();
 
     const toggleTitle = lang === 'fr' 
-        ? 'Passer le site en anglais (Switch to English)' 
-        : 'Passer le site en français (Switch to French)';
+        ? 'Passer en anglais (Switch to English)' 
+        : 'Passer en français (Switch to French)';
+
+    const handleWrapClick = (e) => {
+        e.preventDefault();
+        toggleLang();
+    };
+
+    const handleOptionClick = (targetLang, e) => {
+        e.stopPropagation();
+        if (targetLang !== lang) {
+            setLang(targetLang);
+        } else {
+            toggleLang();
+        }
+    };
 
     if (showLabel) {
         return (
             <div 
                 className={`drawer-lang-toggle ${className}`}
-                onClick={toggleLang}
+                onClick={handleWrapClick}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -31,31 +45,42 @@ export default function LanguageToggle({ className = '', showLabel = false }) {
                     <span>{lang === 'fr' ? 'Langue / Language' : 'Language / Langue'}</span>
                 </span>
                 <div className="lang-toggle-wrap" aria-hidden="true">
-                    <span className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}>
-                        <span className="lang-flag">🇫🇷</span> FR
-                    </span>
-                    <span className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}>
-                        <span className="lang-flag">🇬🇧</span> EN
-                    </span>
+                    <div className={`lang-toggle-slider ${lang === 'fr' ? 'is-fr' : 'is-en'}`} />
+                    <span className={`lang-toggle-option ${lang === 'fr' ? 'is-active' : ''}`}>FR</span>
+                    <span className={`lang-toggle-option ${lang === 'en' ? 'is-active' : ''}`}>EN</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <button
-            type="button"
+        <div
+            role="button"
+            tabIndex={0}
             className={`lang-toggle-wrap ${className}`}
-            onClick={toggleLang}
+            onClick={handleWrapClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleLang();
+                }
+            }}
             title={toggleTitle}
             aria-label={toggleTitle}
         >
-            <span className={`lang-toggle-btn ${lang === 'fr' ? 'is-active' : ''}`}>
+            <div className={`lang-toggle-slider ${lang === 'fr' ? 'is-fr' : 'is-en'}`} />
+            <span 
+                className={`lang-toggle-option ${lang === 'fr' ? 'is-active' : ''}`}
+                onClick={(e) => handleOptionClick('fr', e)}
+            >
                 FR
             </span>
-            <span className={`lang-toggle-btn ${lang === 'en' ? 'is-active' : ''}`}>
+            <span 
+                className={`lang-toggle-option ${lang === 'en' ? 'is-active' : ''}`}
+                onClick={(e) => handleOptionClick('en', e)}
+            >
                 EN
             </span>
-        </button>
+        </div>
     );
 }

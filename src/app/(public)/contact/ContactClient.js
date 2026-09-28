@@ -64,7 +64,7 @@ export default function ContactClient({ info }) {
                                         </div>
                                         <div>
                                             <strong style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '0.35rem' }}>
-                                                {t('contact.phoneLabel').replace('*', '').trim()}
+                                                {t('contact.directPhoneLabel')}
                                             </strong>
                                             <a href={`tel:${phoneTel}`} style={{ color: 'var(--gold-light)', fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: '400' }}>
                                                 {phone}

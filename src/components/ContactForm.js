@@ -93,7 +93,8 @@ export default function ContactForm() {
                     </div>
                     <div className="form-field">
                         <label htmlFor="contact-phone" className="form-label">
-                            <Phone size={13} /> {t('contact.phoneLabel')}
+                            <span className="form-label-title"><Phone size={13} /> {t('contact.phoneLabel')}</span>
+                            <span className="form-label-optional">{t('contact.optionalBadge')}</span>
                         </label>
                         <input id="contact-phone" type="tel" name="phone" placeholder={t('contact.phonePlaceholder')} className="form-input" />
                     </div>

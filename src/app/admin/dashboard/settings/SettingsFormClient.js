@@ -358,7 +358,7 @@ export default function SettingsFormClient({ info }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
                         <div>
                             <label className="admin-label">
-                                🇫🇷 Slogan en Français
+                                FR — Slogan en Français
                             </label>
                             <input
                                 type="text"
@@ -370,7 +370,7 @@ export default function SettingsFormClient({ info }) {
                         </div>
                         <div>
                             <label className="admin-label">
-                                🇬🇧 Slogan en Anglais (English Tagline)
+                                EN — Slogan en Anglais (English Tagline)
                             </label>
                             <input
                                 type="text"
@@ -401,22 +401,22 @@ export default function SettingsFormClient({ info }) {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
                         <div>
-                            <label className="admin-label">🇫🇷 Adresse / Localisation (Français) *</label>
+                            <label className="admin-label">FR — Adresse / Localisation (Français) *</label>
                             <input type="text" name="address" defaultValue={info.address} className="admin-input" required />
                         </div>
                         <div>
-                            <label className="admin-label">🇬🇧 Location / Address (English) *</label>
+                            <label className="admin-label">EN — Location / Address (English) *</label>
                             <input type="text" name="address_en" defaultValue={info.address_en || ''} placeholder="e.g. 15 rue des Délices, 75011 Paris, France" className="admin-input" required />
                         </div>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
                         <div>
-                            <label className="admin-label">🇫🇷 Horaires de commande (Français) *</label>
+                            <label className="admin-label">FR — Horaires de commande (Français) *</label>
                             <input type="text" name="hours" defaultValue={info.hours} className="admin-input" required />
                         </div>
                         <div>
-                            <label className="admin-label">🇬🇧 Ordering Hours (English) *</label>
+                            <label className="admin-label">EN — Ordering Hours (English) *</label>
                             <input type="text" name="hours_en" defaultValue={info.hours_en || ''} placeholder="e.g. Mon - Sat: 9:00 AM - 7:00 PM" className="admin-input" required />
                         </div>
                     </div>
@@ -454,11 +454,11 @@ export default function SettingsFormClient({ info }) {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
-                            <label className="admin-label">🇫🇷 Texte de présentation (Français) *</label>
+                            <label className="admin-label">FR — Texte de présentation (Français) *</label>
                             <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
                         </div>
                         <div>
-                            <label className="admin-label">🇬🇧 Presentation text (English) *</label>
+                            <label className="admin-label">EN — Presentation text (English) *</label>
                             <textarea name="about_text_en" defaultValue={info.about_text_en || ''} placeholder="Tell your story in English..." className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
                         </div>
                     </div>

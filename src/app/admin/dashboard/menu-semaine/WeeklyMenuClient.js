@@ -300,7 +300,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
             {/* Titre */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">🇫🇷 Titre du menu (Français) *</label>
+                    <label className="admin-label">FR — Titre du menu (Français) *</label>
                     <input
                         type="text"
                         name="title"
@@ -311,7 +311,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                     />
                 </div>
                 <div>
-                    <label className="admin-label">🇬🇧 Menu Title (English)</label>
+                    <label className="admin-label">EN — Menu Title (English)</label>
                     <input
                         type="text"
                         name="title_en"
@@ -325,7 +325,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
             {/* Description */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">🇫🇷 Description des plats (Français)</label>
+                    <label className="admin-label">FR — Description des plats (Français)</label>
                     <textarea
                         name="description"
                         className="admin-input"
@@ -335,7 +335,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                     />
                 </div>
                 <div>
-                    <label className="admin-label">🇬🇧 Dishes description (English)</label>
+                    <label className="admin-label">EN — Dishes description (English)</label>
                     <textarea
                         name="description_en"
                         className="admin-input"
@@ -646,7 +646,7 @@ export default function WeeklyMenuClient({ menus }) {
                                         <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)' }}>{menu.title}</h3>
                                         {menu.title_en && (
                                             <span style={{ fontSize: '0.82rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                                                🇬🇧 {menu.title_en}
+                                                EN — {menu.title_en}
                                             </span>
                                         )}
                                         {menu.is_current === 1 && (

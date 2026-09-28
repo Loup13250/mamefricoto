@@ -164,12 +164,23 @@ function CarouselForm({ onCancel }) {
         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">Titre principal *</label>
+                    <label className="admin-label">🇫🇷 Titre principal (Français) *</label>
                     <input type="text" name="title" className="admin-input" placeholder="Ex: Cuisine Maison avec Amour" required />
                 </div>
                 <div>
-                    <label className="admin-label">Sous-titre (optionnel)</label>
+                    <label className="admin-label">🇬🇧 Main Title (English)</label>
+                    <input type="text" name="title_en" className="admin-input" placeholder="Ex: Homemade Cuisine with Love" />
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div>
+                    <label className="admin-label">🇫🇷 Sous-titre (Français)</label>
                     <input type="text" name="subtitle" className="admin-input" placeholder="Ex: Des plats faits maison livrés chez vous" />
+                </div>
+                <div>
+                    <label className="admin-label">🇬🇧 Subtitle (English)</label>
+                    <input type="text" name="subtitle_en" className="admin-input" placeholder="Ex: Homemade dishes delivered to your doorstep" />
                 </div>
             </div>
 
@@ -410,12 +421,23 @@ function EditCarouselForm({ item, onCancel }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">Titre principal *</label>
+                    <label className="admin-label">🇫🇷 Titre principal (Français) *</label>
                     <input type="text" name="title" defaultValue={item.title} className="admin-input" required />
                 </div>
                 <div>
-                    <label className="admin-label">Sous-titre</label>
+                    <label className="admin-label">🇬🇧 Main Title (English)</label>
+                    <input type="text" name="title_en" defaultValue={item.title_en || ''} placeholder="Title in English..." className="admin-input" />
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div>
+                    <label className="admin-label">🇫🇷 Sous-titre (Français)</label>
                     <input type="text" name="subtitle" defaultValue={item.subtitle || ''} className="admin-input" />
+                </div>
+                <div>
+                    <label className="admin-label">🇬🇧 Subtitle (English)</label>
+                    <input type="text" name="subtitle_en" defaultValue={item.subtitle_en || ''} placeholder="Subtitle in English..." className="admin-input" />
                 </div>
             </div>
 
@@ -677,8 +699,16 @@ export default function CarouselClient({ images }) {
                                     )}
                                 </div>
                                 <div style={{ padding: '0.85rem 1rem' }}>
-                                    <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--admin-text)' }}>{img.title}</h3>
-                                    {img.subtitle && <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{img.subtitle}</p>}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                        <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--admin-text)', margin: 0 }}>{img.title}</h3>
+                                        {img.title_en && (
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
+                                                🇬🇧 {img.title_en}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {img.subtitle && <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.8rem', marginTop: '0.2rem', marginBottom: 0 }}>{img.subtitle}</p>}
+                                    {img.subtitle_en && <p style={{ color: 'var(--admin-gold)', opacity: 0.85, fontSize: '0.75rem', marginTop: '0.1rem', marginBottom: 0, fontStyle: 'italic' }}>🇬🇧 {img.subtitle_en}</p>}
                                 </div>
                             </div>
                         ))}

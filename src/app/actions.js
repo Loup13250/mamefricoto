@@ -61,7 +61,7 @@ export async function adminLogout() {
 }
 
 // --- SECURE FILE UPLOAD HELPER ---
-const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg', '.jfif', '.heic', '.heif', '.avif', '.bmp']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg', '.jfif', '.heic', '.heif', '.avif', '.bmp', '.pdf']);
 
 async function saveUploadedFile(file) {
     if (!file || typeof file === 'string' || !file.name || file.size === 0) return null;
@@ -70,7 +70,7 @@ async function saveUploadedFile(file) {
     const maxSize = isVercel ? 4.5 * 1024 * 1024 : 50 * 1024 * 1024;
 
     if (file.size > maxSize) {
-        throw new Error("L'image sélectionnée est trop volumineuse (max 4.5 Mo). Veuillez choisir une autre photo ou la compresser.");
+        throw new Error("Le fichier sélectionné est trop volumineux (max 4.5 Mo). Veuillez choisir un fichier plus léger.");
     }
 
     let ext = path.extname(file.name || '').toLowerCase();
@@ -79,6 +79,8 @@ async function saveUploadedFile(file) {
             ext = '.webp';
         } else if (file.type && file.type.startsWith('video/')) {
             ext = '.mp4';
+        } else if (file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf')) {
+            ext = '.pdf';
         } else {
             ext = '.jpg';
         }
@@ -98,8 +100,9 @@ async function saveUploadedFile(file) {
             '.mp4': 'video/mp4',
             '.webm': 'video/webm',
             '.mov': 'video/quicktime',
+            '.pdf': 'application/pdf',
         };
-        const mimeType = file.type || mimeTypes[ext] || 'image/jpeg';
+        const mimeType = file.type || mimeTypes[ext] || (ext === '.pdf' ? 'application/pdf' : 'image/jpeg');
 
         // Stockage ultra-performant dans media_storage pour éviter de gonfler le payload HTML avec de gros Data URIs
         const mediaId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
@@ -140,9 +143,9 @@ export async function updateSiteInfo(formData) {
     const db = getDb();
 
     const fields = [
-        'contact_email', 'phone', 'address', 'hours',
-        'instagram', 'facebook', 'google_reviews', 'about_text',
-        'formspree_url'
+        'contact_email', 'phone', 'address', 'address_en', 'hours', 'hours_en',
+        'instagram', 'facebook', 'google_reviews', 'about_text', 'about_text_en',
+        'tagline', 'tagline_en', 'site_icon', 'formspree_url'
     ];
 
     const stmt = db.prepare(`
@@ -159,6 +162,7 @@ export async function updateSiteInfo(formData) {
 
     const logoFile = formData.get('logo_file');
     const aboutFile = formData.get('about_file');
+    const siteIconFile = formData.get('site_icon_file');
 
     if (logoFile && logoFile.size > 0) {
         const logoUrl = await saveUploadedFile(logoFile);
@@ -170,9 +174,15 @@ export async function updateSiteInfo(formData) {
         if (aboutUrl) await stmt.run('about_image', aboutUrl);
     }
 
+    if (siteIconFile && siteIconFile.size > 0) {
+        const iconUrl = await saveUploadedFile(siteIconFile);
+        if (iconUrl) await stmt.run('site_icon', iconUrl);
+    }
+
     revalidatePath('/');
     revalidatePath('/contact');
     revalidatePath('/a-propos');
+    revalidatePath('/realisations');
     revalidatePath('/admin/dashboard/settings');
     return { success: true };
 }
@@ -181,7 +191,9 @@ export async function updateSiteInfo(formData) {
 export async function addWeeklyMenu(formData) {
     await requireAdminAuth();
     const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
     const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
 
     if (!title) {
@@ -207,7 +219,7 @@ export async function addWeeklyMenu(formData) {
         await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    const result = await db.prepare('INSERT INTO weekly_menus (title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?)').run(title, description, mainImageUrl, '', is_current);
+    const result = await db.prepare('INSERT INTO weekly_menus (title, title_en, description, description_en, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, title_en, description, description_en, mainImageUrl, '', is_current);
     const menuId = result.lastInsertRowid;
 
     const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
@@ -238,7 +250,9 @@ export async function editWeeklyMenu(formData) {
     if (!id) return { error: 'ID invalide' };
 
     const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
     const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
     const is_current = formData.get('is_current') === 'on' ? 1 : 0;
 
     if (!title) {
@@ -262,7 +276,7 @@ export async function editWeeklyMenu(formData) {
     }
 
     if (uploadedUrls.length > 0) {
-        await db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, uploadedUrls[0], is_current, id);
+        await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, image_url=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, uploadedUrls[0], is_current, id);
         await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
         const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
         for (let idx = 0; idx < uploadedUrls.length; idx++) {
@@ -271,13 +285,13 @@ export async function editWeeklyMenu(formData) {
     } else {
         const existingImages = await db.prepare('SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ?').get(id);
         if (existingImages.count === 0) {
-            await db.prepare('UPDATE weekly_menus SET title=?, description=?, image_url=?, is_current=? WHERE id=?').run(title, description, DEFAULT_MENU_IMAGES[0], is_current, id);
+            await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, image_url=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, DEFAULT_MENU_IMAGES[0], is_current, id);
             const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
             for (let idx = 0; idx < DEFAULT_MENU_IMAGES.length; idx++) {
                 await stmt.run(id, DEFAULT_MENU_IMAGES[idx], idx + 1);
             }
         } else {
-            await db.prepare('UPDATE weekly_menus SET title=?, description=?, is_current=? WHERE id=?').run(title, description, is_current, id);
+            await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, is_current, id);
         }
     }
 
@@ -321,7 +335,9 @@ export async function addCarouselImage(formData) {
     try {
         await requireAdminAuth();
         const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
+        const subtitle_en = (formData.get('subtitle_en') || '').toString().trim();
         const display_order = parseInt(formData.get('display_order') || '0', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
@@ -344,7 +360,7 @@ export async function addCarouselImage(formData) {
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO carousel_images (image_url, mobile_image_url, title, subtitle, fit_mode, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(image_url, mobile_image_url || null, title, subtitle, fit_mode, display_order);
+        await db.prepare('INSERT INTO carousel_images (image_url, mobile_image_url, title, title_en, subtitle, subtitle_en, fit_mode, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(image_url, mobile_image_url || null, title, title_en, subtitle, subtitle_en, fit_mode, display_order);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
@@ -385,7 +401,9 @@ export async function editCarouselImage(formData) {
         if (!id) return { error: 'ID de la photo invalide' };
 
         const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
+        const subtitle_en = (formData.get('subtitle_en') || '').toString().trim();
         const display_order = parseInt(formData.get('display_order') || '1', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
@@ -419,9 +437,9 @@ export async function editCarouselImage(formData) {
 
         await db.prepare(`
             UPDATE carousel_images
-            SET title = ?, subtitle = ?, image_url = ?, mobile_image_url = ?, fit_mode = ?, display_order = ?
+            SET title = ?, title_en = ?, subtitle = ?, subtitle_en = ?, image_url = ?, mobile_image_url = ?, fit_mode = ?, display_order = ?
             WHERE id = ?
-        `).run(title, subtitle, image_url, mobile_image_url, fit_mode, display_order, id);
+        `).run(title, title_en, subtitle, subtitle_en, image_url, mobile_image_url, fit_mode, display_order, id);
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
@@ -437,7 +455,9 @@ export async function addGalleryPost(formData) {
     try {
         await requireAdminAuth();
         const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
         const caption = (formData.get('caption') || '').toString().trim();
+        const caption_en = (formData.get('caption_en') || '').toString().trim();
         let media_type = (formData.get('media_type') || 'image').toString().trim();
         const image_url_text = (formData.get('image_url') || '').toString().trim();
         const file = formData.get('image_file');
@@ -456,8 +476,8 @@ export async function addGalleryPost(formData) {
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO gallery_posts (title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, 0)').run(
-            title, caption, image_url, media_type
+        await db.prepare('INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, 0)').run(
+            title, title_en, caption, caption_en, image_url, media_type
         );
 
         // Nettoyage automatique : limiter la galerie aux 15 plus récentes
@@ -478,6 +498,33 @@ export async function addGalleryPost(formData) {
     } catch (err) {
         console.error('[Gallery] Erreur :', err);
         return { error: err.message || 'Une erreur est survenue lors de la publication.' };
+    }
+}
+
+export async function editGalleryPost(formData) {
+    try {
+        await requireAdminAuth();
+        const id = extractId(formData);
+        if (!id) return { error: 'ID invalide' };
+
+        const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
+        const caption = (formData.get('caption') || '').toString().trim();
+        const caption_en = (formData.get('caption_en') || '').toString().trim();
+
+        const db = getDb();
+        await db.prepare('UPDATE gallery_posts SET title = ?, title_en = ?, caption = ?, caption_en = ? WHERE id = ?').run(
+            title, title_en, caption, caption_en, id
+        );
+
+        revalidatePath('/');
+        revalidatePath('/realisations');
+        revalidatePath('/galerie');
+        revalidatePath('/admin/dashboard/galerie');
+        return { success: true };
+    } catch (err) {
+        console.error('[Gallery Edit] Erreur :', err);
+        return { error: err.message || 'Erreur lors de la mise à jour.' };
     }
 }
 
@@ -678,8 +725,11 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
 export async function addService(formData) {
     await requireAdminAuth();
     const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
     const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
     const badge = (formData.get('badge') || '').toString().trim();
+    const badge_en = (formData.get('badge_en') || '').toString().trim();
     const num = (formData.get('num') || '').toString().trim();
 
     if (!title || !description) {
@@ -692,12 +742,14 @@ export async function addService(formData) {
 
     const formattedNum = num || (nextOrder < 10 ? `0${nextOrder}` : `${nextOrder}`);
 
-    await db.prepare('INSERT INTO services (num, title, description, badge, display_order) VALUES (?, ?, ?, ?, ?)').run(
-        formattedNum, title, description, badge, nextOrder
+    await db.prepare('INSERT INTO services (num, title, title_en, description, description_en, badge, badge_en, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+        formattedNum, title, title_en, description, description_en, badge, badge_en, nextOrder
     );
 
     revalidatePath('/');
+    revalidatePath('/');
     revalidatePath('/a-propos');
+    revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
 }
@@ -708,8 +760,11 @@ export async function editService(formData) {
     if (!id) return { error: 'ID invalide' };
 
     const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
     const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
     const badge = (formData.get('badge') || '').toString().trim();
+    const badge_en = (formData.get('badge_en') || '').toString().trim();
     const num = (formData.get('num') || '').toString().trim();
 
     if (!title || !description) {
@@ -717,12 +772,13 @@ export async function editService(formData) {
     }
 
     const db = getDb();
-    await db.prepare('UPDATE services SET num = ?, title = ?, description = ?, badge = ? WHERE id = ?').run(
-        num, title, description, badge, id
+    await db.prepare('UPDATE services SET num = ?, title = ?, title_en = ?, description = ?, description_en = ?, badge = ?, badge_en = ? WHERE id = ?').run(
+        num, title, title_en, description, description_en, badge, badge_en, id
     );
 
     revalidatePath('/');
     revalidatePath('/a-propos');
+    revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
 }
@@ -737,6 +793,7 @@ export async function deleteService(idOrFormData) {
 
     revalidatePath('/');
     revalidatePath('/a-propos');
+    revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
 }
@@ -763,6 +820,231 @@ export async function reorderService(id, direction) {
 
     revalidatePath('/');
     revalidatePath('/a-propos');
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+// --- PRICING DOCUMENTS (TARIFS IMAGES & PDFS) ---
+export async function addPricingDocument(formData) {
+    await requireAdminAuth();
+    const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
+    const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
+    const file_fr = formData.get('file_fr');
+    const file_en = formData.get('file_en');
+    let file_url = (formData.get('file_url') || '').toString().trim();
+    let file_url_en = (formData.get('file_url_en') || '').toString().trim();
+
+    if (!title) {
+        return { error: 'Veuillez saisir un titre pour le document de tarifs.' };
+    }
+
+    if (file_fr && file_fr.size > 0) {
+        file_url = await saveUploadedFile(file_fr);
+    }
+    if (file_en && file_en.size > 0) {
+        file_url_en = await saveUploadedFile(file_en);
+    }
+
+    if (!file_url) {
+        return { error: 'Veuillez téléverser au moins un document ou une image de tarif.' };
+    }
+
+    const isPdf = (file_url || '').toLowerCase().endsWith('.pdf');
+    const file_type = isPdf ? 'pdf' : 'image';
+
+    const db = getDb();
+    const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM pricing_documents').get();
+    const nextOrder = (maxRow?.maxOrder || 0) + 1;
+
+    await db.prepare(`
+        INSERT INTO pricing_documents (title, title_en, description, description_en, file_url, file_url_en, file_type, display_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, title_en, description, description_en, file_url, file_url_en || file_url, file_type, nextOrder);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function editPricingDocument(formData) {
+    await requireAdminAuth();
+    const id = extractId(formData);
+    if (!id) return { error: 'ID manquant' };
+
+    const title = (formData.get('title') || '').toString().trim();
+    const title_en = (formData.get('title_en') || '').toString().trim();
+    const description = (formData.get('description') || '').toString().trim();
+    const description_en = (formData.get('description_en') || '').toString().trim();
+    const file_fr = formData.get('file_fr');
+    const file_en = formData.get('file_en');
+
+    const db = getDb();
+    const existing = await db.prepare('SELECT * FROM pricing_documents WHERE id = ?').get(id);
+    if (!existing) return { error: 'Document introuvable' };
+
+    let file_url = existing.file_url;
+    let file_url_en = existing.file_url_en;
+
+    if (file_fr && file_fr.size > 0) {
+        file_url = await saveUploadedFile(file_fr);
+    }
+    if (file_en && file_en.size > 0) {
+        file_url_en = await saveUploadedFile(file_en);
+    }
+
+    const isPdf = (file_url || '').toLowerCase().endsWith('.pdf');
+    const file_type = isPdf ? 'pdf' : 'image';
+
+    await db.prepare(`
+        UPDATE pricing_documents
+        SET title = ?, title_en = ?, description = ?, description_en = ?, file_url = ?, file_url_en = ?, file_type = ?
+        WHERE id = ?
+    `).run(title, title_en, description, description_en, file_url, file_url_en || file_url, file_type, id);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function deletePricingDocument(idOrFormData) {
+    await requireAdminAuth();
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
+    const db = getDb();
+    await db.prepare('DELETE FROM pricing_documents WHERE id = ?').run(id);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function reorderPricingDocument(id, direction) {
+    await requireAdminAuth();
+    const db = getDb();
+    const docs = await db.prepare('SELECT id, display_order FROM pricing_documents ORDER BY display_order ASC, id ASC').all();
+    const index = docs.findIndex(d => d.id === id);
+    if (index === -1) return { error: 'Document introuvable' };
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= docs.length) return { success: true };
+
+    const currentDoc = docs[index];
+    const targetDoc = docs[targetIndex];
+
+    const currentOrder = currentDoc.display_order || index + 1;
+    const targetOrder = targetDoc.display_order || targetIndex + 1;
+
+    const stmt = db.prepare('UPDATE pricing_documents SET display_order = ? WHERE id = ?');
+    await stmt.run(targetOrder, currentDoc.id);
+    await stmt.run(currentOrder, targetDoc.id);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+// --- FIXED MEAL PRICES ---
+export async function addFixedPrice(formData) {
+    await requireAdminAuth();
+    const name = (formData.get('name') || '').toString().trim();
+    const name_en = (formData.get('name_en') || '').toString().trim();
+    const price = (formData.get('price') || '').toString().trim();
+    const price_en = (formData.get('price_en') || '').toString().trim();
+    const details = (formData.get('details') || '').toString().trim();
+    const details_en = (formData.get('details_en') || '').toString().trim();
+    const badge = (formData.get('badge') || '').toString().trim();
+    const badge_en = (formData.get('badge_en') || '').toString().trim();
+    const category = (formData.get('category') || 'Repas').toString().trim();
+    const category_en = (formData.get('category_en') || 'Meals').toString().trim();
+
+    if (!name || !price) {
+        return { error: 'Veuillez saisir le nom de la formule et son prix.' };
+    }
+
+    const db = getDb();
+    const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM fixed_prices').get();
+    const nextOrder = (maxRow?.maxOrder || 0) + 1;
+
+    await db.prepare(`
+        INSERT INTO fixed_prices (name, name_en, price, price_en, details, details_en, badge, badge_en, category, category_en, display_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(name, name_en, price, price_en || price, details, details_en, badge, badge_en, category, category_en, nextOrder);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function editFixedPrice(formData) {
+    await requireAdminAuth();
+    const id = extractId(formData);
+    if (!id) return { error: 'ID manquant' };
+
+    const name = (formData.get('name') || '').toString().trim();
+    const name_en = (formData.get('name_en') || '').toString().trim();
+    const price = (formData.get('price') || '').toString().trim();
+    const price_en = (formData.get('price_en') || '').toString().trim();
+    const details = (formData.get('details') || '').toString().trim();
+    const details_en = (formData.get('details_en') || '').toString().trim();
+    const badge = (formData.get('badge') || '').toString().trim();
+    const badge_en = (formData.get('badge_en') || '').toString().trim();
+    const category = (formData.get('category') || 'Repas').toString().trim();
+    const category_en = (formData.get('category_en') || 'Meals').toString().trim();
+
+    if (!name || !price) {
+        return { error: 'Veuillez saisir le nom de la formule et son prix.' };
+    }
+
+    const db = getDb();
+    await db.prepare(`
+        UPDATE fixed_prices
+        SET name = ?, name_en = ?, price = ?, price_en = ?, details = ?, details_en = ?, badge = ?, badge_en = ?, category = ?, category_en = ?
+        WHERE id = ?
+    `).run(name, name_en, price, price_en || price, details, details_en, badge, badge_en, category, category_en, id);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function deleteFixedPrice(idOrFormData) {
+    await requireAdminAuth();
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
+    const db = getDb();
+    await db.prepare('DELETE FROM fixed_prices WHERE id = ?').run(id);
+
+    revalidatePath('/tarifs');
+    revalidatePath('/admin/dashboard/prestations');
+    return { success: true };
+}
+
+export async function reorderFixedPrice(id, direction) {
+    await requireAdminAuth();
+    const db = getDb();
+    const prices = await db.prepare('SELECT id, display_order FROM fixed_prices ORDER BY display_order ASC, id ASC').all();
+    const index = prices.findIndex(p => p.id === id);
+    if (index === -1) return { error: 'Tarif introuvable' };
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= prices.length) return { success: true };
+
+    const currentPrice = prices[index];
+    const targetPrice = prices[targetIndex];
+
+    const currentOrder = currentPrice.display_order || index + 1;
+    const targetOrder = targetPrice.display_order || targetIndex + 1;
+
+    const stmt = db.prepare('UPDATE fixed_prices SET display_order = ? WHERE id = ?');
+    await stmt.run(targetOrder, currentPrice.id);
+    await stmt.run(currentOrder, targetPrice.id);
+
+    revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
 }
@@ -797,8 +1079,8 @@ export async function restoreDatabaseFromBackup(formData) {
         if (Array.isArray(backup.data.services) && backup.data.services.length > 0) {
             await db.prepare('DELETE FROM services').run();
             for (const s of backup.data.services) {
-                await db.prepare('INSERT INTO services (id, num, title, description, badge, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(
-                    s.id, s.num, s.title, s.description, s.badge, s.display_order
+                await db.prepare('INSERT INTO services (id, num, title, title_en, description, description_en, badge, badge_en, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+                    s.id, s.num, s.title, s.title_en || '', s.description, s.description_en || '', s.badge || '', s.badge_en || '', s.display_order
                 );
             }
         }
@@ -807,8 +1089,8 @@ export async function restoreDatabaseFromBackup(formData) {
             await db.prepare('DELETE FROM weekly_menu_images').run();
             await db.prepare('DELETE FROM weekly_menus').run();
             for (const m of backup.data.weekly_menus) {
-                await db.prepare('INSERT INTO weekly_menus (id, title, description, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?)').run(
-                    m.id, m.title, m.description, m.image_url, m.embed_url || '', m.is_current ? 1 : 0
+                await db.prepare('INSERT INTO weekly_menus (id, title, title_en, description, description_en, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+                    m.id, m.title, m.title_en || '', m.description, m.description_en || '', m.image_url, m.embed_url || '', m.is_current ? 1 : 0
                 );
             }
             if (Array.isArray(backup.data.weekly_menu_images)) {
@@ -823,8 +1105,8 @@ export async function restoreDatabaseFromBackup(formData) {
         if (Array.isArray(backup.data.gallery_posts) && backup.data.gallery_posts.length > 0) {
             await db.prepare('DELETE FROM gallery_posts').run();
             for (const post of backup.data.gallery_posts) {
-                await db.prepare('INSERT INTO gallery_posts (id, title, caption, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?)').run(
-                    post.id, post.title, post.caption, post.image_url, post.media_type || 'image', post.display_order
+                await db.prepare('INSERT INTO gallery_posts (id, title, title_en, caption, caption_en, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+                    post.id, post.title, post.title_en || '', post.caption, post.caption_en || '', post.image_url, post.media_type || 'image', post.display_order
                 );
             }
         }
@@ -832,8 +1114,8 @@ export async function restoreDatabaseFromBackup(formData) {
         if (Array.isArray(backup.data.carousel_images) && backup.data.carousel_images.length > 0) {
             await db.prepare('DELETE FROM carousel_images').run();
             for (const c of backup.data.carousel_images) {
-                await db.prepare('INSERT INTO carousel_images (id, title, subtitle, image_url, display_order) VALUES (?, ?, ?, ?, ?)').run(
-                    c.id, c.title, c.subtitle, c.image_url, c.display_order
+                await db.prepare('INSERT INTO carousel_images (id, title, title_en, subtitle, subtitle_en, image_url, mobile_image_url, fit_mode, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+                    c.id, c.title, c.title_en || '', c.subtitle, c.subtitle_en || '', c.image_url, c.mobile_image_url || null, c.fit_mode || 'cover', c.display_order
                 );
             }
         }

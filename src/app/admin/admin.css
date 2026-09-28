@@ -3,38 +3,9 @@
   Haute Gastronomie Dark & Gold Theme (Aesthetics aligned with the main site)
 */
 
-:root {
-  --admin-bg: #0E0D0C;
-  --admin-bg-2: #161412;
-  --admin-card-bg: #1C1917;
-  --admin-surface: #242019;
-
-  --admin-text: #FDFBF7;
-  --admin-text-muted: #D8CEBE;
-  --admin-text-subtle: #A69B8D;
-
-  --admin-gold: #D4B475;
-  --admin-gold-light: #ECD8A5;
-  --admin-gold-dark: #B89552;
-  --admin-gold-glow: rgba(212, 180, 117, 0.2);
-
-  --admin-terracotta: #D96748;
-  --admin-terra-light: #EB7D5E;
-
-  --admin-border: rgba(212, 180, 117, 0.2);
-  --admin-border-soft: rgba(212, 180, 117, 0.1);
-
-  --admin-radius-sm: 8px;
-  --admin-radius-md: 16px;
-  --admin-radius-lg: 24px;
-  --admin-radius-pill: 9999px;
-
-  --admin-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-  --admin-glow: 0 0 25px rgba(200, 169, 110, 0.12);
-  --admin-transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-theme="light"] {
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
   --admin-bg: #FAF7F2;
   --admin-bg-2: #F3EDE4;
   --admin-card-bg: #FFFFFF;
@@ -55,8 +26,14 @@
   --admin-border: rgba(184, 139, 70, 0.25);
   --admin-border-soft: rgba(184, 139, 70, 0.12);
 
+  --admin-radius-sm: 8px;
+  --admin-radius-md: 16px;
+  --admin-radius-lg: 24px;
+  --admin-radius-pill: 9999px;
+
   --admin-shadow: 0 10px 40px rgba(36, 30, 25, 0.08);
   --admin-glow: 0 0 25px rgba(184, 139, 70, 0.12);
+  --admin-transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Light mode component specific overrides */

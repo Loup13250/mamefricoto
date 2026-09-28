@@ -4,7 +4,7 @@ import GalleryClient from './GalleryClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Nos Réalisations & Coulisses | Admin Mamé Fricoto',
+    title: 'Galerie & Coulisses | Admin Mamé Fricoto',
 };
 
 export default async function GaleriePage() {

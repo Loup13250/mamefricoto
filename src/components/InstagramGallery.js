@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { useLanguage } from '@/context/LanguageContext';
 import { X, Play, Instagram, Phone, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import './InstagramGallery.css';
 
 export default function InstagramGallery({ posts, siteInfo, showHeader = true }) {
     const [selectedIndex, setSelectedIndex] = useState(null);
+    const { t, trans, lang } = useLanguage();
 
     const handleKeyDown = useCallback((e) => {
         if (selectedIndex === null) return;
@@ -35,47 +37,51 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
         <div className="container">
             {showHeader && (
                 <div className="gallery-header anim-up">
-                    <span className="label">Nos réalisations</span>
+                    <span className="label">{t('gallery.badge')}</span>
                     <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
-                        Les Coulisses<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>de la Cuisine</em>
+                        {t('gallery.title')}<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>{t('gallery.titleItalic')}</em>
                     </h2>
                 </div>
             )}
 
             <div className="gallery-grid">
-                {posts.map((post, idx) => (
-                    <div
-                        key={post.id}
-                        className="gallery-item anim-up"
-                        style={{ animationDelay: `${(idx % 4) * 80}ms` }}
-                        onClick={() => setSelectedIndex(idx)}
-                    >
-                        {post.media_type === 'video' ? (
-                            <>
-                                <video src={post.image_url} autoPlay loop muted playsInline className="gallery-img" />
-                                <div className="video-mark">
-                                    <Play size={12} fill="currentColor" />
-                                </div>
-                            </>
-                        ) : (
-                            <Image
-                                src={post.image_url}
-                                alt={post.title || post.caption || 'Réalisation traiteur Mamé Fricoto à Eyguières'}
-                                width={500}
-                                height={500}
-                                className="gallery-img"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                loading="lazy"
-                                unoptimized
-                            />
-                        )}
-                        <div className="gallery-overlay">
-                            {post.title && <h3 className="gallery-overlay-title">{post.title}</h3>}
-                            {post.caption && <p className="gallery-overlay-caption">{post.caption}</p>}
+                {posts.map((post, idx) => {
+                    const postTitle = trans(post, 'title');
+                    const postCaption = trans(post, 'caption');
+                    return (
+                        <div
+                            key={post.id}
+                            className="gallery-item anim-up"
+                            style={{ animationDelay: `${(idx % 4) * 80}ms` }}
+                            onClick={() => setSelectedIndex(idx)}
+                        >
+                            {post.media_type === 'video' ? (
+                                <>
+                                    <video src={post.image_url} autoPlay loop muted playsInline className="gallery-img" />
+                                    <div className="video-mark">
+                                        <Play size={12} fill="currentColor" />
+                                    </div>
+                                </>
+                            ) : (
+                                <Image
+                                    src={post.image_url}
+                                    alt={postTitle || postCaption || 'Réalisation traiteur Mamé Fricoto'}
+                                    width={500}
+                                    height={500}
+                                    className="gallery-img"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                    loading="lazy"
+                                    unoptimized
+                                />
+                            )}
+                            <div className="gallery-overlay">
+                                {postTitle && <h3 className="gallery-overlay-title">{postTitle}</h3>}
+                                {postCaption && <p className="gallery-overlay-caption">{postCaption}</p>}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <div className="gallery-footer text-center">
@@ -87,7 +93,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}
                 >
                     <Instagram size={16} />
-                    Suivre @mamefricoto
+                    {t('gallery.follow')}
                     <ArrowRight size={14} />
                 </a>
             </div>
@@ -107,7 +113,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                         e.stopPropagation();
                                         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : posts.length - 1));
                                     }}
-                                    aria-label="Photo précédente"
+                                    aria-label={t('hero.prev')}
                                 >
                                     <ChevronLeft className="lightbox-nav-icon" />
                                 </button>
@@ -118,7 +124,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                         e.stopPropagation();
                                         setSelectedIndex((prev) => (prev < posts.length - 1 ? prev + 1 : 0));
                                     }}
-                                    aria-label="Photo suivante"
+                                    aria-label={t('hero.next')}
                                 >
                                     <ChevronRight className="lightbox-nav-icon" />
                                 </button>
@@ -126,7 +132,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                         )}
 
                         <div className="modal-card">
-                            <button type="button" className="modal-close" onClick={() => setSelectedIndex(null)} aria-label="Fermer">
+                            <button type="button" className="modal-close" onClick={() => setSelectedIndex(null)} aria-label={lang === 'en' ? 'Close' : 'Fermer'}>
                                 <X size={18} />
                             </button>
 
@@ -138,7 +144,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                     }
                                 }}
                                 style={{ cursor: posts.length > 1 ? 'pointer' : 'default', position: 'relative' }}
-                                title={posts.length > 1 ? "Cliquer pour passer à la photo suivante" : ""}
+                                title={posts.length > 1 ? (lang === 'en' ? 'Click for next image' : 'Cliquer pour passer à la photo suivante') : ''}
                             >
                                 {/* Counter badge */}
                                 {posts.length > 1 && (
@@ -152,7 +158,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                 ) : (
                                     <Image
                                         src={selectedPost.image_url}
-                                        alt={selectedPost.title || ''}
+                                        alt={trans(selectedPost, 'title') || ''}
                                         width={800}
                                         height={800}
                                         className="modal-img"
@@ -163,21 +169,21 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                 )}
                             </div>
                             <div className="modal-info">
-                            <div className="modal-meta">
-                                <Image src="/logo.png" alt="Mamé Fricoto" width={36} height={36} style={{ borderRadius: '2px', objectFit: 'cover' }} />
-                                <div className="modal-meta-text">
-                                    <strong>Mamé Fricoto</strong>
-                                    <span>Eyguières · Les Coulisses</span>
+                                <div className="modal-meta">
+                                    <Image src={siteInfo?.site_icon || siteInfo?.logo || "/logo.png"} alt="Mamé Fricoto" width={36} height={36} style={{ borderRadius: '2px', objectFit: 'cover' }} unoptimized />
+                                    <div className="modal-meta-text">
+                                        <strong>Mamé Fricoto</strong>
+                                        <span>{lang === 'en' ? 'Eyguières · Behind the Scenes' : 'Eyguières · Les Coulisses'}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            {selectedPost.title && <h3 className="modal-title">{selectedPost.title}</h3>}
-                            {selectedPost.caption && <p className="modal-caption">{selectedPost.caption}</p>}
-                            <div className="modal-cta">
-                                <a href={`tel:${(siteInfo?.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} className="btn-terra modal-cta-btn">
-                                    <Phone size={15} />
-                                    Commander — {siteInfo?.phone || '07 43 64 64 11'}
-                                </a>
-                            </div>
+                                {trans(selectedPost, 'title') && <h3 className="modal-title">{trans(selectedPost, 'title')}</h3>}
+                                {trans(selectedPost, 'caption') && <p className="modal-caption">{trans(selectedPost, 'caption')}</p>}
+                                <div className="modal-cta">
+                                    <a href={`tel:${(siteInfo?.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} className="btn-terra modal-cta-btn">
+                                        <Phone size={15} />
+                                        {lang === 'en' ? 'Order' : 'Commander'} — {siteInfo?.phone || '07 43 64 64 11'}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

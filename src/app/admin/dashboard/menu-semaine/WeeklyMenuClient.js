@@ -298,28 +298,52 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
             {isEdit && <input type="hidden" name="id" value={activeMenu.id} />}
 
             {/* Titre */}
-            <div>
-                <label className="admin-label">Titre du menu *</label>
-                <input
-                    type="text"
-                    name="title"
-                    className="admin-input"
-                    placeholder="Ex : Menu du 15 au 18 Juillet"
-                    defaultValue={activeMenu?.title || ''}
-                    required
-                />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                <div>
+                    <label className="admin-label">🇫🇷 Titre du menu (Français) *</label>
+                    <input
+                        type="text"
+                        name="title"
+                        className="admin-input"
+                        placeholder="Ex : Menu du 15 au 18 Juillet"
+                        defaultValue={activeMenu?.title || ''}
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="admin-label">🇬🇧 Menu Title (English)</label>
+                    <input
+                        type="text"
+                        name="title_en"
+                        className="admin-input"
+                        placeholder="e.g. Menu for July 15th to 18th"
+                        defaultValue={activeMenu?.title_en || ''}
+                    />
+                </div>
             </div>
 
             {/* Description */}
-            <div>
-                <label className="admin-label">Description des plats (optionnel)</label>
-                <textarea
-                    name="description"
-                    className="admin-input"
-                    rows="3"
-                    placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
-                    defaultValue={activeMenu?.description || ''}
-                />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                <div>
+                    <label className="admin-label">🇫🇷 Description des plats (Français)</label>
+                    <textarea
+                        name="description"
+                        className="admin-input"
+                        rows="3"
+                        placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
+                        defaultValue={activeMenu?.description || ''}
+                    />
+                </div>
+                <div>
+                    <label className="admin-label">🇬🇧 Dishes description (English)</label>
+                    <textarea
+                        name="description_en"
+                        className="admin-input"
+                        rows="3"
+                        placeholder="e.g. Eggplant tatin, Lemon drizzle cake, Saffron rice..."
+                        defaultValue={activeMenu?.description_en || ''}
+                    />
+                </div>
             </div>
 
             {/* DropZone */}
@@ -620,6 +644,11 @@ export default function WeeklyMenuClient({ menus }) {
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
                                         <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)' }}>{menu.title}</h3>
+                                        {menu.title_en && (
+                                            <span style={{ fontSize: '0.82rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
+                                                🇬🇧 {menu.title_en}
+                                            </span>
+                                        )}
                                         {menu.is_current === 1 && (
                                             <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(34,197,94,0.15)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px' }}>
                                                 En ligne

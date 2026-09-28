@@ -178,10 +178,14 @@ function MessageCard({ msg }) {
             }}>
                 <div>
                     <span style={{ fontSize: '0.72rem', color: 'var(--admin-gold)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.08em', display: 'block', marginBottom: '0.25rem' }}>Téléphone</span>
-                    <a href={`tel:${msg.phone}`} style={{ color: 'var(--admin-text)', fontWeight: '600', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Phone size={14} style={{ color: 'var(--admin-gold)' }} />
-                        {msg.phone}
-                    </a>
+                    {msg.phone ? (
+                        <a href={`tel:${msg.phone}`} style={{ color: 'var(--admin-text)', fontWeight: '600', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <Phone size={14} style={{ color: 'var(--admin-gold)' }} />
+                            {msg.phone}
+                        </a>
+                    ) : (
+                        <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.88rem', fontStyle: 'italic' }}>Non renseigné</span>
+                    )}
                 </div>
 
                 <div>

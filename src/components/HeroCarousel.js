@@ -1,35 +1,46 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Phone, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import { useLanguage } from '@/context/LanguageContext';
 import './HeroCarousel.css';
 
-export default function HeroCarousel({ slides, siteInfo }) {
+export default function HeroCarousel({ slides = [], siteInfo }) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
     const [touchStartX, setTouchStartX] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
+    const { t, trans } = useLanguage();
+    const timerRef = useRef(null);
 
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
 
-    if (!slides || slides.length === 0) return null;
+    const hasSlides = Array.isArray(slides) && slides.length > 0;
+    const slidesCount = hasSlides ? slides.length : 0;
 
+    const handleNext = useCallback(() => {
+        if (slidesCount <= 1) return;
+        setCurrentIndex((prev) => (prev === slidesCount - 1 ? 0 : prev + 1));
+    }, [slidesCount]);
+
+    const handlePrev = useCallback(() => {
+        if (slidesCount <= 1) return;
+        setCurrentIndex((prev) => (prev === 0 ? slidesCount - 1 : prev - 1));
+    }, [slidesCount]);
+
+    // Continuous Autoplay: cycles every 5.5s reliably across all devices and Mac/Safari
     useEffect(() => {
-        if (isHovered || slides.length <= 1) return;
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-        }, 6000);
-        return () => clearInterval(timer);
-    }, [isHovered, slides.length]);
+        if (slidesCount <= 1) return;
 
-    const handlePrev = () => {
-        setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-    };
+        timerRef.current = setInterval(() => {
+            handleNext();
+        }, 5500);
 
-    const handleNext = () => {
-        setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    };
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [handleNext, slidesCount, currentIndex]);
 
     const handleTouchStart = (e) => {
         setTouchStartX(e.touches[0].clientX);
@@ -57,66 +68,56 @@ export default function HeroCarousel({ slides, siteInfo }) {
         setTouchStartY(null);
     };
 
-    const [loadOthers, setLoadOthers] = useState(false);
+    if (!hasSlides) return null;
 
-    useEffect(() => {
-        const timer = setTimeout(() => setLoadOthers(true), 2500);
-        return () => clearTimeout(timer);
-    }, []);
-
-    const triggerLoadOthers = () => {
-        if (!loadOthers) setLoadOthers(true);
-    };
+    const currentSlide = slides[currentIndex];
+    const slideTitle = currentSlide ? trans(currentSlide, 'title') : '';
+    const slideSubtitle = currentSlide ? trans(currentSlide, 'subtitle') : '';
 
     return (
         <section
             className="hero"
             aria-label="Bannières de présentation"
-            onMouseEnter={() => { setIsHovered(true); triggerLoadOthers(); }}
-            onMouseLeave={() => setIsHovered(false)}
-            onTouchStart={(e) => { handleTouchStart(e); triggerLoadOthers(); }}
+            onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
             <div className="hero-track">
                 {slides.map((slide, index) => {
-                    const shouldRenderImage = index === 0 || loadOthers || Math.abs(index - currentIndex) <= 1;
+                    const isActive = index === currentIndex;
                     return (
                         <div
                             key={slide.id || index}
-                            className={`hero-slide ${index === currentIndex ? 'active' : ''}`}
+                            className={`hero-slide ${isActive ? 'active' : ''}`}
+                            aria-hidden={!isActive}
                         >
-                            {shouldRenderImage && (
-                                <>
-                                    {/* Desktop Image Layer */}
-                                    <div className={`hero-slide-layer hero-layer-desktop ${slide.mobile_image_url ? 'has-mobile-alt' : ''}`}>
-                                        <Image
-                                            src={slide.image_url}
-                                            alt={slide.title || 'Traiteur Maison Mamé Fricoto à Eyguières'}
-                                            fill
-                                            sizes="100vw"
-                                            priority={index === 0}
-                                            fetchPriority={index === 0 ? 'high' : 'low'}
-                                            loading={index === 0 ? 'eager' : 'lazy'}
-                                            unoptimized
-                                        />
-                                    </div>
+                            {/* Desktop Image Layer */}
+                            <div className={`hero-slide-layer hero-layer-desktop ${slide.mobile_image_url ? 'has-mobile-alt' : ''}`}>
+                                <Image
+                                    src={slide.image_url}
+                                    alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
+                                    fill
+                                    sizes="100vw"
+                                    priority={index === 0}
+                                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                                    loading={index === 0 ? 'eager' : 'lazy'}
+                                    unoptimized
+                                />
+                            </div>
 
-                                    {/* Mobile Specific Image Layer */}
-                                    {slide.mobile_image_url && (
-                                        <div className="hero-slide-layer hero-layer-mobile">
-                                            <Image
-                                                src={slide.mobile_image_url}
-                                                alt={slide.title || 'Traiteur Maison Mamé Fricoto à Eyguières'}
-                                                fill
-                                                sizes="100vw"
-                                                priority={index === 0}
-                                                fetchPriority={index === 0 ? 'high' : 'low'}
-                                                loading={index === 0 ? 'eager' : 'lazy'}
-                                                unoptimized
-                                            />
-                                        </div>
-                                    )}
-                                </>
+                            {/* Mobile Specific Image Layer */}
+                            {slide.mobile_image_url && (
+                                <div className="hero-slide-layer hero-layer-mobile">
+                                    <Image
+                                        src={slide.mobile_image_url}
+                                        alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
+                                        fill
+                                        sizes="100vw"
+                                        priority={index === 0}
+                                        fetchPriority={index === 0 ? 'high' : 'auto'}
+                                        loading={index === 0 ? 'eager' : 'lazy'}
+                                        unoptimized
+                                    />
+                                </div>
                             )}
                         </div>
                     );
@@ -125,18 +126,18 @@ export default function HeroCarousel({ slides, siteInfo }) {
 
             <div className="hero-content container">
                 <div className="hero-content-inner anim-up">
-                    <p className="hero-eyebrow">Traiteur Maison · Eyguières</p>
+                    <p className="hero-eyebrow">{t('hero.eyebrow')}</p>
                     <h1 className="hero-title">
-                        {slides[currentIndex]?.title || (<><em>Mamé Fricoto</em><br />Cuisine Maison</>)}
+                        {slideTitle || (<><em>Mamé Fricoto</em><br />{t('hero.defaultSubtitle')}</>)}
                     </h1>
-                    {slides[currentIndex]?.subtitle && (
-                        <p className="hero-subtitle">{slides[currentIndex].subtitle}</p>
+                    {slideSubtitle && (
+                        <p className="hero-subtitle">{slideSubtitle}</p>
                     )}
                     <div className="hero-actions">
                         <a href="#menu-semaine" className="btn-gold hero-btn-menu">
-                            Voir le menu
+                            {t('hero.viewMenu')}
                         </a>
-                        <a href={`tel:${phoneTel}`} className="btn-outline hero-btn-phone" aria-label={`Appeler le ${phone}`}>
+                        <a href={`tel:${phoneTel}`} className="btn-outline hero-btn-phone" aria-label={`${t('hero.call')} ${phone}`}>
                             <Phone size={16} />
                             <span>{phone}</span>
                         </a>
@@ -144,13 +145,13 @@ export default function HeroCarousel({ slides, siteInfo }) {
                 </div>
             </div>
 
-            {slides.length > 1 && (
+            {slidesCount > 1 && (
                 <>
                     <div className="hero-arrows">
-                        <button type="button" onClick={handlePrev} className="hero-arrow" aria-label="Diapositive précédente">
+                        <button type="button" onClick={handlePrev} className="hero-arrow" aria-label={t('hero.prev')}>
                             <ChevronLeft size={22} />
                         </button>
-                        <button type="button" onClick={handleNext} className="hero-arrow" aria-label="Diapositive suivante">
+                        <button type="button" onClick={handleNext} className="hero-arrow" aria-label={t('hero.next')}>
                             <ChevronRight size={22} />
                         </button>
                     </div>
@@ -163,7 +164,7 @@ export default function HeroCarousel({ slides, siteInfo }) {
                                 aria-selected={idx === currentIndex}
                                 onClick={() => setCurrentIndex(idx)}
                                 className={`hero-dot ${idx === currentIndex ? 'active' : ''}`}
-                                aria-label={`Diapositive ${idx + 1} sur ${slides.length}`}
+                                aria-label={`Diapositive ${idx + 1} sur ${slidesCount}`}
                             />
                         ))}
                     </div>

@@ -1,5 +1,7 @@
 import { DM_Sans, Cormorant_Garamond } from "next/font/google";
 import Script from "next/script";
+import { getSiteInfo } from "@/lib/data";
+import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -21,85 +23,86 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://mamefricoto.vercel.app');
 
 export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0E0D0C' },
-    { media: '(prefers-color-scheme: light)', color: '#FAF7F2' },
-  ],
+  themeColor: '#FAF7F2',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
 };
 
-export const metadata = {
-  metadataBase: new URL(baseUrl),
-  title: {
-    default: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
-    template: "%s | Mamé Fricoto"
-  },
-  description: "Mamé Fricoto : Traiteur artisanal & cuisine familiale préparée avec amour à Eyguières. Menus de la semaine, plats du jour mijotés, buffets et réceptions en Provence.",
-  keywords: ["traiteur Eyguières", "cuisine maison Eyguières", "plat du jour Provence", "buffet dînatoire Salon-de-Provence", "traiteur mariage Eyguières", "repas entreprise"],
-  authors: [{ name: "Mamé Fricoto" }],
-  creator: "Mamé Fricoto",
-  publisher: "Mamé Fricoto",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata() {
+  const siteInfo = await getSiteInfo();
+  const iconUrl = siteInfo?.site_icon || '/icon.svg';
+  const isSvg = iconUrl.endsWith('.svg') || iconUrl.includes('.svg') || iconUrl.includes('image%2Fsvg');
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
+      template: "%s | Mamé Fricoto"
+    },
+    description: "Mamé Fricoto : Traiteur artisanal & cuisine familiale préparée avec amour à Eyguières. Menus de la semaine, plats du jour mijotés, buffets et réceptions en Provence.",
+    keywords: ["traiteur Eyguières", "cuisine maison Eyguières", "plat du jour Provence", "buffet dînatoire Salon-de-Provence", "traiteur mariage Eyguières", "repas entreprise"],
+    authors: [{ name: "Mamé Fricoto" }],
+    creator: "Mamé Fricoto",
+    publisher: "Mamé Fricoto",
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-  openGraph: {
-    type: "website",
-    locale: "fr_FR",
-    url: baseUrl,
-    siteName: "Mamé Fricoto",
-    title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
-    description: "Cuisine familiale généreuse et de saison à Eyguières. Menus hebdomadaires et réceptions sur mesure.",
-    images: [
-      {
-        url: "/logo.png",
-        width: 500,
-        height: 500,
-        alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
-      },
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
-      },
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary",
-    title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
-    description: "Cuisine maison et événements à Eyguières et en Provence.",
-    images: ["/logo.png", "/og-image.png"],
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/logo.png", type: "image/png" },
-    ],
-    shortcut: "/logo.png",
-    apple: "/logo.png",
-  },
-};
+    openGraph: {
+      type: "website",
+      locale: "fr_FR",
+      url: baseUrl,
+      siteName: "Mamé Fricoto",
+      title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
+      description: "Cuisine familiale généreuse et de saison à Eyguières. Menus hebdomadaires et réceptions sur mesure.",
+      images: [
+        {
+          url: "/logo.png",
+          width: 500,
+          height: 500,
+          alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
+        },
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "Mamé Fricoto — Traiteur & Cuisine Maison",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary",
+      title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
+      description: "Cuisine maison et événements à Eyguières et en Provence.",
+      images: ["/logo.png", "/og-image.png"],
+    },
+    icons: {
+      icon: [
+        { url: iconUrl, type: isSvg ? 'image/svg+xml' : 'image/png' },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+      shortcut: iconUrl,
+      apple: iconUrl,
+    },
+  };
+}
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const siteInfo = await getSiteInfo();
+  const iconUrl = siteInfo?.site_icon || '/icon.svg';
+
   return (
     <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
       <head>
+        <link rel="icon" type="image/svg+xml" href={iconUrl} />
         <Script
           id="json-ld-schema"
           type="application/ld+json"
@@ -140,21 +143,15 @@ export default function RootLayout({ children }) {
           }}
         />
         <Script
-          id="theme-init"
+          id="theme-cleanup"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  var t = localStorage.getItem('mamefricoto-theme');
-                  if (t === 'dark' || t === 'light') {
-                    document.documentElement.setAttribute('data-theme', t);
-                  } else {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                  }
-                } catch (e) {
+                  localStorage.removeItem('mamefricoto-theme');
                   document.documentElement.setAttribute('data-theme', 'light');
-                }
+                } catch (e) {}
               })();
             `,
           }}
@@ -164,7 +161,9 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="sr-only focus:not-sr-only">
           Aller au contenu principal
         </a>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

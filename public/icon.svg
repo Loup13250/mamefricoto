@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECD8A5" />
+      <stop offset="50%" stop-color="#D4B475" />
+      <stop offset="100%" stop-color="#9C7232" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#241E19" />
+      <stop offset="100%" stop-color="#14110E" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer circle with golden border -->
+  <circle cx="256" cy="256" r="246" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="12" />
+  <circle cx="256" cy="256" r="226" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-dasharray="8 6" opacity="0.6" />
+  
+  <!-- Chef Hat / Toque & Kitchen Cloche Icon -->
+  <g fill="url(#goldGrad)" transform="translate(0, -10)">
+    <!-- Chef Hat Top Puffs -->
+    <path d="M190 190 C170 160 180 120 220 115 C235 85 277 85 292 115 C332 120 342 160 322 190 C340 215 330 245 305 255 L207 255 C182 245 172 215 190 190 Z" />
+    <!-- Hat Band -->
+    <rect x="202" y="260" width="108" height="24" rx="6" />
+    <!-- Fork & Spoon Accent -->
+    <path d="M225 298 L287 360 M287 298 L225 360" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round" />
+    <circle cx="256" cy="329" r="7" fill="#ECD8A5" />
+  </g>
+  
+  <!-- Monogram text -->
+  <text x="256" y="420" font-family="'Cormorant Garamond', Georgia, serif" font-size="52" font-weight="700" letter-spacing="4" fill="url(#goldGrad)" text-anchor="middle">MAMÉ FRICOTO</text>
+  <text x="256" y="450" font-family="'DM Sans', sans-serif" font-size="20" font-weight="500" letter-spacing="6" fill="#ECD8A5" opacity="0.85" text-anchor="middle">EYGUIÈRES</text>
+</svg>

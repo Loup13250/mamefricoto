@@ -1,0 +1,229 @@
+/* ===================================================
+   GOOGLE REVIEWS SECTION — HAUTE GASTRONOMIE PROVENCE
+   =================================================== */
+
+.reviews-section {
+    padding: 5.5rem 0 6rem;
+    background: var(--bg-2, #FAF7F2);
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.reviews-header {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 3.5rem;
+}
+
+.reviews-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background: rgba(200, 169, 110, 0.15);
+    color: var(--gold);
+    border: 1px solid rgba(200, 169, 110, 0.25);
+    margin-bottom: 0.75rem;
+}
+
+.reviews-header h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    color: var(--text);
+    margin: 0.5rem 0 0.75rem;
+    line-height: 1.15;
+}
+
+.reviews-header p {
+    color: var(--text-2);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.reviews-rating-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.reviews-rating-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.reviews-rating-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Reviews Grid */
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.75rem;
+    margin-bottom: 3.5rem;
+}
+
+@media (max-width: 1024px) {
+    .reviews-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .reviews-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+}
+
+.review-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(148, 104, 30, 0.16);
+    border-radius: 16px;
+    padding: 2.2rem 1.85rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(148, 104, 30, 0.12);
+    border-color: rgba(184, 139, 70, 0.5);
+}
+
+.review-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+}
+
+.review-author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.review-author-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #B88B46 0%, #785520 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(148, 104, 30, 0.28);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.review-author-name {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #1F1A15;
+    margin: 0 0 0.15rem;
+    line-height: 1.25;
+}
+
+.review-date {
+    font-size: 0.78rem;
+    color: #85786C;
+    font-weight: 500;
+}
+
+.review-google-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1a73e8;
+    background: rgba(26, 115, 232, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(26, 115, 232, 0.16);
+    flex-shrink: 0;
+}
+
+.review-stars {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 1.1rem;
+}
+
+.review-quote {
+    font-size: 0.93rem;
+    line-height: 1.7;
+    color: #4A3F35;
+    margin: 0;
+    flex: 1;
+    font-weight: 400;
+}
+
+/* Footer CTA */
+.reviews-footer {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reviews-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 12px 24px;
+    border-radius: 9999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.reviews-cta-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200, 169, 110, 0.18);
+}
+
+@media (max-width: 768px) {
+    .reviews-section {
+        padding: 3.5rem 0 4rem;
+    }
+    .reviews-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    .review-card {
+        padding: 1.5rem;
+    }
+}

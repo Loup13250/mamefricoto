@@ -1,0 +1,355 @@
+/* Tarifs & Prestations Page Styling */
+
+.tarifs-page {
+    position: relative;
+    width: 100%;
+}
+
+/* Quick Filter / Nav Pills */
+.tarifs-nav-pills {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.tarifs-nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.95rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.tarifs-nav-pill:hover,
+.tarifs-nav-pill.active {
+    background: var(--gold);
+    color: #1a1510;
+    border-color: var(--gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 169, 110, 0.25);
+}
+
+/* Sections */
+.tarifs-section {
+    padding: 1.5rem 0 3rem;
+    position: relative;
+}
+
+.tarifs-section--alt {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 0;
+}
+
+.tarifs-section-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+}
+
+.tarifs-section-header .label {
+    margin-bottom: 0.25rem;
+    display: inline-block;
+    font-size: 0.72rem;
+}
+
+.tarifs-section-header h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 400;
+    margin-top: 0.25rem;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+}
+
+.tarifs-section-header p {
+    color: var(--text-2);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+/* Pricing Documents (PDFs & Images) Grid */
+.pricing-docs-grid {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.pricing-doc-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 14px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    max-width: 500px;
+    width: 100%;
+}
+
+.pricing-doc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+    border-color: var(--gold);
+}
+
+/* Document Preview Visual — Entire Image Preserved & Visible */
+.pricing-doc-visual {
+    position: relative;
+    width: 100%;
+    background: #FAF7F2;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.pricing-doc-img {
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.pricing-doc-visual:hover .pricing-doc-img {
+    transform: scale(1.015);
+}
+
+.pricing-doc-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 14, 11, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.85rem;
+    backdrop-filter: blur(2px);
+}
+
+.pricing-doc-visual:hover .pricing-doc-overlay {
+    opacity: 1;
+}
+
+/* PDF Preview Frame */
+.pricing-doc-pdf-preview {
+    width: 100%;
+    min-height: 280px;
+    background: linear-gradient(135deg, #1c1815 0%, #2b241e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    cursor: pointer;
+}
+
+.pricing-doc-pdf-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+}
+
+.pricing-doc-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+
+/* Document Info & Actions */
+.pricing-doc-content {
+    padding: 1.25rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.pricing-doc-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 0.35rem;
+}
+
+.pricing-doc-desc {
+    color: var(--text-2);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.pricing-doc-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.pricing-doc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.pricing-doc-btn--primary {
+    background: var(--gold);
+    color: #1a1510;
+}
+
+.pricing-doc-btn--primary:hover {
+    background: var(--gold-light, #dcc18b);
+    transform: translateY(-1px);
+}
+
+.pricing-doc-btn--outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.pricing-doc-btn--outline:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+/* Lightbox Modal */
+.pricing-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(12, 10, 8, 0.94);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.pricing-lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.pricing-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+}
+
+.pricing-lightbox-content {
+    max-width: 92vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pricing-lightbox-img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.pricing-lightbox-caption {
+    margin-top: 1rem;
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .pricing-docs-grid {
+        gap: 1.5rem;
+    }
+    .pricing-doc-card {
+        max-width: 100%;
+    }
+    .pricing-doc-img {
+        max-height: 380px;
+    }
+    .tarifs-section {
+        padding: 1.25rem 0 2rem;
+    }
+}

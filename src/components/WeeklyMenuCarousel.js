@@ -2,7 +2,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Phone, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone, Receipt } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import './WeeklyMenuCarousel.css';
 
 function isVideoUrl(url) {
@@ -15,6 +16,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [arrowsVisible, setArrowsVisible] = useState(true);
     const touchStartX = useRef(0);
     const hideTimerRef = useRef(null);
+    const { t, trans } = useLanguage();
 
     const triggerArrowVisibility = useCallback(() => {
         setArrowsVisible(true);
@@ -73,8 +75,17 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         touchStartX.current = 0;
     };
 
-    const currentMedia = images[currentIndex]?.image_url || menu.image_url;
-    const isVideo = isVideoUrl(currentMedia) || images[currentIndex]?.media_type === 'video';
+    // Preload all carousel images immediately on mount so first slide transition is 100% instant
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        images.forEach((item) => {
+            const src = item?.image_url;
+            if (src && !isVideoUrl(src)) {
+                const img = new window.Image();
+                img.src = src;
+            }
+        });
+    }, [images]);
 
     return (
         <div className="menu-card anim-up" role="region" aria-label="Menu de la semaine">
@@ -87,31 +98,47 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
             >
-                {currentMedia ? (
-                    isVideo ? (
-                        <video
-                            src={currentMedia}
-                            controls
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="menu-img"
-                        />
-                    ) : (
-                        <Image
-                            src={currentMedia}
-                            alt={`${menu.title} — photo ${currentIndex + 1} sur ${images.length || 1}`}
-                            width={900}
-                            height={1100}
-                            className="menu-img"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-                            loading="lazy"
-                            unoptimized
-                            draggable={false}
-                        />
-                    )
+                {images.length > 0 ? (
+                    <div className="menu-slides-container">
+                        {images.map((item, idx) => {
+                            const mediaUrl = item.image_url || menu.image_url;
+                            const isVid = isVideoUrl(mediaUrl) || item.media_type === 'video';
+                            const isActive = idx === currentIndex;
+                            return (
+                                <div
+                                    key={item.id || idx}
+                                    className={`menu-slide ${isActive ? 'active' : ''}`}
+                                    aria-hidden={!isActive}
+                                >
+                                    {isVid ? (
+                                        <video
+                                            src={mediaUrl}
+                                            controls={isActive}
+                                            autoPlay={isActive}
+                                            loop
+                                            muted
+                                            playsInline
+                                            className="menu-img"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={mediaUrl}
+                                            alt={`${menu.title} — photo ${idx + 1} sur ${images.length || 1}`}
+                                            width={900}
+                                            height={1100}
+                                            className="menu-img"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+                                            priority={idx === 0}
+                                            loading="eager"
+                                            unoptimized
+                                            draggable={false}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 ) : (
                     <div className="menu-placeholder">
                         <p>Menu de la semaine</p>
@@ -130,7 +157,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             type="button"
                             className={`menu-arrow menu-arrow-left ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                            aria-label="Plat précédent"
+                            aria-label={t('menu.prevDish')}
                         >
                             <ChevronLeft size={22} />
                         </button>
@@ -138,7 +165,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                             type="button"
                             className={`menu-arrow menu-arrow-right ${arrowsVisible ? 'visible' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                            aria-label="Plat suivant"
+                            aria-label={t('menu.nextDish')}
                         >
                             <ChevronRight size={22} />
                         </button>
@@ -165,22 +192,22 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
             {/* Right: Info */}
             <div className="menu-sidebar">
-                <p className="menu-sidebar-label">Menu de la semaine</p>
-                <h3 className="menu-title">{menu.title}</h3>
-                {menu.description && (
-                    <p className="menu-description">{menu.description}</p>
+                <p className="menu-sidebar-label">{t('menu.label')}</p>
+                <h3 className="menu-title">{trans(menu, 'title')}</h3>
+                {trans(menu, 'description') && (
+                    <p className="menu-description">{trans(menu, 'description')}</p>
                 )}
                 <p className="menu-order-note">
-                    Commandes au {siteInfo?.phone || '07 43 64 64 11'} &mdash; Retrait au labo à Eyguières ou livraison à domicile.
+                    {t('menu.orderPhone', { phone: siteInfo?.phone || '07 43 64 64 11' })} &mdash; {t('menu.orderHint')}
                 </p>
                 <div className="menu-cta-group">
-                    <a href={`tel:${(siteInfo?.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} className="btn-terra menu-cta-btn">
-                        <Phone size={16} />
-                        Commander par téléphone
+                    <a href={`tel:${(siteInfo?.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} className="menu-cta-btn menu-cta-btn--primary">
+                        <Phone size={15} />
+                        <span>{t('menu.orderBtn')}</span>
                     </a>
-                    <Link href="/contact" className="btn-outline menu-cta-btn">
-                        <FileText size={16} />
-                        Demander un devis
+                    <Link href="/tarifs" className="menu-cta-btn menu-cta-btn--secondary">
+                        <Receipt size={15} />
+                        <span>{t('menu.tarifsBtn')}</span>
                     </Link>
                 </div>
             </div>

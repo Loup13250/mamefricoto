@@ -1,9 +1,9 @@
 'use client';
 import { useState, useRef, useTransition, useCallback } from 'react';
 import Image from 'next/image';
-import { addGalleryPost, deleteGalleryPost, reorderGalleryPost } from '@/app/actions';
+import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost } from '@/app/actions';
 import {
-    Plus, Trash2, X, Film, UploadCloud, Loader2,
+    Plus, Trash2, Pencil, X, Film, UploadCloud, Loader2,
     CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight
 } from 'lucide-react';
 
@@ -144,11 +144,14 @@ async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
 
 export default function GalleryClient({ posts }) {
     const [isAdding, setIsAdding] = useState(false);
+    const [editingPost, setEditingPost] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [editSuccess, setEditSuccess] = useState(false);
+    const [editError, setEditError] = useState('');
     const [deleteId, setDeleteId] = useState(null);
     const [isDeleting, startDeleteTransition] = useTransition();
     const inputRef = useRef(null);
@@ -222,6 +225,24 @@ export default function GalleryClient({ posts }) {
         });
     };
 
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        setEditError('');
+        const formData = new FormData(e.target);
+        startTransition(async () => {
+            const result = await editGalleryPost(formData);
+            if (result?.error) {
+                setEditError(result.error);
+            } else {
+                setEditSuccess(true);
+                setTimeout(() => {
+                    setEditSuccess(false);
+                    setEditingPost(null);
+                }, 1000);
+            }
+        });
+    };
+
     const handleDelete = (id) => {
         startDeleteTransition(async () => {
             await deleteGalleryPost(id);
@@ -242,16 +263,102 @@ export default function GalleryClient({ posts }) {
 
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '760px', marginBottom: '2.5rem' }}>
-                <h1 className="admin-page-title">Nos Réalisations — Photos &amp; Vidéos</h1>
+                <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page publique dédiée <strong>Nos Réalisations (Les Coulisses de la Cuisine)</strong>.
+                    Ajoutez vos photos et vidéos de cuisine. Elles s&apos;affichent sur la page publique dédiée <strong>Galerie (Les Coulisses de la Cuisine)</strong>.
                 </p>
-                {!isAdding && (
+                {!isAdding && !editingPost && (
                     <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
                         <Plus size={16} /> Ajouter une photo / vidéo
                     </button>
                 )}
             </div>
+
+            {/* Formulaire Édition */}
+            {editingPost && (
+                <div className="admin-card" style={{ width: '100%', maxWidth: '760px', marginBottom: '3rem', border: '1px solid var(--admin-gold)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                        <h2 style={{ fontSize: '1.15rem', fontWeight: '600', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Pencil size={18} /> Modifier les titres &amp; légendes (Bilingue FR / EN)
+                        </h2>
+                        <button type="button" onClick={() => setEditingPost(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {editSuccess ? (
+                        <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(34,197,94,0.08)', borderRadius: '6px' }}>
+                            <CheckCircle2 size={36} style={{ color: '#16a34a', marginBottom: '0.5rem' }} />
+                            <p style={{ color: '#16a34a', fontWeight: '600' }}>Modifications enregistrées avec succès !</p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            <input type="hidden" name="id" value={editingPost.id} />
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                <div>
+                                    <label className="admin-label">🇫🇷 Titre / Nom du plat (Français)</label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        defaultValue={editingPost.title || ''}
+                                        className="admin-input"
+                                        placeholder="Ex : Risotto crémeux aux gambas"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="admin-label">🇬🇧 Title / Dish (English)</label>
+                                    <input
+                                        type="text"
+                                        name="title_en"
+                                        defaultValue={editingPost.title_en || ''}
+                                        className="admin-input"
+                                        placeholder="e.g. Creamy King Prawn Risotto"
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                <div>
+                                    <label className="admin-label">🇫🇷 Légende (Français)</label>
+                                    <textarea
+                                        name="caption"
+                                        defaultValue={editingPost.caption || ''}
+                                        className="admin-input"
+                                        rows="2"
+                                        placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="admin-label">🇬🇧 Caption (English)</label>
+                                    <textarea
+                                        name="caption_en"
+                                        defaultValue={editingPost.caption_en || ''}
+                                        className="admin-input"
+                                        rows="2"
+                                        placeholder="e.g. Freshly prepared buffet live from our kitchen..."
+                                    />
+                                </div>
+                            </div>
+
+                            {editError && (
+                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.85rem' }}>
+                                    <AlertCircle size={16} /> {editError}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
+                                <button type="button" onClick={() => setEditingPost(null)} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                                    Annuler
+                                </button>
+                                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending}>
+                                    {isPending ? <Loader2 size={16} className="spin" /> : 'Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            )}
 
             {/* Formulaire ajout */}
             {isAdding && (
@@ -347,25 +454,48 @@ export default function GalleryClient({ posts }) {
                             />
 
                             {/* Titre */}
-                            <div>
-                                <label className="admin-label">Titre / Nom du plat (optionnel)</label>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    className="admin-input"
-                                    placeholder="Ex : Risotto crémeux aux gambas"
-                                />
+                            {/* Titres FR / EN */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                <div>
+                                    <label className="admin-label">🇫🇷 Titre / Plat (Français)</label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        className="admin-input"
+                                        placeholder="Ex : Risotto crémeux aux gambas"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="admin-label">🇬🇧 Title / Dish (English)</label>
+                                    <input
+                                        type="text"
+                                        name="title_en"
+                                        className="admin-input"
+                                        placeholder="e.g. Creamy King Prawn Risotto"
+                                    />
+                                </div>
                             </div>
 
-                            {/* Légende */}
-                            <div>
-                                <label className="admin-label">Légende (optionnel)</label>
-                                <textarea
-                                    name="caption"
-                                    className="admin-input"
-                                    rows="2"
-                                    placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
-                                />
+                            {/* Légendes FR / EN */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                <div>
+                                    <label className="admin-label">🇫🇷 Légende (Français)</label>
+                                    <textarea
+                                        name="caption"
+                                        className="admin-input"
+                                        rows="2"
+                                        placeholder="Ex : Préparation du buffet dînatoire en direct du labo..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="admin-label">🇬🇧 Caption (English)</label>
+                                    <textarea
+                                        name="caption_en"
+                                        className="admin-input"
+                                        rows="2"
+                                        placeholder="e.g. Freshly prepared buffet live from our kitchen..."
+                                    />
+                                </div>
                             </div>
 
                             {/* Erreur */}
@@ -476,31 +606,48 @@ export default function GalleryClient({ posts }) {
                                         </button>
                                     </div>
 
-                                    {deleteId === post.id ? (
-                                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                                            <button
-                                                onClick={() => handleDelete(post.id)}
-                                                disabled={isDeleting}
-                                                style={{ padding: '5px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
-                                            >
-                                                {isDeleting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer ?'}
-                                            </button>
-                                            <button
-                                                onClick={() => setDeleteId(null)}
-                                                style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                            >
-                                                <X size={12} />
-                                            </button>
-                                        </div>
-                                    ) : (
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                                         <button
-                                            onClick={() => setDeleteId(post.id)}
-                                            style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.85)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginTop: '2px' }}
-                                            title="Supprimer"
+                                            onClick={() => setEditingPost(post)}
+                                            title="Modifier les textes FR &amp; EN"
+                                            style={{
+                                                width: '32px', height: '32px',
+                                                background: 'rgba(200,169,110,0.3)',
+                                                border: '1px solid var(--admin-gold)',
+                                                color: 'var(--admin-gold)',
+                                                borderRadius: '3px', cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}
                                         >
-                                            <Trash2 size={15} />
+                                            <Pencil size={14} />
                                         </button>
-                                    )}
+
+                                        {deleteId === post.id ? (
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <button
+                                                    onClick={() => handleDelete(post.id)}
+                                                    disabled={isDeleting}
+                                                    style={{ padding: '5px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                >
+                                                    {isDeleting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer ?'}
+                                                </button>
+                                                <button
+                                                    onClick={() => setDeleteId(null)}
+                                                    style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => setDeleteId(post.id)}
+                                                style={{ width: '32px', height: '32px', background: 'rgba(239,68,68,0.85)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                title="Supprimer"
+                                            >
+                                                <Trash2 size={15} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}

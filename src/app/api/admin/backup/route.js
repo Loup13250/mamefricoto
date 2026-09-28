@@ -18,6 +18,8 @@ export async function GET() {
         const tables = [
             'site_info',
             'services',
+            'pricing_documents',
+            'fixed_prices',
             'weekly_menus',
             'weekly_menu_images',
             'gallery_posts',

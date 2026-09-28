@@ -6,8 +6,6 @@ import { useState, useEffect } from 'react';
 import { adminLogout } from '@/app/actions';
 import { LayoutDashboard, CalendarDays, Image as ImageIcon, Settings, LogOut, ChefHat, Mail, Camera, Menu as MenuIcon, X } from 'lucide-react';
 
-import ThemeToggle from '@/components/ThemeToggle';
-
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -26,7 +24,6 @@ export default function DashboardLayout({ children }) {
                     <span>Mamé Fricoto</span>
                 </a>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <ThemeToggle />
                     <button
                         className="admin-mobile-toggle"
                         onClick={() => setMobileOpen(!mobileOpen)}
@@ -68,7 +65,7 @@ export default function DashboardLayout({ children }) {
                     </Link>
                     <Link href="/admin/dashboard/galerie" className={`admin-nav-link ${pathname === '/admin/dashboard/galerie' ? 'active' : ''}`}>
                         <Camera size={18} />
-                        <span>Nos Réalisations</span>
+                        <span>Galerie</span>
                     </Link>
                     <Link href="/admin/dashboard/carousel" className={`admin-nav-link ${pathname === '/admin/dashboard/carousel' ? 'active' : ''}`}>
                         <ImageIcon size={18} />
@@ -76,7 +73,7 @@ export default function DashboardLayout({ children }) {
                     </Link>
                     <Link href="/admin/dashboard/prestations" className={`admin-nav-link ${pathname === '/admin/dashboard/prestations' ? 'active' : ''}`}>
                         <ChefHat size={18} />
-                        <span>Prestations & Services</span>
+                        <span>Tarifs & Prestations</span>
                     </Link>
                     <Link href="/admin/dashboard/settings" className={`admin-nav-link ${pathname === '/admin/dashboard/settings' ? 'active' : ''}`}>
                         <Settings size={18} />
@@ -84,10 +81,6 @@ export default function DashboardLayout({ children }) {
                     </Link>
                 </nav>
                 <div className="admin-sidebar-footer">
-                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0.25rem' }}>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--admin-text-subtle)', fontWeight: '600' }}>Thème</span>
-                        <ThemeToggle showLabel />
-                    </div>
                     <form action={adminLogout}>
                         <button type="submit" className="admin-nav-link" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <LogOut size={18} />

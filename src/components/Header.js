@@ -4,7 +4,8 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu as MenuIcon, X as XIcon, Phone, Instagram, Facebook, MapPin } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageToggle from './LanguageToggle';
 import './Header.css';
 
 export default function Header({ siteInfo }) {
@@ -12,9 +13,11 @@ export default function Header({ siteInfo }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
     const isHome = pathname === '/';
+    const { t, trans } = useLanguage();
 
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
+    const logoSrc = siteInfo?.site_icon || siteInfo?.logo || '/icon.svg';
 
     useEffect(() => {
         setScrolled(window.scrollY > 60);
@@ -61,34 +64,46 @@ export default function Header({ siteInfo }) {
     return (
         <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
             <div className="container header-inner">
-                <Link href="/" className="logo-link" aria-label="Mamé Fricoto — Accueil">
+                <Link href="/" className="logo-link" aria-label={`Mamé Fricoto — ${t('nav.home')}`}>
                     <div className="logo-round-wrap">
                         <Image
-                            src={siteInfo?.logo || "/logo.png"}
+                            src={logoSrc}
                             alt="Mamé Fricoto"
                             width={48}
                             height={48}
                             className="logo-img"
                             priority
+                            unoptimized
                         />
                     </div>
                 </Link>
 
                 <nav className="site-nav" aria-label="Navigation principale">
-                    <Link href="/" prefetch={true} className={pathname === '/' ? 'nav-link active' : 'nav-link'}>Accueil</Link>
-                    <Link href="/realisations" prefetch={true} className={pathname === '/realisations' || pathname === '/galerie' ? 'nav-link active' : 'nav-link'}>Nos Réalisations</Link>
-                    <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>À Propos</Link>
-                    <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>Contact</Link>
+                    <Link href="/" prefetch={true} className={pathname === '/' ? 'nav-link active' : 'nav-link'}>
+                        {t('nav.home')}
+                    </Link>
+                    <Link href="/tarifs" prefetch={true} className={pathname === '/tarifs' || pathname === '/prestations' ? 'nav-link active' : 'nav-link'}>
+                        {t('nav.tarifs')}
+                    </Link>
+                    <Link href="/galerie" prefetch={true} className={pathname === '/galerie' || pathname === '/realisations' ? 'nav-link active' : 'nav-link'}>
+                        {t('nav.creations')}
+                    </Link>
+                    <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>
+                        {t('nav.about')}
+                    </Link>
+                    <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>
+                        {t('nav.contact')}
+                    </Link>
                 </nav>
 
                 <div className="header-actions-right">
                     <div className="header-cta">
-                        <a href={`tel:${phoneTel}`} className="cta-phone-btn">
+                        <a href={`tel:${phoneTel}`} className="cta-phone-btn" title={`${t('nav.callUs')} ${phone}`}>
                             <Phone size={14} />
                             {phone}
                         </a>
                     </div>
-                    <ThemeToggle />
+                    <LanguageToggle />
                 </div>
 
                 <button
@@ -97,7 +112,7 @@ export default function Header({ siteInfo }) {
                     onClick={toggleMobileMenu}
                     aria-expanded={mobileMenuOpen}
                     aria-controls="mobile-nav"
-                    aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                    aria-label={mobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
                 >
                     {mobileMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
                 </button>
@@ -114,43 +129,46 @@ export default function Header({ siteInfo }) {
                     role="dialog"
                     aria-modal="true"
                     aria-hidden={!mobileMenuOpen}
-                    inert={!mobileMenuOpen ? '' : undefined}
+                    inert={!mobileMenuOpen}
                 >
                     {/* Drawer Header */}
                     <div className="mobile-drawer-header">
                         <div className="mobile-drawer-brand">
                             <span className="mobile-drawer-title">Mamé Fricoto</span>
-                            <span className="mobile-drawer-sub">Cuisine Familiale &amp; Fait Maison</span>
+                            <span className="mobile-drawer-sub">{t('nav.brandSubtitle')}</span>
                         </div>
                         <button
                             type="button"
                             className="mobile-drawer-close"
                             onClick={closeMobileMenu}
-                            aria-label="Fermer le menu"
+                            aria-label={t('nav.closeMenu')}
                         >
                             <XIcon size={22} />
                         </button>
                     </div>
 
-                    {/* Main Nav Links (centered) */}
+                    {/* Main Nav Links */}
                     <nav className="mobile-nav-body" aria-label="Navigation mobile">
                         <Link href="/" prefetch={true} className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
-                            Accueil
+                            {t('nav.home')}
                         </Link>
-                        <Link href="/realisations" prefetch={true} className={pathname === '/realisations' || pathname === '/galerie' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
-                            Nos Réalisations
+                        <Link href="/tarifs" prefetch={true} className={pathname === '/tarifs' || pathname === '/prestations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            {t('nav.tarifs')}
+                        </Link>
+                        <Link href="/galerie" prefetch={true} className={pathname === '/galerie' || pathname === '/realisations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                            {t('nav.creations')}
                         </Link>
                         <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
-                            À Propos
+                            {t('nav.about')}
                         </Link>
                         <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
-                            Contact &amp; Devis
+                            {t('nav.contact')}
                         </Link>
                     </nav>
 
                     {/* Drawer Footer */}
                     <div className="mobile-drawer-footer">
-                        <ThemeToggle showLabel className="drawer-theme-toggle" />
+                        <LanguageToggle showLabel className="drawer-theme-toggle" />
 
                         <a href={`tel:${phoneTel}`} className="mobile-phone-cta">
                             <Phone size={16} />
@@ -159,7 +177,7 @@ export default function Header({ siteInfo }) {
 
                         <div className="mobile-location-tag">
                             <MapPin size={13} style={{ color: 'var(--gold)' }} />
-                            <span>{siteInfo?.address || 'Livraison & Retrait à Eyguières (13)'}</span>
+                            <span>{trans(siteInfo, 'address') || 'Eyguières, Bouches-du-Rhône'}</span>
                         </div>
 
                         <div className="mobile-socials">

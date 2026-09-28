@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS site_info (
 CREATE TABLE IF NOT EXISTS weekly_menus (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
+  title_en TEXT,
   description TEXT,
+  description_en TEXT,
   image_url TEXT,
   embed_url TEXT,
   is_current BOOLEAN DEFAULT 0,
@@ -43,7 +45,9 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 CREATE TABLE IF NOT EXISTS gallery_posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT,
+  title_en TEXT,
   caption TEXT,
+  caption_en TEXT,
   image_url TEXT NOT NULL,
   media_type TEXT DEFAULT 'image',
   display_order INTEGER DEFAULT 0,
@@ -53,7 +57,9 @@ CREATE TABLE IF NOT EXISTS gallery_posts (
 CREATE TABLE IF NOT EXISTS carousel_images (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT,
+  title_en TEXT,
   subtitle TEXT,
+  subtitle_en TEXT,
   image_url TEXT NOT NULL,
   mobile_image_url TEXT,
   fit_mode TEXT DEFAULT 'cover',
@@ -64,8 +70,11 @@ CREATE TABLE IF NOT EXISTS services (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   num TEXT,
   title TEXT NOT NULL,
+  title_en TEXT,
   description TEXT NOT NULL,
+  description_en TEXT,
   badge TEXT,
+  badge_en TEXT,
   display_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -74,6 +83,35 @@ CREATE TABLE IF NOT EXISTS media_storage (
   id TEXT PRIMARY KEY,
   mime_type TEXT NOT NULL,
   data BLOB NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS pricing_documents (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  title_en TEXT,
+  description TEXT,
+  description_en TEXT,
+  file_url TEXT NOT NULL,
+  file_url_en TEXT,
+  file_type TEXT DEFAULT 'image',
+  display_order INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS fixed_prices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category TEXT DEFAULT 'Repas',
+  category_en TEXT DEFAULT 'Meals',
+  name TEXT NOT NULL,
+  name_en TEXT,
+  price TEXT NOT NULL,
+  price_en TEXT,
+  details TEXT,
+  details_en TEXT,
+  badge TEXT,
+  badge_en TEXT,
+  display_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

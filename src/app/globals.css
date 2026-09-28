@@ -1,44 +1,9 @@
 @import "tailwindcss";
 
-:root {
-  /* Mamé Fricoto — Palette Gastronomique Contemporaine */
-  --bg:          #0E0D0C;
-  --bg-2:        #161412;
-  --bg-card:     #1C1917;
-  --surface:     #242019;
-
-  --text-1:      #FDFBF7;
-  --text-2:      #E4DACB;
-  --text-3:      #BDB2A5;
-
-  --gold:        #D4B475;
-  --gold-light:  #ECD8A5;
-  --gold-dark:   #B89552;
-
-  --terracotta:  #D96748;
-  --terra-light: #EB7D5E;
-  --terra-dark:  #B54C30;
-
-  --cream:       #FDFBF7;
-  --cream-dim:   #E4DACB;
-
-  --border:      rgba(200, 169, 110, 0.16);
-  --border-soft: rgba(200, 169, 110, 0.08);
-
-  --radius-sm:   8px;
-  --radius-md:   16px;
-  --radius-lg:   24px;
-  --radius-xl:   36px;
-
-  --ease:        cubic-bezier(0.22, 1, 0.36, 1);
-  --transition:  all 0.4s var(--ease);
-
-  --font-heading: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
-  --font-body:    var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
-}
-
-[data-theme="light"] {
-  /* Mamé Fricoto — Mode Clair Gastronomique Chaud & Élégant */
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  /* Mamé Fricoto — Mode Clair Gastronomique Chaud, Lumineux & Élégant */
   --bg:          #FAF7F2;
   --bg-2:        #F3EDE4;
   --bg-card:     #FFFFFF;
@@ -61,6 +26,17 @@
 
   --border:      rgba(148, 104, 30, 0.28);
   --border-soft: rgba(148, 104, 30, 0.14);
+
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   36px;
+
+  --ease:        cubic-bezier(0.22, 1, 0.36, 1);
+  --transition:  all 0.4s var(--ease);
+
+  --font-heading: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  --font-body:    var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
 }
 
 * {
@@ -438,11 +414,7 @@ img {
 
 /* Services / Prestations */
 [data-theme="light"] .service-num {
-  color: rgba(184, 139, 70, 0.3) !important;
-}
-
-[data-theme="light"] .service-card:hover .service-num {
-  color: #9C7232 !important;
+  color: rgba(184, 139, 70, 0.35) !important;
 }
 
 /* Lightbox Modal */

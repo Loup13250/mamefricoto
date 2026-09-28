@@ -1,21 +1,21 @@
 'use client';
 import { useState } from 'react';
 import { submitContactForm } from '@/app/actions';
-import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, Utensils, HeartHandshake, PartyPopper, Building, HelpCircle } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, PartyPopper, Building, HelpCircle } from 'lucide-react';
 import './ContactForm.css';
 
 export default function ContactForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [selectedEventType, setSelectedEventType] = useState('Plat du jour / Repas');
+    const [selectedEventType, setSelectedEventType] = useState('Événement Privé');
+    const { t } = useLanguage();
 
     const eventTypes = [
-        { id: 'Plat du jour / Repas', label: 'Plat du Jour', icon: <Utensils size={14} /> },
-        { id: 'Buffet Dînatoire', label: 'Buffet Dînatoire', icon: <HeartHandshake size={14} /> },
-        { id: 'Événement Privé', label: 'Événement Privé', icon: <PartyPopper size={14} /> },
-        { id: "Repas d'Entreprise", label: 'Entreprise', icon: <Building size={14} /> },
-        { id: 'Autre prestation', label: 'Autre', icon: <HelpCircle size={14} /> },
+        { id: 'Événement Privé', labelKey: 'type.private', icon: <PartyPopper size={14} /> },
+        { id: 'Entreprise', labelKey: 'type.pro', icon: <Building size={14} /> },
+        { id: 'Autre', labelKey: 'type.other', icon: <HelpCircle size={14} /> },
     ];
 
     async function handleSubmit(e) {
@@ -42,17 +42,17 @@ export default function ContactForm() {
     return (
         <div className="contact-card anim-up">
             <div className="contact-form-header">
-                <span className="label">Discutons de votre projet</span>
-                <h2>Demande de Devis &amp; Réservation</h2>
-                <p>Remplissez les détails ci-dessous. Mamé Fricoto vous répondra très rapidement.</p>
+                <span className="label">{t('contact.formBadge')}</span>
+                <h2>{t('contact.formTitle')}</h2>
+                <p>{t('contact.formDesc')}</p>
             </div>
 
             {success && (
                 <div className="form-alert alert-success" role="alert">
                     <CheckCircle2 size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
-                        <strong style={{ display: 'block', marginBottom: '0.25rem' }}>Message transmis</strong>
-                        Merci, nous vous recontacterons dans les plus brefs délais.
+                        <strong style={{ display: 'block', marginBottom: '0.25rem' }}>{t('contact.successTitle')}</strong>
+                        {t('contact.successDesc')}
                     </div>
                 </div>
             )}
@@ -64,9 +64,9 @@ export default function ContactForm() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="contact-form" aria-label="Formulaire de demande de devis">
+            <form onSubmit={handleSubmit} className="contact-form" aria-label={t('contact.formTitle')}>
                 <div className="form-field">
-                    <span className="form-label" id="label-prestation">Type de prestation</span>
+                    <span className="form-label" id="label-prestation">{t('contact.typeLabel')}</span>
                     <div className="form-pills" role="radiogroup" aria-labelledby="label-prestation">
                         {eventTypes.map((type) => (
                             <button
@@ -78,7 +78,7 @@ export default function ContactForm() {
                                 className={`form-pill ${selectedEventType === type.id ? 'active' : ''}`}
                             >
                                 {type.icon}
-                                {type.label}
+                                {t(type.labelKey)}
                             </button>
                         ))}
                     </div>
@@ -87,29 +87,29 @@ export default function ContactForm() {
                 <div className="form-row">
                     <div className="form-field">
                         <label htmlFor="contact-name" className="form-label">
-                            <User size={13} /> Nom &amp; Prénom *
+                            <User size={13} /> {t('contact.nameLabel')}
                         </label>
-                        <input id="contact-name" type="text" name="name" required placeholder="Marie Dupont" className="form-input" />
+                        <input id="contact-name" type="text" name="name" required placeholder={t('contact.namePlaceholder')} className="form-input" />
                     </div>
                     <div className="form-field">
                         <label htmlFor="contact-phone" className="form-label">
-                            <Phone size={13} /> Téléphone *
+                            <Phone size={13} /> {t('contact.phoneLabel')}
                         </label>
-                        <input id="contact-phone" type="tel" name="phone" required placeholder="06 00 00 00 00" className="form-input" />
+                        <input id="contact-phone" type="tel" name="phone" placeholder={t('contact.phonePlaceholder')} className="form-input" />
                     </div>
                 </div>
 
                 <div className="form-field">
                     <label htmlFor="contact-email" className="form-label">
-                        <Mail size={13} /> Adresse Email *
+                        <Mail size={13} /> {t('contact.emailLabel')}
                     </label>
-                    <input id="contact-email" type="email" name="email" required placeholder="marie@exemple.fr" className="form-input" />
+                    <input id="contact-email" type="email" name="email" required placeholder={t('contact.emailPlaceholder')} className="form-input" />
                 </div>
 
                 <div className="form-row">
                     <div className="form-field">
                         <label htmlFor="contact-date" className="form-label">
-                            <Calendar size={13} /> Date souhaitée
+                            <Calendar size={13} /> {t('contact.dateLabel')}
                         </label>
                         <input
                             id="contact-date"
@@ -121,29 +121,29 @@ export default function ContactForm() {
                     </div>
                     <div className="form-field">
                         <label htmlFor="contact-guests" className="form-label">
-                            <Users size={13} /> Nombre de convives
+                            <Users size={13} /> {t('contact.guestsLabel')}
                         </label>
-                        <input id="contact-guests" type="text" name="guests" placeholder="Ex : 20 personnes" className="form-input" />
+                        <input id="contact-guests" type="text" name="guests" placeholder={t('contact.guestsPlaceholder')} className="form-input" />
                     </div>
                 </div>
 
                 <div className="form-field">
-                    <label htmlFor="contact-message" className="form-label">Votre message *</label>
+                    <label htmlFor="contact-message" className="form-label">{t('contact.messageLabel')}</label>
                     <textarea
                         id="contact-message"
                         name="message"
                         required
                         rows="4"
-                        placeholder="Décrivez votre projet (lieu, menu souhaité, allergies, contraintes)..."
+                        placeholder={t('contact.messagePlaceholder')}
                         className="form-input form-textarea"
                     />
                 </div>
 
                 <div className="form-submit-row">
                     <button type="submit" className="form-submit-btn" disabled={loading}>
-                        {loading ? 'Envoi en cours...' : (
+                        {loading ? t('contact.submitting') : (
                             <>
-                                Envoyer ma demande
+                                {t('contact.submitBtn')}
                                 <Send size={16} />
                             </>
                         )}

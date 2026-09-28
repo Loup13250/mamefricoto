@@ -92,7 +92,21 @@ export async function getAllWeeklyMenus() {
 // --- Contact Messages ---
 export async function getContactMessages() {
     const db = getDb();
-    return await db.prepare('SELECT * FROM contact_messages ORDER BY created_at DESC').all();
+    const rows = await db.prepare('SELECT * FROM contact_messages ORDER BY created_at DESC').all();
+    return (rows || []).map(r => ({
+        id: Number(r.id),
+        name: r.name ? String(r.name) : '',
+        email: r.email ? String(r.email) : '',
+        phone: r.phone ? String(r.phone) : '',
+        event_type: r.event_type ? String(r.event_type) : '',
+        event_date: r.event_date ? String(r.event_date) : '',
+        guests: r.guests ? String(r.guests) : '',
+        message: r.message ? String(r.message) : '',
+        is_read: Number(r.is_read) || 0,
+        created_at: r.created_at ? String(r.created_at) : '',
+        status: r.status ? String(r.status) : 'nouveau',
+        admin_notes: r.admin_notes ? String(r.admin_notes) : ''
+    }));
 }
 
 export async function getUnreadMessageCount() {
@@ -146,10 +160,42 @@ export async function getServices() {
     try {
         const services = await db.prepare('SELECT * FROM services ORDER BY display_order ASC, id ASC').all();
         if (services && services.length > 0) {
-            return services;
+            return services.map(s => ({ ...s }));
         }
     } catch (err) {
         console.error('getServices error:', err);
     }
     return DEFAULT_SERVICES;
+}
+
+// --- Pricing Documents (PDFs & Images) ---
+export async function getPricingDocuments() {
+    const db = getDb();
+    try {
+        const docs = await db.prepare('SELECT * FROM pricing_documents ORDER BY display_order ASC, id ASC').all();
+        if (docs && docs.length > 0) {
+            return Promise.all(docs.map(async doc => ({
+                ...doc,
+                file_url: await normalizeUrl(doc.file_url),
+                file_url_en: doc.file_url_en ? await normalizeUrl(doc.file_url_en) : null
+            })));
+        }
+    } catch (err) {
+        console.error('getPricingDocuments error:', err);
+    }
+    return [];
+}
+
+// --- Fixed Meal Prices ---
+export async function getFixedPrices() {
+    const db = getDb();
+    try {
+        const prices = await db.prepare('SELECT * FROM fixed_prices ORDER BY display_order ASC, id ASC').all();
+        if (prices && prices.length > 0) {
+            return prices.map(p => ({ ...p }));
+        }
+    } catch (err) {
+        console.error('getFixedPrices error:', err);
+    }
+    return [];
 }

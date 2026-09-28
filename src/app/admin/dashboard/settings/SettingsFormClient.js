@@ -64,12 +64,15 @@ async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
 export default function SettingsFormClient({ info }) {
     const [logoPreview, setLogoPreview] = useState(info.logo || null);
     const [aboutPreview, setAboutPreview] = useState(info.about_image || null);
+    const [siteIconPreview, setSiteIconPreview] = useState(info.site_icon || '/icon.svg');
 
     const [logoFile, setLogoFile] = useState(null);
     const [aboutFile, setAboutFile] = useState(null);
+    const [siteIconFile, setSiteIconFile] = useState(null);
 
     const [logoDragging, setLogoDragging] = useState(false);
     const [aboutDragging, setAboutDragging] = useState(false);
+    const [siteIconDragging, setSiteIconDragging] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -80,6 +83,7 @@ export default function SettingsFormClient({ info }) {
 
     const logoInputRef = useRef(null);
     const aboutInputRef = useRef(null);
+    const siteIconInputRef = useRef(null);
 
     const handleLogoSelect = (file) => {
         if (!file || !file.type.startsWith('image/')) return;
@@ -93,6 +97,16 @@ export default function SettingsFormClient({ info }) {
         setAboutPreview(URL.createObjectURL(file));
     };
 
+    const handleSiteIconSelect = (file) => {
+        if (!file) return;
+        if (!file.name.endsWith('.svg') && !file.type.includes('svg')) {
+            alert("Veuillez sélectionner un fichier SVG (.svg) pour l'icône du site.");
+            return;
+        }
+        setSiteIconFile(file);
+        setSiteIconPreview(URL.createObjectURL(file));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -102,6 +116,7 @@ export default function SettingsFormClient({ info }) {
 
         formData.delete('logo_file');
         formData.delete('about_file');
+        formData.delete('site_icon_file');
 
         if (logoFile) {
             const compressedLogo = await compressImageFile(logoFile, 800, 0.9);
@@ -110,6 +125,10 @@ export default function SettingsFormClient({ info }) {
         if (aboutFile) {
             const compressedAbout = await compressImageFile(aboutFile, 2048, 0.85);
             formData.append('about_file', compressedAbout);
+        }
+        if (siteIconFile) {
+            // Keep SVG intact without canvas compression
+            formData.append('site_icon_file', siteIconFile);
         }
 
         await updateSiteInfo(formData);
@@ -158,13 +177,69 @@ export default function SettingsFormClient({ info }) {
                     </div>
                 )}
 
-                {/* Visuels du site */}
+                {/* Visuels du site & Icône */}
                 <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <ImageIcon size={18} style={{ color: 'var(--admin-gold)' }} /> Visuels du Site (Logo &amp; Image À Propos)
+                        <ImageIcon size={18} style={{ color: 'var(--admin-gold)' }} /> Visuels du Site (Logo, Icône SVG &amp; Photo)
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+
+                        {/* SVG Site Icon Box */}
+                        <div>
+                            <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span>Icône du site (SVG)</span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--admin-gold)', fontWeight: '600' }}>Onglet navigateur &amp; favicon</span>
+                            </label>
+                            {siteIconPreview ? (
+                                <div style={{
+                                    position: 'relative',
+                                    background: 'var(--admin-surface)',
+                                    border: '1px solid var(--admin-border)',
+                                    borderRadius: '6px',
+                                    padding: '1rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                }}>
+                                    <div style={{ height: '70px', width: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF7F2', borderRadius: '50%', border: '1px solid #E8DFD3', padding: '10px' }}>
+                                        <Image src={siteIconPreview} alt="Site SVG icon preview" width={48} height={48} style={{ width: '48px', height: '48px', objectFit: 'contain' }} unoptimized />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => siteIconInputRef.current?.click()}
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+                                    >
+                                        Changer l&apos;icône SVG
+                                    </button>
+                                </div>
+                            ) : (
+                                <div
+                                    onDragOver={(e) => { e.preventDefault(); setSiteIconDragging(true); }}
+                                    onDragLeave={() => setSiteIconDragging(false)}
+                                    onDrop={(e) => { e.preventDefault(); setSiteIconDragging(false); handleSiteIconSelect(e.dataTransfer.files?.[0]); }}
+                                    onClick={() => siteIconInputRef.current?.click()}
+                                    style={{
+                                        border: `2px dashed ${siteIconDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
+                                        background: siteIconDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
+                                        borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
+                                    }}
+                                >
+                                    <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.5rem' }} />
+                                    <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter l&apos;icône SVG</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Fichier .svg vectoriel</span>
+                                </div>
+                            )}
+                            <input
+                                ref={siteIconInputRef}
+                                type="file"
+                                accept=".svg,image/svg+xml"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleSiteIconSelect(e.target.files?.[0])}
+                            />
+                        </div>
 
                         {/* Logo Box */}
                         <div>
@@ -275,10 +350,43 @@ export default function SettingsFormClient({ info }) {
                     </div>
                 </div>
 
+                {/* Slogan & Accroches */}
+                <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Globe size={18} style={{ color: 'var(--admin-gold)' }} /> Slogan / Accroche (Bilingue)
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                        <div>
+                            <label className="admin-label">
+                                🇫🇷 Slogan en Français
+                            </label>
+                            <input
+                                type="text"
+                                name="tagline"
+                                defaultValue={info.tagline || ''}
+                                placeholder="Ex: Cuisine Traiteur Événementiel & Familiale"
+                                className="admin-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="admin-label">
+                                🇬🇧 Slogan en Anglais (English Tagline)
+                            </label>
+                            <input
+                                type="text"
+                                name="tagline_en"
+                                defaultValue={info.tagline_en || ''}
+                                placeholder="Ex: Artisanal Catering & Homemade Gastronomy"
+                                className="admin-input"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 {/* Coordonnées */}
                 <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Phone size={18} style={{ color: 'var(--admin-gold)' }} /> Coordonnées &amp; Contact
+                        <Phone size={18} style={{ color: 'var(--admin-gold)' }} /> Coordonnées &amp; Contact (Bilingue)
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                         <div>
@@ -291,14 +399,26 @@ export default function SettingsFormClient({ info }) {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: '1rem' }}>
-                        <label className="admin-label">Adresse / Localisation *</label>
-                        <input type="text" name="address" defaultValue={info.address} className="admin-input" required />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
+                        <div>
+                            <label className="admin-label">🇫🇷 Adresse / Localisation (Français) *</label>
+                            <input type="text" name="address" defaultValue={info.address} className="admin-input" required />
+                        </div>
+                        <div>
+                            <label className="admin-label">🇬🇧 Location / Address (English) *</label>
+                            <input type="text" name="address_en" defaultValue={info.address_en || ''} placeholder="e.g. 15 rue des Délices, 75011 Paris, France" className="admin-input" required />
+                        </div>
                     </div>
 
-                    <div style={{ marginTop: '1rem' }}>
-                        <label className="admin-label">Horaires de commande *</label>
-                        <input type="text" name="hours" defaultValue={info.hours} className="admin-input" required />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
+                        <div>
+                            <label className="admin-label">🇫🇷 Horaires de commande (Français) *</label>
+                            <input type="text" name="hours" defaultValue={info.hours} className="admin-input" required />
+                        </div>
+                        <div>
+                            <label className="admin-label">🇬🇧 Ordering Hours (English) *</label>
+                            <input type="text" name="hours_en" defaultValue={info.hours_en || ''} placeholder="e.g. Mon - Sat: 9:00 AM - 7:00 PM" className="admin-input" required />
+                        </div>
                     </div>
                 </div>
 
@@ -323,13 +443,25 @@ export default function SettingsFormClient({ info }) {
                     </div>
                 </div>
 
-                {/* Descriptions */}
+                {/* Descriptions À Propos */}
                 <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
-                    <label className="admin-label">Texte de présentation &quot;À Propos&quot;</label>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)', marginBottom: '0.5rem' }}>
-                        Ce texte s&apos;affiche sur la page d&apos;accueil et sur la page À Propos. Vous pouvez sauter des lignes (Touche Entrée) pour créer plusieurs paragraphes.
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1rem' }}>
+                        Présentation &quot;À Propos&quot; (Bilingue)
+                    </h3>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)', marginBottom: '1.25rem' }}>
+                        Ces textes s&apos;affichent sur la page d&apos;accueil et sur la page À Propos. Vous pouvez sauter des lignes (Touche Entrée) pour créer plusieurs paragraphes.
                     </p>
-                    <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div>
+                            <label className="admin-label">🇫🇷 Texte de présentation (Français) *</label>
+                            <textarea name="about_text" defaultValue={info.about_text} className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
+                        </div>
+                        <div>
+                            <label className="admin-label">🇬🇧 Presentation text (English) *</label>
+                            <textarea name="about_text_en" defaultValue={info.about_text_en || ''} placeholder="Tell your story in English..." className="admin-input" rows="6" required style={{ lineHeight: '1.6' }}></textarea>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Notification Email (Optionnel) */}

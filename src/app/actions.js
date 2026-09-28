@@ -160,23 +160,20 @@ export async function updateSiteInfo(formData) {
         }
     }
 
-    const logoFile = formData.get('logo_file');
+    const logoFile = formData.get('logo_file') || formData.get('site_icon_file');
     const aboutFile = formData.get('about_file');
-    const siteIconFile = formData.get('site_icon_file');
 
     if (logoFile && logoFile.size > 0) {
         const logoUrl = await saveUploadedFile(logoFile);
-        if (logoUrl) await stmt.run('logo', logoUrl);
+        if (logoUrl) {
+            await stmt.run('logo', logoUrl);
+            await stmt.run('site_icon', logoUrl);
+        }
     }
 
     if (aboutFile && aboutFile.size > 0) {
         const aboutUrl = await saveUploadedFile(aboutFile);
         if (aboutUrl) await stmt.run('about_image', aboutUrl);
-    }
-
-    if (siteIconFile && siteIconFile.size > 0) {
-        const iconUrl = await saveUploadedFile(siteIconFile);
-        if (iconUrl) await stmt.run('site_icon', iconUrl);
     }
 
     revalidatePath('/');

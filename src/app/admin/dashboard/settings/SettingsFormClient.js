@@ -62,17 +62,15 @@ async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
 }
 
 export default function SettingsFormClient({ info }) {
-    const [logoPreview, setLogoPreview] = useState(info.logo || null);
+    const initialLogo = info.site_icon || info.logo || '/icon.svg';
+    const [logoPreview, setLogoPreview] = useState(initialLogo);
     const [aboutPreview, setAboutPreview] = useState(info.about_image || null);
-    const [siteIconPreview, setSiteIconPreview] = useState(info.site_icon || '/icon.svg');
 
     const [logoFile, setLogoFile] = useState(null);
     const [aboutFile, setAboutFile] = useState(null);
-    const [siteIconFile, setSiteIconFile] = useState(null);
 
     const [logoDragging, setLogoDragging] = useState(false);
     const [aboutDragging, setAboutDragging] = useState(false);
-    const [siteIconDragging, setSiteIconDragging] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -83,10 +81,10 @@ export default function SettingsFormClient({ info }) {
 
     const logoInputRef = useRef(null);
     const aboutInputRef = useRef(null);
-    const siteIconInputRef = useRef(null);
 
     const handleLogoSelect = (file) => {
-        if (!file || !file.type.startsWith('image/')) return;
+        if (!file) return;
+        if (!file.type.startsWith('image/') && !file.name.endsWith('.svg') && !file.type.includes('svg')) return;
         setLogoFile(file);
         setLogoPreview(URL.createObjectURL(file));
     };
@@ -95,16 +93,6 @@ export default function SettingsFormClient({ info }) {
         if (!file || !file.type.startsWith('image/')) return;
         setAboutFile(file);
         setAboutPreview(URL.createObjectURL(file));
-    };
-
-    const handleSiteIconSelect = (file) => {
-        if (!file) return;
-        if (!file.name.endsWith('.svg') && !file.type.includes('svg')) {
-            alert("Veuillez sélectionner un fichier SVG (.svg) pour l'icône du site.");
-            return;
-        }
-        setSiteIconFile(file);
-        setSiteIconPreview(URL.createObjectURL(file));
     };
 
     const handleSubmit = async (e) => {
@@ -119,16 +107,14 @@ export default function SettingsFormClient({ info }) {
         formData.delete('site_icon_file');
 
         if (logoFile) {
-            const compressedLogo = await compressImageFile(logoFile, 800, 0.9);
-            formData.append('logo_file', compressedLogo);
+            const isSvg = logoFile.name.endsWith('.svg') || logoFile.type.includes('svg');
+            const fileToUpload = isSvg ? logoFile : await compressImageFile(logoFile, 1024, 0.9);
+            formData.append('logo_file', fileToUpload);
+            formData.append('site_icon_file', fileToUpload);
         }
         if (aboutFile) {
             const compressedAbout = await compressImageFile(aboutFile, 2048, 0.85);
             formData.append('about_file', compressedAbout);
-        }
-        if (siteIconFile) {
-            // Keep SVG intact without canvas compression
-            formData.append('site_icon_file', siteIconFile);
         }
 
         await updateSiteInfo(formData);
@@ -177,96 +163,61 @@ export default function SettingsFormClient({ info }) {
                     </div>
                 )}
 
-                {/* Visuels du site & Icône */}
+                {/* Visuels du site */}
                 <div style={{ borderBottom: '1px solid var(--admin-border-soft)', paddingBottom: '1.75rem' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <ImageIcon size={18} style={{ color: 'var(--admin-gold)' }} /> Visuels du Site (Logo, Icône SVG &amp; Photo)
+                        <ImageIcon size={18} style={{ color: 'var(--admin-gold)' }} /> Visuels du Site (Logo &amp; Photo)
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
 
-                        {/* SVG Site Icon Box */}
+                        {/* Un seul bloc : Logo & Icône du site */}
                         <div>
                             <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <span>Icône du site (SVG)</span>
-                                <span style={{ fontSize: '0.72rem', color: 'var(--admin-gold)', fontWeight: '600' }}>Onglet navigateur &amp; favicon</span>
+                                <span>Logo &amp; Icône du site</span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--admin-gold)', fontWeight: '600' }}>En-tête, favicon &amp; onglet</span>
                             </label>
-                            {siteIconPreview ? (
-                                <div style={{
-                                    position: 'relative',
-                                    background: 'var(--admin-surface)',
-                                    border: '1px solid var(--admin-border)',
-                                    borderRadius: '6px',
-                                    padding: '1rem',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '0.75rem',
-                                }}>
-                                    <div style={{ height: '70px', width: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF7F2', borderRadius: '50%', border: '1px solid #E8DFD3', padding: '10px' }}>
-                                        <Image src={siteIconPreview} alt="Site SVG icon preview" width={48} height={48} style={{ width: '48px', height: '48px', objectFit: 'contain' }} unoptimized />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => siteIconInputRef.current?.click()}
-                                        className="admin-btn admin-btn-secondary"
-                                        style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-                                    >
-                                        Changer l&apos;icône SVG
-                                    </button>
-                                </div>
-                            ) : (
-                                <div
-                                    onDragOver={(e) => { e.preventDefault(); setSiteIconDragging(true); }}
-                                    onDragLeave={() => setSiteIconDragging(false)}
-                                    onDrop={(e) => { e.preventDefault(); setSiteIconDragging(false); handleSiteIconSelect(e.dataTransfer.files?.[0]); }}
-                                    onClick={() => siteIconInputRef.current?.click()}
-                                    style={{
-                                        border: `2px dashed ${siteIconDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
-                                        background: siteIconDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
-                                        borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
-                                    }}
-                                >
-                                    <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.5rem' }} />
-                                    <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter l&apos;icône SVG</span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Fichier .svg vectoriel</span>
-                                </div>
-                            )}
-                            <input
-                                ref={siteIconInputRef}
-                                type="file"
-                                accept=".svg,image/svg+xml"
-                                style={{ display: 'none' }}
-                                onChange={(e) => handleSiteIconSelect(e.target.files?.[0])}
-                            />
-                        </div>
-
-                        {/* Logo Box */}
-                        <div>
-                            <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Logo Mamé Fricoto</label>
                             {logoPreview ? (
                                 <div style={{
                                     position: 'relative',
                                     background: 'var(--admin-surface)',
                                     border: '1px solid var(--admin-border)',
                                     borderRadius: '6px',
-                                    padding: '1rem',
+                                    padding: '1.25rem',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '0.75rem',
+                                    gap: '0.85rem',
                                 }}>
-                                    <div style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Image src={logoPreview} alt="Logo preview" width={160} height={60} style={{ maxHeight: '60px', height: 'auto', width: 'auto', objectFit: 'contain' }} unoptimized />
+                                    <div style={{
+                                        height: '76px', width: '76px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        background: '#FAF7F2', borderRadius: '50%',
+                                        border: '1px solid #E8DFD3', padding: '10px',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                    }}>
+                                        <Image
+                                            src={logoPreview}
+                                            alt="Logo et icône du site"
+                                            width={56}
+                                            height={56}
+                                            style={{ width: '56px', height: '56px', objectFit: 'contain' }}
+                                            unoptimized
+                                        />
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => logoInputRef.current?.click()}
-                                        className="admin-btn admin-btn-secondary"
-                                        style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-                                    >
-                                        Changer le logo
-                                    </button>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)', display: 'block', marginBottom: '0.5rem' }}>
+                                            Utilisé pour le logo du menu, l&apos;icône d&apos;onglet et le favicon.
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => logoInputRef.current?.click()}
+                                            className="admin-btn admin-btn-secondary"
+                                            style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                                        >
+                                            Changer le logo / icône
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <div
@@ -277,18 +228,18 @@ export default function SettingsFormClient({ info }) {
                                     style={{
                                         border: `2px dashed ${logoDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
                                         background: logoDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
-                                        borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
+                                        borderRadius: '6px', padding: '1.75rem 1rem', textAlign: 'center', cursor: 'pointer'
                                     }}
                                 >
                                     <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.5rem' }} />
-                                    <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter le logo</span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>PNG, SVG (Fond transparent)</span>
+                                    <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour ajouter le logo / icône</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Fichier SVG (recommandé), PNG ou WEBP</span>
                                 </div>
                             )}
                             <input
                                 ref={logoInputRef}
                                 type="file"
-                                accept="image/*"
+                                accept=".svg,image/svg+xml,image/png,image/webp,image/*"
                                 style={{ display: 'none' }}
                                 onChange={(e) => handleLogoSelect(e.target.files?.[0])}
                             />

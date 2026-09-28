@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
+    <!-- Ombre douce sous l'assiette -->
     <filter id="plateShadow" x="-15%" y="-15%" width="130%" height="130%">
       <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#182A40" flood-opacity="0.45" />
     </filter>
@@ -7,17 +8,20 @@
       <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#7A2210" flood-opacity="0.3" />
     </filter>
     
+    <!-- Dégradé bleu signature Provence -->
     <linearGradient id="provenceBlue" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#3A679B" />
       <stop offset="50%" stop-color="#315B8C" />
       <stop offset="100%" stop-color="#264870" />
     </linearGradient>
 
+    <!-- Jaune soleil chaud -->
     <linearGradient id="plateYellow" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#F9CA42" />
       <stop offset="100%" stop-color="#E5A61E" />
     </linearGradient>
 
+    <!-- Terracotta provençal -->
     <linearGradient id="terracottaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ED633E" />
       <stop offset="100%" stop-color="#D24724" />
@@ -49,14 +53,18 @@
   <!-- Gobelet / Carafe en terracotta rétro (gauche de l'assiette) -->
   <g transform="translate(142, 172) rotate(-8)">
     <path d="M 6 0 L 26 0 C 31 0 34 5 33 11 L 30 36 C 29 41 24 45 19 45 L 13 45 C 8 45 3 41 2 36 L -1 11 C -2 5 1 0 6 0 Z" fill="url(#terracottaGrad)" />
+    <!-- Ellipse ouverture gobelet -->
     <ellipse cx="16" cy="6" rx="12" ry="4" fill="#F07957" />
     <ellipse cx="16" cy="7" rx="10" ry="2.5" fill="#2E4D73" opacity="0.6" />
   </g>
 
   <!-- Fourchette rétro en terracotta (droite de l'assiette) -->
   <g transform="translate(344, 150) rotate(14)">
+    <!-- Manche -->
     <path d="M 8 50 L 11 105 C 11 108 9 110 6 110 C 3 110 1 108 1 105 L 4 50 Z" fill="url(#terracottaGrad)" />
+    <!-- Base dents -->
     <path d="M 2 40 C 2 48 10 48 10 40 L 12 18 C 12 16 10 14 8 14 C 6 14 4 16 4 18 Z" fill="url(#terracottaGrad)" />
+    <!-- Dents de la fourchette -->
     <rect x="-2" y="2" width="2.8" height="24" rx="1.4" fill="url(#terracottaGrad)" />
     <rect x="3" y="0" width="2.8" height="26" rx="1.4" fill="url(#terracottaGrad)" />
     <rect x="8" y="0" width="2.8" height="26" rx="1.4" fill="url(#terracottaGrad)" />
@@ -65,16 +73,22 @@
 
   <!-- ASSIETTE CULINAIRE MAMÉ FRICOTO (Centre) -->
   <g filter="url(#plateShadow)">
+    <!-- Assiette bordure jaune soleil -->
     <circle cx="256" cy="200" r="92" fill="url(#plateYellow)" />
+    <!-- Bord intérieur assiette -->
     <circle cx="256" cy="200" r="82" fill="#E8A81F" opacity="0.4" />
     <circle cx="256" cy="200" r="76" fill="#FDFBF7" />
+    <!-- Papier dentelle / fond de plat clair -->
     <polygon points="256,132 278,142 300,136 314,152 334,158 338,180 354,194 346,216 354,236 338,248 332,270 310,272 296,288 274,282 256,292 238,282 216,288 202,272 180,270 174,248 158,236 166,216 158,194 174,180 178,158 198,152 212,136 234,142" fill="#FFF9ED" opacity="0.9" />
 
+    <!-- Ingrédients provençaux savoureux -->
     <g filter="url(#foodShadow)">
+      <!-- Tranches de Tomates et Agrumes -->
       <!-- Tomate haut -->
       <g transform="translate(242, 142)">
         <circle cx="14" cy="14" r="15" fill="#D9472B" />
         <circle cx="14" cy="14" r="12" fill="#ED593B" />
+        <!-- Pépins tomate -->
         <circle cx="10" cy="11" r="1.5" fill="#F7DC84" />
         <circle cx="18" cy="11" r="1.5" fill="#F7DC84" />
         <circle cx="14" cy="18" r="1.5" fill="#F7DC84" />
@@ -93,6 +107,7 @@
       <g transform="translate(268, 206)">
         <circle cx="14" cy="14" r="15" fill="#E8961E" />
         <circle cx="14" cy="14" r="11.5" fill="#FCAE2D" />
+        <!-- Rayons d'agrume -->
         <path d="M 14 14 L 14 4 M 14 14 L 22 7 M 14 14 L 24 16 M 14 14 L 20 22 M 14 14 L 12 24 M 14 14 L 5 20 M 14 14 L 4 12 M 14 14 L 8 6" stroke="#FFF7E6" stroke-width="1" opacity="0.7" />
       </g>
 
@@ -105,28 +120,32 @@
         <circle cx="17" cy="22" r="1.8" fill="#F7DC84" />
       </g>
 
-      <!-- Mozzarella / Burrata -->
+      <!-- Mozzarella / Burrata crémeuse (tranches blanches) -->
       <circle cx="218" cy="178" r="14" fill="#FAF5E8" stroke="#E6DCBF" stroke-width="1.5" />
       <circle cx="266" cy="162" r="13" fill="#FCF8ED" stroke="#E8DEBE" stroke-width="1.5" />
       <circle cx="224" cy="214" r="13.5" fill="#FDF9EF" stroke="#E6DCBF" stroke-width="1.5" />
 
-      <!-- Agrume gauche -->
+      <!-- Agrume jaune/orange gauche -->
       <g transform="translate(196, 178)">
         <circle cx="13" cy="13" r="14" fill="#ECA022" />
         <circle cx="13" cy="13" r="10.5" fill="#F9B838" />
         <path d="M 13 13 L 13 3 M 13 13 L 20 6 M 13 13 L 22 14 M 13 13 L 18 20 M 13 13 L 10 22 M 13 13 L 4 18 M 13 13 L 3 11 M 13 13 L 7 5" stroke="#FFF7E6" stroke-width="0.9" opacity="0.75" />
       </g>
 
-      <!-- Roquette / Feuilles d'herbes au centre -->
+      <!-- Roquette / Feuilles d'herbes fraîches au centre -->
       <g fill="#274628" stroke="#1F3820" stroke-width="0.8">
+        <!-- Feuille 1 -->
         <path d="M 256 198 C 248 185 240 180 234 172 C 240 178 244 176 248 168 C 252 174 256 172 260 165 C 263 173 268 174 274 169 C 270 177 274 182 280 184 C 272 188 268 194 256 198 Z" />
+        <!-- Feuille 2 -->
         <path d="M 256 200 C 265 208 275 212 284 218 C 276 215 274 220 273 226 C 267 220 264 224 259 230 C 258 222 252 221 247 227 C 249 218 244 216 238 213 C 246 210 250 205 256 200 Z" fill="#2E522F" />
+        <!-- Feuille 3 (latérale) -->
         <path d="M 254 196 C 242 196 232 192 222 190 C 230 196 226 200 222 205 C 229 203 230 208 230 214 C 236 208 240 211 241 218 C 244 210 248 208 254 196 Z" fill="#365C37" />
+        <!-- Branchettes / tiges fines -->
         <path d="M 256 195 Q 262 175 258 160" stroke="#719363" stroke-width="2" fill="none" stroke-linecap="round" />
         <path d="M 256 202 Q 248 220 252 234" stroke="#719363" stroke-width="1.8" fill="none" stroke-linecap="round" />
       </g>
 
-      <!-- Grains de poivre -->
+      <!-- Grains de poivre / herbes parsemées -->
       <circle cx="214" cy="162" r="1.8" fill="#1C1815" />
       <circle cx="282" cy="154" r="1.6" fill="#1C1815" />
       <circle cx="294" cy="228" r="1.8" fill="#1C1815" />
@@ -140,40 +159,53 @@
   <!-- ============================================== -->
   <g fill="#FFFDF8" filter="url(#plateShadow)">
     
-    <!-- MOT 1 : "mamé" -->
+    <!-- MOT 1 : "mamé" (centré à gauche) -->
+    <!-- m -->
     <path d="M 98 382 L 98 344 C 98 335 104 330 112 330 C 119 330 123 334 125 340 C 128 334 133 330 140 330 C 148 330 154 335 154 344 L 154 382 C 154 386 150 388 145 388 C 140 388 137 386 137 382 L 137 348 C 137 343 134 340 130 340 C 126 340 123 343 123 348 L 123 382 C 123 386 119 388 114 388 C 109 388 106 386 106 382 L 106 348 C 106 343 103 340 99 340 C 95 340 92 343 92 348 L 92 382 C 92 386 89 388 84 388 C 79 388 76 386 76 382 L 76 344 C 76 335 82 330 90 330 C 94 330 96 332 98 335 Z" transform="translate(6, 0)" />
     
+    <!-- a -->
     <path d="M 182 338 C 193 338 200 345 200 356 L 200 382 C 200 386 197 388 192 388 C 188 388 185 386 185 382 L 185 376 C 182 384 174 389 165 389 C 153 389 144 381 144 369 C 144 357 154 350 167 350 L 185 350 L 185 348 C 185 342 181 339 175 339 C 168 339 164 342 163 347 C 162 350 159 352 155 352 C 150 352 147 348 148 343 C 152 335 165 338 182 338 Z M 185 365 L 170 365 C 163 365 159 368 159 373 C 159 378 164 381 170 381 C 178 381 185 375 185 367 Z" transform="translate(18, 0)" />
 
+    <!-- m -->
     <path d="M 238 382 L 238 344 C 238 335 244 330 252 330 C 259 330 263 334 265 340 C 268 334 273 330 280 330 C 288 330 294 335 294 344 L 294 382 C 294 386 290 388 285 388 C 280 388 277 386 277 382 L 277 348 C 277 343 274 340 270 340 C 266 340 263 343 263 348 L 263 382 C 263 386 259 388 254 388 C 249 388 246 386 246 382 L 246 348 C 246 343 243 340 239 340 C 235 340 232 343 232 348 L 232 382 C 232 386 229 388 224 388 C 219 388 216 386 216 382 L 216 344 C 216 335 222 330 230 330 C 234 330 236 332 238 335 Z" transform="translate(26, 0)" />
 
+    <!-- é (avec accent aigu rétro) -->
     <g transform="translate(36, 0)">
+      <!-- accent -->
       <path d="M 324 321 C 322 321 319 320 318 317 L 311 306 C 309 303 310 299 314 297 C 317 295 321 296 323 299 L 330 310 C 332 313 331 317 328 319 C 327 321 325 321 324 321 Z" fill="#F4CA55" />
+      <!-- corps du e -->
       <path d="M 319 330 C 334 330 344 340 344 356 C 344 359 342 361 339 361 L 305 361 C 306 372 314 378 325 378 C 331 378 336 375 338 371 C 340 368 343 366 347 367 C 352 368 353 372 351 376 C 346 384 336 388 324 388 C 306 388 293 376 293 359 C 293 342 305 330 319 330 Z M 305 352 L 331 352 C 330 344 324 339 318 339 C 311 339 306 344 305 352 Z" />
     </g>
 
-    <!-- MOT 2 : "fricoto" -->
+    <!-- MOT 2 : "fricoto" (ligne inférieure majestueuse) -->
     <g transform="translate(18, 56)">
+      <!-- f -->
       <path d="M 76 340 C 76 333 81 328 89 328 C 96 328 101 332 102 337 C 103 341 100 344 96 344 C 92 344 89 342 88 340 C 88 339 87 338 86 338 C 84 338 83 340 83 343 L 83 348 L 94 348 C 98 348 100 351 100 354 C 100 358 98 360 94 360 L 83 360 L 83 384 C 83 388 80 391 76 391 C 72 391 69 388 69 384 L 69 360 L 63 360 C 59 360 57 358 57 354 C 57 351 59 348 63 348 L 69 348 L 69 343 C 69 334 72 328 84 328" />
 
+      <!-- r -->
       <path d="M 112 348 L 112 344 C 112 336 117 331 124 331 C 128 331 131 333 133 336 C 137 332 142 330 148 331 C 152 332 153 336 152 340 C 151 344 147 345 144 344 C 138 343 134 347 134 353 L 134 384 C 134 388 131 390 127 390 C 123 390 120 388 120 384 L 120 354 C 120 349 117 346 113 346 C 109 346 106 349 106 354 L 106 384 C 106 388 103 390 99 390 C 95 390 92 388 92 384 L 92 344 C 92 336 97 331 105 331 C 109 331 111 333 112 336 Z" transform="translate(14, 0)" />
 
+      <!-- i (avec point doré) -->
       <g transform="translate(68, 0)">
         <circle cx="118" cy="336" r="6.5" fill="#F4CA55" />
         <path d="M 124 352 L 124 384 C 124 388 121 390 117 390 C 113 390 110 388 110 384 L 110 352 C 110 348 113 345 117 345 C 121 345 124 348 124 352 Z" />
       </g>
 
+      <!-- c -->
       <path d="M 226 350 C 224 345 219 340 211 340 C 199 340 189 350 189 365 C 189 380 199 390 211 390 C 220 390 225 385 227 380 C 228 376 232 375 236 377 C 240 378 241 383 239 387 C 235 395 225 401 211 401 C 192 401 176 386 176 365 C 176 344 192 329 211 329 C 224 329 234 335 238 343 C 240 347 238 351 234 353 C 230 354 227 353 226 350 Z" transform="translate(24, -11)" />
 
+      <!-- o -->
       <path d="M 284 340 C 298 340 309 351 309 366 C 309 381 298 392 284 392 C 270 392 259 381 259 366 C 259 351 270 340 284 340 Z M 284 353 C 277 353 272 359 272 366 C 272 373 277 379 284 379 C 291 379 296 373 296 366 C 296 359 291 353 284 353 Z" transform="translate(18, -12)" />
 
+      <!-- t -->
       <path d="M 334 332 L 334 345 L 345 345 C 349 345 351 348 351 351 C 351 355 349 357 345 357 L 334 357 L 334 376 C 334 380 337 382 341 382 C 343 382 345 381 347 380 C 350 378 354 379 356 382 C 358 386 356 390 352 392 C 347 394 342 394 337 394 C 326 394 320 387 320 376 L 320 357 L 314 357 C 310 357 308 355 308 351 C 308 348 310 345 314 345 L 320 345 L 320 332 C 320 328 323 325 327 325 C 331 325 334 328 334 332 Z" transform="translate(18, -7)" />
 
+      <!-- o -->
       <path d="M 388 340 C 402 340 413 351 413 366 C 413 381 402 392 388 392 C 374 392 363 381 363 366 C 363 351 374 340 388 340 Z M 388 353 C 381 353 376 359 376 366 C 376 373 381 379 388 379 C 395 379 400 373 400 366 C 400 359 395 353 388 353 Z" transform="translate(10, -12)" />
     </g>
   </g>
 
-  <!-- "cuisine maison" -->
+  <!-- Ligne manuscrite élégante : "cuisine maison" -->
   <text x="256" y="472" font-family="'Brush Script MT', 'Caveat', 'Playball', cursive, sans-serif" font-size="28" font-style="italic" fill="#F4CA55" text-anchor="middle" letter-spacing="2">
     cuisine maison
   </text>

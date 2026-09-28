@@ -63,8 +63,8 @@
     align-items: center;
     justify-content: center;
     border: 1.5px solid var(--gold);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-    background: #0E0D0C;
+    box-shadow: 0 2px 10px rgba(49, 91, 140, 0.35);
+    background: #315B8C;
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     touch-action: manipulation;
 }

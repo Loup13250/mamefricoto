@@ -163,9 +163,9 @@ function DropZone({ onFiles, isDragging, setIsDragging, inputName = "image_files
 }
 
 /* =====================================================
-   COMPRESSION IMAGE 2K WEBP
+   COMPRESSION IMAGE OPTIMISÉE WEBP (Max 1400px @ 0.80)
    ===================================================== */
-async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
+async function compressImageFile(file, maxWidth = 1400, quality = 0.80) {
     if (!file || typeof file === 'string' || !file.type?.startsWith('image/')) return file;
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -270,35 +270,57 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         });
     }, []);
 
+    const handleReorderExisting = (imgId, direction) => {
+        setError('');
+        startTransition(async () => {
+            const res = await reorderWeeklyMenuImage(imgId, direction);
+            if (res?.error) setError(res.error);
+        });
+    };
+
+    const handleDeleteExisting = (imgId) => {
+        setError('');
+        startTransition(async () => {
+            const res = await deleteWeeklyMenuImage(imgId);
+            if (res?.error) setError(res.error);
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        const formTarget = e.currentTarget;
 
         startTransition(async () => {
-            const formData = new FormData(e.target);
-            formData.delete('image_files');
-            formData.delete('image_files_fr');
-            formData.delete('image_files_en');
+            try {
+                const formData = new FormData(formTarget);
+                formData.delete('image_files');
+                formData.delete('image_files_fr');
+                formData.delete('image_files_en');
 
-            // Compression FR
-            const compressedFr = await Promise.all(filesFr.map(f => compressImageFile(f, 2048, 0.85)));
-            for (const file of compressedFr) {
-                formData.append('image_files_fr', file);
-            }
+                // Compression FR (1400px, 0.80)
+                const compressedFr = await Promise.all(filesFr.map(f => compressImageFile(f, 1400, 0.80)));
+                for (const file of compressedFr) {
+                    formData.append('image_files_fr', file);
+                }
 
-            // Compression EN
-            const compressedEn = await Promise.all(filesEn.map(f => compressImageFile(f, 2048, 0.85)));
-            for (const file of compressedEn) {
-                formData.append('image_files_en', file);
-            }
+                // Compression EN (1400px, 0.80)
+                const compressedEn = await Promise.all(filesEn.map(f => compressImageFile(f, 1400, 0.80)));
+                for (const file of compressedEn) {
+                    formData.append('image_files_en', file);
+                }
 
-            const action = isEdit ? editWeeklyMenu : addWeeklyMenu;
-            const result = await action(formData);
-            if (result?.error) {
-                setError(result.error);
-            } else {
-                setSuccess(true);
-                setTimeout(() => onCancel(), 1000);
+                const action = isEdit ? editWeeklyMenu : addWeeklyMenu;
+                const result = await action(formData);
+                if (result?.error) {
+                    setError(result.error);
+                } else {
+                    setSuccess(true);
+                    setTimeout(() => onCancel(), 1000);
+                }
+            } catch (err) {
+                console.error("Submit error:", err);
+                setError(err.message || 'Une erreur est survenue lors de l\'enregistrement.');
             }
         });
     };
@@ -431,7 +453,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                     <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                         <button
                                             type="button"
-                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
+                                            onClick={() => handleReorderExisting(img.id, 'up')}
                                             disabled={idx === 0 || isPending}
                                             title="Monter"
                                             aria-label={`Monter la photo FR numéro ${idx + 1}`}
@@ -441,7 +463,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
+                                            onClick={() => handleReorderExisting(img.id, 'down')}
                                             disabled={idx === currentFrImages.length - 1 || isPending}
                                             title="Descendre"
                                             aria-label={`Descendre la photo FR numéro ${idx + 1}`}
@@ -453,7 +475,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                     {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
                                     <button
                                         type="button"
-                                        onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
+                                        onClick={() => handleDeleteExisting(img.id)}
                                         disabled={isPending}
                                         title="Supprimer définitivement cette photo"
                                         aria-label={`Supprimer définitivement la photo FR numéro ${idx + 1}`}
@@ -559,7 +581,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                     <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                         <button
                                             type="button"
-                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
+                                            onClick={() => handleReorderExisting(img.id, 'up')}
                                             disabled={idx === 0 || isPending}
                                             title="Monter"
                                             aria-label={`Monter la photo EN numéro ${idx + 1}`}
@@ -569,7 +591,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
+                                            onClick={() => handleReorderExisting(img.id, 'down')}
                                             disabled={idx === currentEnImages.length - 1 || isPending}
                                             title="Descendre"
                                             aria-label={`Descendre la photo EN numéro ${idx + 1}`}
@@ -581,7 +603,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                     {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
                                     <button
                                         type="button"
-                                        onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
+                                        onClick={() => handleDeleteExisting(img.id)}
                                         disabled={isPending}
                                         title="Supprimer cette photo anglaise"
                                         aria-label={`Supprimer la photo EN numéro ${idx + 1}`}
@@ -697,7 +719,10 @@ export default function WeeklyMenuClient({ menus }) {
 
     const handleDelete = (id) => {
         startTransition(async () => {
-            await deleteWeeklyMenu(id);
+            const res = await deleteWeeklyMenu(id);
+            if (res?.error) {
+                alert(res.error);
+            }
             setDeleteId(null);
         });
     };

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
-import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost } from '@/app/actions';
+import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost, moveGalleryPostPosition } from '@/app/actions';
 import {
     Plus, Trash2, Pencil, X, Film, UploadCloud, Loader2,
     CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight
@@ -267,16 +267,16 @@ export default function GalleryClient({ posts }) {
                     Ajoutez et gérez vos photos et vidéos de cuisine. Modifiez leurs titres et légendes en français et en anglais pour la page publique <strong>Galerie</strong>.
                 </p>
 
-                {/* BANDEAU CAPACITÉ & CLARIFICATION SUR LA LIMITE */}
+                {/* BANDEAU CAPACITÉ */}
                 <div style={{
                     background: 'var(--admin-surface, #1e1b18)',
                     border: '1px solid var(--admin-border, #332d27)',
                     borderRadius: '8px',
-                    padding: '1.25rem',
+                    padding: '1rem 1.25rem',
                     marginBottom: '1.5rem',
                     boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                             <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-gold, #C8A96E)' }}>
                                 Capacité de la vitrine
@@ -304,7 +304,6 @@ export default function GalleryClient({ posts }) {
                         background: 'rgba(255,255,255,0.08)',
                         borderRadius: '3px',
                         overflow: 'hidden',
-                        marginBottom: '0.85rem',
                     }}>
                         <div style={{
                             width: `${Math.min(100, (posts.length / 30) * 100)}%`,
@@ -312,23 +311,6 @@ export default function GalleryClient({ posts }) {
                             background: posts.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
                             transition: 'width 0.4s ease',
                         }} />
-                    </div>
-
-                    <div style={{
-                        fontSize: '0.8rem',
-                        lineHeight: '1.5',
-                        color: 'var(--admin-text-muted, #aaa)',
-                        background: 'rgba(0,0,0,0.25)',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '6px',
-                        borderLeft: '3px solid var(--admin-gold, #C8A96E)',
-                    }}>
-                        <strong style={{ color: 'var(--admin-gold, #C8A96E)', display: 'block', marginBottom: '0.25rem' }}>
-                            💡 À propos de la limite de la Galerie :
-                        </strong>
-                        La galerie est conçue comme un <strong>portfolio gastronomique d’élite</strong>, optimisé pour charger instantanément sur les smartphones (4G/5G) de vos clients.
-                        <br />
-                        <em>Peut-on importer 50&nbsp;000 photos&nbsp;?</em> <strong>Non</strong> : importer des milliers de photos alourdirait le site, ferait ramer les téléphones mobiles de vos visiteurs et saturerait le stockage web. La limite est calibrée à <strong>30 réalisations récentes</strong>, ce qui garantit une vitrine percutante, élégante et un temps de chargement éclair. Si vous ajoutez une 31ᵉ photo, la plus ancienne sera automatiquement archivée.
                     </div>
                 </div>
 
@@ -744,8 +726,8 @@ export default function GalleryClient({ posts }) {
                                     background: 'rgba(0,0,0,0.2)',
                                     borderTop: '1px solid var(--admin-border-soft, #332d27)',
                                 }}>
-                                    {/* Reorder Left/Right */}
-                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                    {/* Reorder Left/Right & Direct Position Select */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <button
                                             onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'up'))}
                                             disabled={idx === 0 || isDeleting}
@@ -778,6 +760,38 @@ export default function GalleryClient({ posts }) {
                                         >
                                             <ArrowRight size={13} />
                                         </button>
+
+                                        {/* Sélecteur de position directe (ex : #1 vers #4) */}
+                                        <select
+                                            value={idx + 1}
+                                            disabled={isDeleting}
+                                            onChange={(e) => {
+                                                const targetPos = parseInt(e.target.value, 10);
+                                                if (targetPos && targetPos !== idx + 1) {
+                                                    startDeleteTransition(() => moveGalleryPostPosition(post.id, targetPos));
+                                                }
+                                            }}
+                                            title="Changer directement l'emplacement (ex : placer en #4)"
+                                            aria-label={`Changer la position de ${post.title || 'cette réalisation'}`}
+                                            style={{
+                                                height: '28px',
+                                                padding: '0 6px',
+                                                background: 'rgba(200,169,110,0.15)',
+                                                border: '1px solid rgba(200,169,110,0.3)',
+                                                color: 'var(--admin-gold, #C8A96E)',
+                                                borderRadius: '3px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '700',
+                                                cursor: 'pointer',
+                                                outline: 'none',
+                                            }}
+                                        >
+                                            {posts.map((_, pIdx) => (
+                                                <option key={pIdx + 1} value={pIdx + 1} style={{ background: '#1e1b18', color: '#FDFBF7' }}>
+                                                    #{pIdx + 1}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     {/* Edit & Delete */}

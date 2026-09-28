@@ -511,7 +511,8 @@ export async function addGalleryPost(formData) {
         }
 
         const db = getDb();
-        await db.prepare('INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, 0)').run(
+        await db.prepare('UPDATE gallery_posts SET display_order = display_order + 1').run();
+        await db.prepare('INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, 1)').run(
             title, title_en, caption, caption_en, image_url, media_type
         );
 
@@ -580,34 +581,49 @@ export async function deleteGalleryPost(idOrFormData) {
     return { success: true };
 }
 
-export async function reorderGalleryPost(idOrFormData, direction) {
+export async function moveGalleryPostPosition(idOrFormData, targetPosition) {
     await requireAdminAuth();
     const id = extractId(idOrFormData);
-    if (!id) return { error: 'ID invalide' };
+    const targetPos = parseInt(targetPosition, 10);
+    if (!id || isNaN(targetPos) || targetPos < 1) return { error: 'Paramètres invalides' };
 
     const db = getDb();
-    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, id ASC').all();
-    const index = posts.findIndex(p => p.id === id);
-    if (index === -1) return { error: 'Photo introuvable' };
+    const posts = await db.prepare('SELECT id, display_order FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
+    const currentIndex = posts.findIndex(p => p.id === id);
+    if (currentIndex === -1) return { error: 'Photo introuvable' };
 
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= posts.length) return { success: true };
+    const targetIndex = Math.max(0, Math.min(posts.length - 1, targetPos - 1));
+    if (currentIndex === targetIndex) return { success: true };
 
-    const currentPost = posts[index];
-    const targetPost = posts[targetIndex];
-
-    const currentOrder = currentPost.display_order || index + 1;
-    const targetOrder = targetPost.display_order || targetIndex + 1;
+    const [moved] = posts.splice(currentIndex, 1);
+    posts.splice(targetIndex, 0, moved);
 
     const stmt = db.prepare('UPDATE gallery_posts SET display_order = ? WHERE id = ?');
-    await stmt.run(targetOrder, currentPost.id);
-    await stmt.run(currentOrder, targetPost.id);
+    for (let i = 0; i < posts.length; i++) {
+        await stmt.run(i + 1, posts[i].id);
+    }
 
     revalidatePath('/');
     revalidatePath('/realisations');
     revalidatePath('/galerie');
     revalidatePath('/admin/dashboard/galerie');
     return { success: true };
+}
+
+export async function reorderGalleryPost(idOrFormData, direction) {
+    await requireAdminAuth();
+    const id = extractId(idOrFormData);
+    if (!id) return { error: 'ID invalide' };
+
+    const db = getDb();
+    const posts = await db.prepare('SELECT id FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
+    const currentIndex = posts.findIndex(p => p.id === id);
+    if (currentIndex === -1) return { error: 'Photo introuvable' };
+
+    const targetPos = direction === 'up' ? currentIndex : currentIndex + 2; // 1-indexed target
+    if (targetPos < 1 || targetPos > posts.length) return { success: true };
+
+    return moveGalleryPostPosition(id, targetPos);
 }
 
 // --- CONTACT & DEVIS FORM (PUBLIC) ---

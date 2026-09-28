@@ -88,10 +88,12 @@
 
 /* ===== SERVICES SECTION ===== */
 .services-section {
-    background: #0F0E0C;
+    background: var(--bg-2);
     padding: 7rem 0;
     position: relative;
     overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .services-section::before {
@@ -101,16 +103,8 @@
     right: -120px;
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(184, 139, 70, 0.07) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(148, 104, 30, 0.05) 0%, transparent 65%);
     pointer-events: none;
-}
-
-.services-section .section-header .label {
-    color: rgba(200, 169, 110, 0.8);
-}
-
-.services-section .section-header h2 {
-    color: #FFFFFF;
 }
 
 .services-grid {
@@ -119,13 +113,13 @@
     gap: 0;
     background: transparent;
     border: none;
-    border-top: 1px solid rgba(200, 169, 110, 0.18);
+    border-top: 1px solid var(--border);
 }
 
 .service-card {
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(200, 169, 110, 0.18);
+    border-bottom: 1px solid var(--border);
     border-radius: 0;
     padding: 2.5rem 0;
     position: relative;
@@ -136,11 +130,6 @@
     grid-template-columns: 80px 1fr;
     gap: 0 2.5rem;
     align-items: start;
-    transition: background 0.3s ease;
-}
-
-.service-card:hover {
-    background: rgba(200, 169, 110, 0.03);
 }
 
 .service-num {
@@ -148,7 +137,7 @@
     font-size: 3.5rem;
     font-weight: 300;
     font-style: italic;
-    color: rgba(200, 169, 110, 0.3);
+    color: rgba(148, 104, 30, 0.25);
     line-height: 1;
     padding-top: 0.2rem;
     margin-bottom: 0;
@@ -156,7 +145,7 @@
     grid-column: 1;
     text-align: right;
     padding-right: 2rem;
-    border-right: 1px solid rgba(200, 169, 110, 0.2);
+    border-right: 1px solid var(--border);
     min-width: 80px;
     align-self: start;
 }
@@ -181,13 +170,13 @@
     font-family: var(--font-heading);
     font-size: 1.6rem;
     font-weight: 400;
-    color: #FFFFFF;
+    color: var(--text-1);
     line-height: 1.2;
     margin: 0;
 }
 
 .service-card p {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-2);
     font-size: 0.9rem;
     line-height: 1.7;
     margin: 0;
@@ -195,9 +184,6 @@
 }
 
 @media (max-width: 900px) {
-    .services-grid {
-        grid-template-columns: 1fr;
-    }
     .service-card {
         grid-template-columns: 56px 1fr;
         gap: 0 1.5rem;

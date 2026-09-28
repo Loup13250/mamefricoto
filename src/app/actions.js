@@ -304,9 +304,9 @@ export async function editWeeklyMenu(formData) {
 
         // Insert new FR images if uploaded
         if (uploadedUrlsFr.length > 0) {
-            const highestOrderRow = await db.prepare('SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL)').get(id);
+            const highestOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id);
             let startOrder = (highestOrderRow?.max_order || 0) + 1;
-            const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, "fr")');
+            const stmt = db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, 'fr')");
             for (const url of uploadedUrlsFr) {
                 await stmt.run(id, url, startOrder++);
             }
@@ -314,17 +314,17 @@ export async function editWeeklyMenu(formData) {
 
         // Insert new EN images if uploaded
         if (uploadedUrlsEn.length > 0) {
-            const highestOrderRow = await db.prepare('SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND lang = "en"').get(id);
+            const highestOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en'").get(id);
             let startOrder = (highestOrderRow?.max_order || 0) + 1;
-            const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, "en")');
+            const stmt = db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, 'en')");
             for (const url of uploadedUrlsEn) {
                 await stmt.run(id, url, startOrder++);
             }
         }
 
         // Sync main image URLs with first image of each language
-        const firstFr = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC LIMIT 1').get(id);
-        const firstEn = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC LIMIT 1').get(id);
+        const firstFr = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC LIMIT 1").get(id);
+        const firstEn = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC LIMIT 1").get(id);
 
         const mainImageUrl = firstFr?.image_url || null;
         const mainImageUrlEn = firstEn?.image_url || null;
@@ -749,8 +749,8 @@ export async function deleteWeeklyMenuImage(imageId) {
 
         const isEn = img.lang === 'en';
         const remaining = isEn
-            ? await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC').all(img.menu_id)
-            : await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC').all(img.menu_id);
+            ? await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.menu_id)
+            : await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.menu_id);
 
         if (isEn) {
             const nextUrlEn = remaining.length > 0 ? remaining[0].image_url : null;
@@ -778,8 +778,8 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
 
         const isEn = img.lang === 'en';
         const images = isEn
-            ? await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC, id ASC').all(img.menu_id)
-            : await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC, id ASC').all(img.menu_id);
+            ? await db.prepare("SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.menu_id)
+            : await db.prepare("SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.menu_id);
 
         const index = images.findIndex(i => i.id === imageId);
         if (index === -1) return { error: 'Image non trouvée' };
@@ -798,8 +798,8 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
         await stmt.run(currentOrder, targetImg.id);
 
         const updatedImages = isEn
-            ? await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC').all(img.menu_id)
-            : await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC').all(img.menu_id);
+            ? await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.menu_id)
+            : await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.menu_id);
 
         if (isEn) {
             if (updatedImages.length > 0) {

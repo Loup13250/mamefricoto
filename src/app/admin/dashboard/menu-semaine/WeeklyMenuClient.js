@@ -657,25 +657,47 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 )}
             </div>
 
-            {/* Menu en cours */}
-            <div style={{
-                display: 'flex', alignItems: 'center', gap: '0.75rem',
-                padding: '1rem 1.25rem',
-                background: 'rgba(34,197,94,0.05)',
-                border: '1px solid rgba(34,197,94,0.15)',
-                borderRadius: '4px',
-            }}>
-                <input
-                    type="checkbox"
-                    name="is_current"
-                    id={`is_current_${activeMenu?.id || 'new'}`}
-                    defaultChecked={activeMenu ? !!activeMenu.is_current : true}
-                    style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
-                />
-                <label htmlFor={`is_current_${activeMenu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
-                    Afficher comme menu en cours sur la page d&apos;accueil
-                </label>
-            </div>
+            {/* Statut menu en cours */}
+            {isEdit && activeMenu?.is_current === 1 ? (
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.85rem 1.25rem',
+                    background: 'rgba(34,197,94,0.08)',
+                    border: '1px solid rgba(34,197,94,0.25)',
+                    borderRadius: '6px',
+                }}>
+                    <input type="hidden" name="is_current" value="on" />
+                    <span style={{
+                        fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em',
+                        padding: '3px 9px', background: 'rgba(34,197,94,0.2)', color: '#22c55e',
+                        border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px'
+                    }}>
+                        En ligne
+                    </span>
+                    <span style={{ color: '#86efac', fontSize: '0.88rem', fontWeight: '600' }}>
+                        Ce menu est actuellement le menu en cours affiché sur la page d&apos;accueil.
+                    </span>
+                </div>
+            ) : (
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '1rem 1.25rem',
+                    background: 'rgba(34,197,94,0.05)',
+                    border: '1px solid rgba(34,197,94,0.15)',
+                    borderRadius: '4px',
+                }}>
+                    <input
+                        type="checkbox"
+                        name="is_current"
+                        id={`is_current_${activeMenu?.id || 'new'}`}
+                        defaultChecked={activeMenu ? !!activeMenu.is_current : true}
+                        style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
+                    />
+                    <label htmlFor={`is_current_${activeMenu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
+                        {isEdit ? 'Définir comme menu en cours sur la page d\'accueil' : 'Afficher comme menu en cours sur la page d\'accueil'}
+                    </label>
+                </div>
+            )}
 
             {/* Erreur */}
             {error && (

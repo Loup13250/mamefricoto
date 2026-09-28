@@ -82,8 +82,8 @@ export default function GoogleReviewsSection({ siteInfo }) {
                     </h2>
                     <p>{t('reviews.subtitle')}</p>
 
-                    <div className="reviews-rating-pill">
-                        <div className="reviews-rating-stars">
+                    <div className="reviews-rating-pill" aria-label="Note de 5 sur 5 basée sur les avis Google vérifiés">
+                        <div className="reviews-rating-stars" aria-hidden="true">
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} size={15} fill="var(--gold)" color="var(--gold)" />
                             ))}
@@ -98,23 +98,23 @@ export default function GoogleReviewsSection({ siteInfo }) {
                         <div key={rev.id} className="review-card anim-up">
                             <div className="review-card-top">
                                 <div className="review-author-info">
-                                    <div className="review-author-avatar">{rev.initials}</div>
+                                    <div className="review-author-avatar" aria-hidden="true">{rev.initials}</div>
                                     <div>
                                         <h3 className="review-author-name">{rev.author}</h3>
                                         <span className="review-date">{rev.date}</span>
                                     </div>
                                 </div>
-                                <div className="review-google-badge">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <div className="review-google-badge" title="Avis client vérifié Google">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#34A853"/>
                                     </svg>
                                     <span>Vérifié</span>
                                 </div>
                             </div>
 
-                            <div className="review-stars">
+                            <div className="review-stars" aria-label={`${rev.stars} étoiles sur 5`}>
                                 {[...Array(rev.stars)].map((_, i) => (
-                                    <Star key={i} size={15} fill="#D4AF37" color="#D4AF37" />
+                                    <Star key={i} size={15} fill="#D4AF37" color="#D4AF37" aria-hidden="true" />
                                 ))}
                             </div>
 

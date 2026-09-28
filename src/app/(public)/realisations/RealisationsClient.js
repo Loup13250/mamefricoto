@@ -11,7 +11,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
     const phoneTel = phone.replace(/\s+/g, '');
 
     return (
-        <main className="subpage-main">
+        <main id="main-content" tabIndex="-1" className="subpage-main">
             {/* ===== PAGE HERO ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">

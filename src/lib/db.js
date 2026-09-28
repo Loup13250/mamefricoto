@@ -24,34 +24,30 @@ export function getDb() {
                 authToken: tursoToken,
             });
 
-            let tableInitPromise = null;
+            let tablesEnsured = false;
             const ensureTables = async () => {
-                if (!tableInitPromise) {
-                    tableInitPromise = (async () => {
-                        try {
-                            await client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-                            await client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-                            await client.execute(`CREATE TABLE IF NOT EXISTS fixed_prices (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT DEFAULT 'Repas', category_en TEXT DEFAULT 'Meals', name TEXT NOT NULL, name_en TEXT, price TEXT NOT NULL, price_en TEXT, details TEXT, details_en TEXT, badge TEXT, badge_en TEXT, display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-                            const migrationCols = [
-                                'ALTER TABLE services ADD COLUMN title_en TEXT',
-                                'ALTER TABLE services ADD COLUMN description_en TEXT',
-                                'ALTER TABLE services ADD COLUMN badge_en TEXT',
-                                'ALTER TABLE weekly_menus ADD COLUMN title_en TEXT',
-                                'ALTER TABLE weekly_menus ADD COLUMN description_en TEXT',
-                                'ALTER TABLE carousel_images ADD COLUMN title_en TEXT',
-                                'ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT',
-                                'ALTER TABLE gallery_posts ADD COLUMN title_en TEXT',
-                                'ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT'
-                            ];
-                            for (const m of migrationCols) {
-                                try { await client.execute(m); } catch (e) {}
-                            }
-                        } catch (err) {
-                            console.error('Turso ensureTables error:', err);
-                        }
-                    })();
+                if (tablesEnsured) return;
+                try {
+                    await Promise.allSettled([
+                        client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS fixed_prices (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT DEFAULT 'Repas', category_en TEXT DEFAULT 'Meals', name TEXT NOT NULL, name_en TEXT, price TEXT NOT NULL, price_en TEXT, details TEXT, details_en TEXT, badge TEXT, badge_en TEXT, display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`ALTER TABLE weekly_menu_images ADD COLUMN lang TEXT DEFAULT 'fr'`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN image_url_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN description_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN badge_en TEXT`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN description_en TEXT`),
+                        client.execute(`ALTER TABLE carousel_images ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT`),
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT`)
+                    ]);
+                    tablesEnsured = true;
+                } catch (err) {
+                    tablesEnsured = true;
                 }
-                await tableInitPromise;
             };
 
 function toPlain(row) {
@@ -168,6 +164,8 @@ function toPlain(row) {
             localDbInstance.exec(schema);
 
             try { localDbInstance.prepare("ALTER TABLE weekly_menus ADD COLUMN embed_url TEXT").run(); } catch {}
+            try { localDbInstance.prepare("ALTER TABLE weekly_menus ADD COLUMN image_url_en TEXT").run(); } catch {}
+            try { localDbInstance.prepare("ALTER TABLE weekly_menu_images ADD COLUMN lang TEXT DEFAULT 'fr'").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE gallery_posts ADD COLUMN media_type TEXT DEFAULT 'image'").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE contact_messages ADD COLUMN status TEXT DEFAULT 'nouveau'").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE contact_messages ADD COLUMN admin_notes TEXT DEFAULT ''").run(); } catch {}

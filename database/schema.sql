@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS weekly_menus (
   description TEXT,
   description_en TEXT,
   image_url TEXT,
+  image_url_en TEXT,
   embed_url TEXT,
   is_current BOOLEAN DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS weekly_menu_images (
   menu_id INTEGER NOT NULL,
   image_url TEXT NOT NULL,
   display_order INTEGER DEFAULT 0,
+  lang TEXT DEFAULT 'fr',
   FOREIGN KEY(menu_id) REFERENCES weekly_menus(id) ON DELETE CASCADE
 );
 

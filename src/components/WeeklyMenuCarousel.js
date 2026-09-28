@@ -16,7 +16,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const [arrowsVisible, setArrowsVisible] = useState(true);
     const touchStartX = useRef(0);
     const hideTimerRef = useRef(null);
-    const { t, trans } = useLanguage();
+    const { t, trans, lang } = useLanguage();
 
     const triggerArrowVisibility = useCallback(() => {
         setArrowsVisible(true);
@@ -33,11 +33,19 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         };
     }, [currentIndex, triggerArrowVisibility]);
 
+    useEffect(() => {
+        setCurrentIndex(0);
+    }, [lang]);
+
     if (!menu) return null;
 
-    const images = menu.images && menu.images.length > 0
-        ? menu.images
-        : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : []);
+    const images = (lang === 'en' && menu.images_en && menu.images_en.length > 0)
+        ? menu.images_en
+        : ((menu.images_fr && menu.images_fr.length > 0)
+            ? menu.images_fr
+            : (menu.images && menu.images.length > 0
+                ? menu.images
+                : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : [])));
 
     const handlePrev = useCallback(() => {
         if (images.length <= 1) return;

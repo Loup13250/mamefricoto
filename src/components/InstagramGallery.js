@@ -54,11 +54,20 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                             className="gallery-item anim-up"
                             style={{ animationDelay: `${(idx % 4) * 80}ms` }}
                             onClick={() => setSelectedIndex(idx)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setSelectedIndex(idx);
+                                }
+                            }}
+                            aria-label={`Agrandir ${postTitle || 'cette réalisation'}`}
                         >
                             {post.media_type === 'video' ? (
                                 <>
                                     <video src={post.image_url} autoPlay loop muted playsInline className="gallery-img" />
-                                    <div className="video-mark">
+                                    <div className="video-mark" aria-hidden="true">
                                         <Play size={12} fill="currentColor" />
                                     </div>
                                 </>
@@ -100,7 +109,13 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
 
             {/* Lightbox */}
             {selectedPost && (
-                <div className="modal-backdrop" onClick={() => setSelectedIndex(null)}>
+                <div
+                    className="modal-backdrop"
+                    onClick={() => setSelectedIndex(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={trans(selectedPost, 'title') || 'Aperçu photo galerie'}
+                >
                     <div className="modal-wrapper" onClick={(e) => e.stopPropagation()}>
                         
                         {/* Navigation Buttons OUTSIDE modal-card */}

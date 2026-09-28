@@ -261,13 +261,83 @@ export default function GalleryClient({ posts }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
 
             {/* Header */}
-            <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2.5rem' }}>
+            <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
-                <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.25rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
                     Ajoutez et gérez vos photos et vidéos de cuisine. Modifiez leurs titres et légendes en français et en anglais pour la page publique <strong>Galerie</strong>.
                 </p>
+
+                {/* BANDEAU CAPACITÉ & CLARIFICATION SUR LA LIMITE */}
+                <div style={{
+                    background: 'var(--admin-surface, #1e1b18)',
+                    border: '1px solid var(--admin-border, #332d27)',
+                    borderRadius: '8px',
+                    padding: '1.25rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-gold, #C8A96E)' }}>
+                                Capacité de la vitrine
+                            </span>
+                            <span style={{
+                                fontSize: '0.8rem',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                background: posts.length >= 30 ? 'rgba(239,68,68,0.2)' : 'rgba(200,169,110,0.2)',
+                                color: posts.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
+                                fontWeight: '700'
+                            }}>
+                                {posts.length} / 30 médias
+                            </span>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle, #888)' }}>
+                            {posts.length >= 30 ? 'Capacité maximale atteinte (30/30)' : `${30 - posts.length} emplacement(s) disponible(s)`}
+                        </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div style={{
+                        width: '100%',
+                        height: '6px',
+                        background: 'rgba(255,255,255,0.08)',
+                        borderRadius: '3px',
+                        overflow: 'hidden',
+                        marginBottom: '0.85rem',
+                    }}>
+                        <div style={{
+                            width: `${Math.min(100, (posts.length / 30) * 100)}%`,
+                            height: '100%',
+                            background: posts.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
+                            transition: 'width 0.4s ease',
+                        }} />
+                    </div>
+
+                    <div style={{
+                        fontSize: '0.8rem',
+                        lineHeight: '1.5',
+                        color: 'var(--admin-text-muted, #aaa)',
+                        background: 'rgba(0,0,0,0.25)',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '6px',
+                        borderLeft: '3px solid var(--admin-gold, #C8A96E)',
+                    }}>
+                        <strong style={{ color: 'var(--admin-gold, #C8A96E)', display: 'block', marginBottom: '0.25rem' }}>
+                            💡 À propos de la limite de la Galerie :
+                        </strong>
+                        La galerie est conçue comme un <strong>portfolio gastronomique d’élite</strong>, optimisé pour charger instantanément sur les smartphones (4G/5G) de vos clients.
+                        <br />
+                        <em>Peut-on importer 50&nbsp;000 photos&nbsp;?</em> <strong>Non</strong> : importer des milliers de photos alourdirait le site, ferait ramer les téléphones mobiles de vos visiteurs et saturerait le stockage web. La limite est calibrée à <strong>30 réalisations récentes</strong>, ce qui garantit une vitrine percutante, élégante et un temps de chargement éclair. Si vous ajoutez une 31ᵉ photo, la plus ancienne sera automatiquement archivée.
+                    </div>
+                </div>
+
                 {!isAdding && !editingPost && (
-                    <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="admin-btn admin-btn-primary"
+                        aria-label="Ajouter une nouvelle photo ou vidéo"
+                    >
                         <Plus size={16} /> Ajouter une photo / vidéo
                     </button>
                 )}
@@ -680,6 +750,7 @@ export default function GalleryClient({ posts }) {
                                             onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'up'))}
                                             disabled={idx === 0 || isDeleting}
                                             title="Déplacer vers la gauche"
+                                            aria-label={`Déplacer ${post.title || 'cette photo'} vers la gauche`}
                                             style={{
                                                 width: '28px', height: '28px',
                                                 background: idx === 0 ? 'transparent' : 'rgba(200,169,110,0.15)',
@@ -695,6 +766,7 @@ export default function GalleryClient({ posts }) {
                                             onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'down'))}
                                             disabled={idx === posts.length - 1 || isDeleting}
                                             title="Déplacer vers la droite"
+                                            aria-label={`Déplacer ${post.title || 'cette photo'} vers la droite`}
                                             style={{
                                                 width: '28px', height: '28px',
                                                 background: idx === posts.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
@@ -726,6 +798,7 @@ export default function GalleryClient({ posts }) {
                                                 fontWeight: '600',
                                             }}
                                             title="Modifier les textes FR &amp; EN"
+                                            aria-label={`Modifier les textes FR et EN de ${post.title || 'cette publication'}`}
                                         >
                                             <Pencil size={12} /> Modifier
                                         </button>
@@ -735,12 +808,14 @@ export default function GalleryClient({ posts }) {
                                                 <button
                                                     onClick={() => handleDelete(post.id)}
                                                     disabled={isDeleting}
+                                                    aria-label="Confirmer la suppression"
                                                     style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
                                                 >
                                                     {isDeleting ? <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} /> : 'Oui'}
                                                 </button>
                                                 <button
                                                     onClick={() => setDeleteId(null)}
+                                                    aria-label="Annuler la suppression"
                                                     style={{ width: '24px', height: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                 >
                                                     <X size={12} />
@@ -751,6 +826,7 @@ export default function GalleryClient({ posts }) {
                                                 onClick={() => setDeleteId(post.id)}
                                                 style={{ width: '28px', height: '28px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                 title="Supprimer"
+                                                aria-label={`Supprimer la publication ${post.title || ''}`}
                                             >
                                                 <Trash2 size={13} />
                                             </button>

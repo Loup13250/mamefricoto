@@ -23,7 +23,7 @@ export default function TarifsClient({ siteInfo, services = [], pricingDocuments
     const phoneTel = phone.replace(/\s+/g, '');
 
     return (
-        <main className="tarifs-page subpage-main">
+        <main id="main-content" tabIndex="-1" className="tarifs-page subpage-main">
             {/* ===== PAGE HERO ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">

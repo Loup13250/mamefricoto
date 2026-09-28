@@ -9,11 +9,13 @@ export const metadata = {
 };
 
 export default async function DashboardOverview() {
-    const info = await getSiteInfo();
-    const currentMenu = await getCurrentWeeklyMenu();
-    const messages = await getContactMessages();
-    const unreadCount = await getUnreadMessageCount();
-    const galleryPosts = await getGalleryPosts();
+    const [info, currentMenu, messages, unreadCount, galleryPosts] = await Promise.all([
+        getSiteInfo(),
+        getCurrentWeeklyMenu(),
+        getContactMessages(),
+        getUnreadMessageCount(),
+        getGalleryPosts(),
+    ]);
 
     const recentMessages = messages.slice(0, 3);
 

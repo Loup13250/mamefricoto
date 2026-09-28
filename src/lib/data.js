@@ -56,17 +56,29 @@ export async function getCurrentWeeklyMenu() {
     if (!menu) return null;
 
     const rawImages = await db.prepare('SELECT * FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(menu.id);
-    const images = await Promise.all(rawImages.map(async img => ({
-        ...img,
-        image_url: await normalizeUrl(img.image_url)
-    })));
+    const images_fr = [];
+    const images_en = [];
 
-    const mainImageUrl = await normalizeUrl(menu.image_url);
+    for (const img of rawImages) {
+        const normUrl = await normalizeUrl(img.image_url);
+        const item = { ...img, image_url: normUrl, lang: img.lang === 'en' ? 'en' : 'fr' };
+        if (img.lang === 'en') {
+            images_en.push(item);
+        } else {
+            images_fr.push(item);
+        }
+    }
+
+    const mainImageUrl = menu.image_url ? await normalizeUrl(menu.image_url) : (images_fr[0]?.image_url || null);
+    const mainImageUrlEn = menu.image_url_en ? await normalizeUrl(menu.image_url_en) : (images_en[0]?.image_url || null);
 
     return {
         ...menu,
         image_url: mainImageUrl,
-        images: images.length > 0 ? images : (mainImageUrl ? [{ id: 0, image_url: mainImageUrl }] : [])
+        image_url_en: mainImageUrlEn,
+        images_fr,
+        images_en,
+        images: images_fr
     };
 }
 
@@ -75,16 +87,29 @@ export async function getAllWeeklyMenus() {
     const menus = await db.prepare('SELECT * FROM weekly_menus ORDER BY created_at DESC').all();
     return Promise.all(menus.map(async menu => {
         const rawImages = await db.prepare('SELECT * FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(menu.id);
-        const images = await Promise.all(rawImages.map(async img => ({
-            ...img,
-            image_url: await normalizeUrl(img.image_url)
-        })));
-        const mainImageUrl = await normalizeUrl(menu.image_url);
+        const images_fr = [];
+        const images_en = [];
+
+        for (const img of rawImages) {
+            const normUrl = await normalizeUrl(img.image_url);
+            const item = { ...img, image_url: normUrl, lang: img.lang === 'en' ? 'en' : 'fr' };
+            if (img.lang === 'en') {
+                images_en.push(item);
+            } else {
+                images_fr.push(item);
+            }
+        }
+
+        const mainImageUrl = menu.image_url ? await normalizeUrl(menu.image_url) : (images_fr[0]?.image_url || null);
+        const mainImageUrlEn = menu.image_url_en ? await normalizeUrl(menu.image_url_en) : (images_en[0]?.image_url || null);
 
         return {
             ...menu,
             image_url: mainImageUrl,
-            images: images.length > 0 ? images : (mainImageUrl ? [{ id: 0, image_url: mainImageUrl }] : [])
+            image_url_en: mainImageUrlEn,
+            images_fr,
+            images_en,
+            images: images_fr
         };
     }));
 }

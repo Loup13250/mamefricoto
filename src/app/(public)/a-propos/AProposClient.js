@@ -23,7 +23,7 @@ export default function AProposClient({ info, services }) {
     ];
 
     return (
-        <main className="subpage-main">
+        <main id="main-content" tabIndex="-1" className="subpage-main">
             {/* ===== PAGE HERO ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">

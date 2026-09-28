@@ -11,7 +11,7 @@ export default function ContactClient({ info }) {
     const hours = trans(info, 'hours') || t('contact.hoursVal');
 
     return (
-        <main className="subpage-main">
+        <main id="main-content" tabIndex="-1" className="subpage-main">
             {/* Page header */}
             <section className="subpage-hero">
                 <div className="container anim-fade">

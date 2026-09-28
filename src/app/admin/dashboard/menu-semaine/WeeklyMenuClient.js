@@ -4,12 +4,12 @@ import Image from 'next/image';
 import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage } from '@/app/actions';
 import {
     Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays,
-    CheckCircle2, Images, GripVertical, ArrowUp, ArrowDown,
+    CheckCircle2, Images, ArrowUp, ArrowDown,
     Loader2, UploadCloud, AlertCircle
 } from 'lucide-react';
 
 /* =====================================================
-   IMAGE PREVIEW ITEM — avec réordonnancement par boutons
+   PREVIEW ITEM (Images sélectionnées prêtes à uploader)
    ===================================================== */
 function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
     const src = typeof file === 'string' ? file : URL.createObjectURL(file);
@@ -89,7 +89,7 @@ function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
             <button
                 type="button"
                 onClick={() => onRemove(index)}
-                title="Retirer"
+                title="Retirer cette image"
                 style={{
                     position: 'absolute', bottom: '8px', right: '8px',
                     width: '28px', height: '28px',
@@ -106,9 +106,9 @@ function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
 }
 
 /* =====================================================
-   DROPZONE — sélection ou glisser-déposer
+   DROPZONE
    ===================================================== */
-function DropZone({ onFiles, isDragging, setIsDragging }) {
+function DropZone({ onFiles, isDragging, setIsDragging, inputName = "image_files", label = "Glisser les images ici, ou cliquer pour choisir" }) {
     const inputRef = useRef(null);
 
     const handleDrop = (e) => {
@@ -128,25 +128,26 @@ function DropZone({ onFiles, isDragging, setIsDragging }) {
                 border: `2px dashed ${isDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
                 background: isDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
                 borderRadius: '6px',
-                padding: '2.5rem 1rem',
+                padding: '2rem 1rem',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem',
+                gap: '0.4rem',
                 cursor: 'pointer',
                 transition: 'all 0.25s ease',
             }}
         >
-            <UploadCloud size={36} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
-            <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.95rem' }}>
-                Glisser les images ici, ou cliquer pour choisir
+            <UploadCloud size={32} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
+            <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.9rem', textAlign: 'center' }}>
+                {label}
             </span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-subtle)' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>
                 JPG, PNG, WEBP · Plusieurs images possibles
             </span>
             <input
                 ref={inputRef}
+                name={inputName}
                 type="file"
                 accept="image/*"
                 multiple
@@ -161,7 +162,6 @@ function DropZone({ onFiles, isDragging, setIsDragging }) {
     );
 }
 
-/* =====================================================
 /* =====================================================
    COMPRESSION IMAGE 2K WEBP
    ===================================================== */
@@ -213,36 +213,56 @@ async function compressImageFile(file, maxWidth = 2048, quality = 0.85) {
 }
 
 /* =====================================================
-   FORM AJOUT / ÉDITION
+   FORMULAIRE AJOUT / ÉDITION (BILINGUE FR / EN)
    ===================================================== */
 function WeeklyMenuForm({ menu, initialData, onCancel }) {
     const activeMenu = menu || initialData;
     const isEdit = !!activeMenu;
-    const [files, setFiles] = useState([]);
-    const [isDragging, setIsDragging] = useState(false);
+
+    // Photos sélectionnées en attente d'upload
+    const [filesFr, setFilesFr] = useState([]);
+    const [filesEn, setFilesEn] = useState([]);
+
+    const [isDraggingFr, setIsDraggingFr] = useState(false);
+    const [isDraggingEn, setIsDraggingEn] = useState(false);
+
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
-    const handleNewFiles = useCallback((newFiles) => {
-        setFiles(prev => [...prev, ...newFiles]);
-    }, []);
-
-    const handleRemove = useCallback((idx) => {
-        setFiles(prev => prev.filter((_, i) => i !== idx));
-    }, []);
-
-    const handleMoveUp = useCallback((idx) => {
+    // Helpers FR
+    const handleNewFilesFr = useCallback((newFiles) => setFilesFr(prev => [...prev, ...newFiles]), []);
+    const handleRemoveFr = useCallback((idx) => setFilesFr(prev => prev.filter((_, i) => i !== idx)), []);
+    const handleMoveUpFr = useCallback((idx) => {
         if (idx === 0) return;
-        setFiles(prev => {
+        setFilesFr(prev => {
             const next = [...prev];
             [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
             return next;
         });
     }, []);
+    const handleMoveDownFr = useCallback((idx) => {
+        setFilesFr(prev => {
+            if (idx >= prev.length - 1) return prev;
+            const next = [...prev];
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+            return next;
+        });
+    }, []);
 
-    const handleMoveDown = useCallback((idx) => {
-        setFiles(prev => {
+    // Helpers EN
+    const handleNewFilesEn = useCallback((newFiles) => setFilesEn(prev => [...prev, ...newFiles]), []);
+    const handleRemoveEn = useCallback((idx) => setFilesEn(prev => prev.filter((_, i) => i !== idx)), []);
+    const handleMoveUpEn = useCallback((idx) => {
+        if (idx === 0) return;
+        setFilesEn(prev => {
+            const next = [...prev];
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+            return next;
+        });
+    }, []);
+    const handleMoveDownEn = useCallback((idx) => {
+        setFilesEn(prev => {
             if (idx >= prev.length - 1) return prev;
             const next = [...prev];
             [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
@@ -257,13 +277,19 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         startTransition(async () => {
             const formData = new FormData(e.target);
             formData.delete('image_files');
+            formData.delete('image_files_fr');
+            formData.delete('image_files_en');
 
-            const compressedFiles = await Promise.all(
-                files.map(f => compressImageFile(f, 2048, 0.85))
-            );
+            // Compression FR
+            const compressedFr = await Promise.all(filesFr.map(f => compressImageFile(f, 2048, 0.85)));
+            for (const file of compressedFr) {
+                formData.append('image_files_fr', file);
+            }
 
-            for (const file of compressedFiles) {
-                formData.append('image_files', file);
+            // Compression EN
+            const compressedEn = await Promise.all(filesEn.map(f => compressImageFile(f, 2048, 0.85)));
+            for (const file of compressedEn) {
+                formData.append('image_files_en', file);
             }
 
             const action = isEdit ? editWeeklyMenu : addWeeklyMenu;
@@ -272,7 +298,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 setError(result.error);
             } else {
                 setSuccess(true);
-                setTimeout(() => onCancel(), 1200);
+                setTimeout(() => onCancel(), 1000);
             }
         });
     };
@@ -293,14 +319,19 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         );
     }
 
+    const currentFrImages = activeMenu?.images_fr || (activeMenu?.images?.filter(img => img.lang !== 'en') || []);
+    const currentEnImages = activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || []);
+
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {isEdit && <input type="hidden" name="id" value={activeMenu.id} />}
 
-            {/* Titre */}
+            {/* Titre FR / EN */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">FR — Titre du menu (Français) *</label>
+                    <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
+                        FR — Titre du menu (Français) *
+                    </label>
                     <input
                         type="text"
                         name="title"
@@ -311,7 +342,9 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                     />
                 </div>
                 <div>
-                    <label className="admin-label">EN — Menu Title (English)</label>
+                    <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
+                        EN — Menu Title (English)
+                    </label>
                     <input
                         type="text"
                         name="title_en"
@@ -322,7 +355,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 </div>
             </div>
 
-            {/* Description */}
+            {/* Description FR / EN */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                 <div>
                     <label className="admin-label">FR — Description des plats (Français)</label>
@@ -346,152 +379,261 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 </div>
             </div>
 
-            {/* DropZone */}
-            <div>
-                <label className="admin-label" style={{ marginBottom: '0.75rem', display: 'block' }}>
-                    Photos du menu
-                    {files.length > 0 && (
-                        <span style={{ marginLeft: '0.75rem', color: '#C8A96E', fontWeight: '600' }}>
-                            {files.length} image{files.length > 1 ? 's' : ''} sélectionnée{files.length > 1 ? 's' : ''}
-                        </span>
-                    )}
-                </label>
-                <DropZone onFiles={handleNewFiles} isDragging={isDragging} setIsDragging={setIsDragging} />
-            </div>
-
-            {/* Prévisualisation + ordre */}
-            {files.length > 0 && (
-                <div>
-                    <p style={{
-                        fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em',
-                        textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)',
-                        marginBottom: '0.75rem',
-                    }}>
-                        Aperçu &amp; Ordre d&apos;affichage — La 1ère image sera la miniature
-                    </p>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                        gap: '10px',
-                    }}>
-                        {files.map((file, idx) => (
-                            <PreviewItem
-                                key={idx}
-                                file={file}
-                                index={idx}
-                                total={files.length}
-                                onRemove={handleRemove}
-                                onMoveUp={handleMoveUp}
-                                onMoveDown={handleMoveDown}
-                            />
-                        ))}
+            {/* =========================================================
+                SECTION 1 : PHOTOS EN FRANÇAIS (FR)
+                ========================================================= */}
+            <div style={{
+                background: 'rgba(0, 0, 0, 0.18)',
+                border: '1px solid var(--admin-border)',
+                borderRadius: '8px',
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(200,169,110,0.2)', color: 'var(--admin-gold)', fontWeight: '700' }}>FR</span>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
+                            Photos du menu en Français
+                        </h3>
                     </div>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>
+                        {currentFrImages.length + filesFr.length} photo{(currentFrImages.length + filesFr.length) > 1 ? 's' : ''}
+                    </span>
                 </div>
-            )}
 
-            {/* Images existantes (édition) */}
-            {isEdit && activeMenu?.images?.length > 0 && (
-                <div>
-                    <p style={{
-                        fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em',
-                        textTransform: 'uppercase', color: 'rgba(200,169,110,0.85)',
-                        marginBottom: '0.75rem',
-                    }}>
-                        Photos actuelles du menu ({activeMenu.images.length}) — Gérez l&apos;ordre ou supprimez des photos :
-                    </p>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-                        gap: '10px',
-                    }}>
-                        {activeMenu.images.map((img, idx) => (
-                            <div key={img.id} style={{
-                                border: '1px solid var(--admin-border)',
-                                borderRadius: '6px', overflow: 'hidden',
-                                aspectRatio: '1 / 1', position: 'relative',
-                                background: 'var(--admin-surface)',
-                            }}>
-                                <Image
-                                    src={img.image_url}
-                                    alt={`Photo ${idx + 1}`}
-                                    width={200}
-                                    height={200}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    unoptimized
-                                />
-
-                                {/* Badge numéro */}
-                                <div style={{
-                                    position: 'absolute', top: '6px', left: '6px',
-                                    background: 'rgba(14,13,12,0.85)',
-                                    border: '1px solid rgba(200,169,110,0.4)',
-                                    color: '#C8A96E', fontSize: '0.68rem', fontWeight: '700',
-                                    padding: '2px 7px', borderRadius: '3px',
-                                }}>#{idx + 1}</div>
-
-                                {/* Reorder Controls */}
-                                <div style={{
-                                    position: 'absolute', top: '6px', right: '6px',
-                                    display: 'flex', flexDirection: 'column', gap: '3px',
+                {/* Photos actuelles FR (mode édition) */}
+                {isEdit && currentFrImages.length > 0 && (
+                    <div>
+                        <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', marginBottom: '0.6rem' }}>
+                            Photos actuelles en ligne — Utilisez la croix rouge pour supprimer n&apos;importe quelle photo :
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                            {currentFrImages.map((img, idx) => (
+                                <div key={img.id} style={{
+                                    border: '1px solid var(--admin-border)',
+                                    borderRadius: '6px', overflow: 'hidden',
+                                    aspectRatio: '1 / 1', position: 'relative',
+                                    background: 'var(--admin-surface)',
                                 }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
-                                        disabled={idx === 0 || isPending}
-                                        title="Déplacer vers le haut / miniature principale"
-                                        style={{
-                                            width: '26px', height: '26px',
-                                            background: 'rgba(14,13,12,0.85)',
-                                            border: '1px solid rgba(200,169,110,0.3)',
-                                            color: idx === 0 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
-                                            borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        }}
-                                    >
-                                        <ArrowUp size={12} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
-                                        disabled={idx === activeMenu.images.length - 1 || isPending}
-                                        title="Déplacer vers le bas"
-                                        style={{
-                                            width: '26px', height: '26px',
-                                            background: 'rgba(14,13,12,0.85)',
-                                            border: '1px solid rgba(200,169,110,0.3)',
-                                            color: idx === activeMenu.images.length - 1 ? 'rgba(200,169,110,0.3)' : '#C8A96E',
-                                            borderRadius: '3px', cursor: idx === activeMenu.images.length - 1 ? 'default' : 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        }}
-                                    >
-                                        <ArrowDown size={12} />
-                                    </button>
-                                </div>
-
-                                {/* Delete image button */}
-                                {activeMenu.images.length > 1 && (
+                                    <Image
+                                        src={img.image_url}
+                                        alt={`Photo FR ${idx + 1}`}
+                                        width={200}
+                                        height={200}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        unoptimized
+                                    />
+                                    <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px' }}>
+                                        #{idx + 1}
+                                    </div>
+                                    <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
+                                            disabled={idx === 0 || isPending}
+                                            title="Monter"
+                                            aria-label={`Monter la photo FR numéro ${idx + 1}`}
+                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            <ArrowUp size={11} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
+                                            disabled={idx === currentFrImages.length - 1 || isPending}
+                                            title="Descendre"
+                                            aria-label={`Descendre la photo FR numéro ${idx + 1}`}
+                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            <ArrowDown size={11} />
+                                        </button>
+                                    </div>
+                                    {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
                                     <button
                                         type="button"
                                         onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
                                         disabled={isPending}
-                                        title="Supprimer cette photo"
+                                        title="Supprimer définitivement cette photo"
+                                        aria-label={`Supprimer définitivement la photo FR numéro ${idx + 1}`}
                                         style={{
-                                            position: 'absolute', bottom: '6px', right: '6px',
-                                            width: '26px', height: '26px',
-                                            background: 'rgba(239,68,68,0.9)',
+                                            position: 'absolute', bottom: '5px', right: '5px',
+                                            width: '24px', height: '24px',
+                                            background: 'rgba(239,68,68,0.95)',
                                             border: 'none', borderRadius: '3px', color: 'white',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             cursor: 'pointer',
+                                            boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
                                         }}
                                     >
                                         <X size={13} />
                                     </button>
-                                )}
-                            </div>
-                        ))}
+                                </div>
+                            ))}
+                        </div>
                     </div>
+                )}
+
+                {/* Dropzone FR */}
+                <DropZone
+                    onFiles={handleNewFilesFr}
+                    isDragging={isDraggingFr}
+                    setIsDragging={setIsDraggingFr}
+                    inputName="image_files_fr"
+                    label="Ajouter des photos pour le menu Français"
+                />
+
+                {/* Aperçu nouvelles photos FR */}
+                {filesFr.length > 0 && (
+                    <div>
+                        <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
+                            Nouvelles photos FR prêtes à être ajoutées :
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                            {filesFr.map((file, idx) => (
+                                <PreviewItem
+                                    key={idx}
+                                    file={file}
+                                    index={idx}
+                                    total={filesFr.length}
+                                    onRemove={handleRemoveFr}
+                                    onMoveUp={handleMoveUpFr}
+                                    onMoveDown={handleMoveDownFr}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* =========================================================
+                SECTION 2 : PHOTOS EN ANGLAIS (EN) — OPTIONNEL
+                ========================================================= */}
+            <div style={{
+                background: 'rgba(0, 0, 0, 0.18)',
+                border: '1px solid var(--admin-border)',
+                borderRadius: '8px',
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', color: 'var(--admin-text-subtle)', fontWeight: '700' }}>EN</span>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
+                            Photos du menu en Anglais (Optionnel)
+                        </h3>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
+                        Si aucune photo n&apos;est ajoutée ici, le site affichera automatiquement les photos françaises
+                    </span>
                 </div>
-            )}
+
+                {/* Photos actuelles EN (mode édition) */}
+                {isEdit && currentEnImages.length > 0 && (
+                    <div>
+                        <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', marginBottom: '0.6rem' }}>
+                            Photos actuelles en version anglaise :
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                            {currentEnImages.map((img, idx) => (
+                                <div key={img.id} style={{
+                                    border: '1px solid var(--admin-border)',
+                                    borderRadius: '6px', overflow: 'hidden',
+                                    aspectRatio: '1 / 1', position: 'relative',
+                                    background: 'var(--admin-surface)',
+                                }}>
+                                    <Image
+                                        src={img.image_url}
+                                        alt={`Photo EN ${idx + 1}`}
+                                        width={200}
+                                        height={200}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        unoptimized
+                                    />
+                                    <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px' }}>
+                                        #{idx + 1}
+                                    </div>
+                                    <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'up'))}
+                                            disabled={idx === 0 || isPending}
+                                            title="Monter"
+                                            aria-label={`Monter la photo EN numéro ${idx + 1}`}
+                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            <ArrowUp size={11} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => startTransition(() => reorderWeeklyMenuImage(img.id, 'down'))}
+                                            disabled={idx === currentEnImages.length - 1 || isPending}
+                                            title="Descendre"
+                                            aria-label={`Descendre la photo EN numéro ${idx + 1}`}
+                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            <ArrowDown size={11} />
+                                        </button>
+                                    </div>
+                                    {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
+                                    <button
+                                        type="button"
+                                        onClick={() => startTransition(() => deleteWeeklyMenuImage(img.id))}
+                                        disabled={isPending}
+                                        title="Supprimer cette photo anglaise"
+                                        aria-label={`Supprimer la photo EN numéro ${idx + 1}`}
+                                        style={{
+                                            position: 'absolute', bottom: '5px', right: '5px',
+                                            width: '24px', height: '24px',
+                                            background: 'rgba(239,68,68,0.95)',
+                                            border: 'none', borderRadius: '3px', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                        }}
+                                    >
+                                        <X size={13} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Dropzone EN */}
+                <DropZone
+                    onFiles={handleNewFilesEn}
+                    isDragging={isDraggingEn}
+                    setIsDragging={setIsDraggingEn}
+                    inputName="image_files_en"
+                    label="Ajouter des photos spécifiques pour la version Anglaise (Optionnel)"
+                />
+
+                {/* Aperçu nouvelles photos EN */}
+                {filesEn.length > 0 && (
+                    <div>
+                        <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
+                            Nouvelles photos EN prêtes à être ajoutées :
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                            {filesEn.map((file, idx) => (
+                                <PreviewItem
+                                    key={idx}
+                                    file={file}
+                                    index={idx}
+                                    total={filesEn.length}
+                                    onRemove={handleRemoveEn}
+                                    onMoveUp={handleMoveUpEn}
+                                    onMoveDown={handleMoveDownEn}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Menu en cours */}
             <div style={{
@@ -562,10 +704,10 @@ export default function WeeklyMenuClient({ menus }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            <div style={{ width: '100%', maxWidth: '750px', marginBottom: '2.5rem' }}>
+            <div style={{ width: '100%', maxWidth: '850px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Menu de la Semaine</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Créez ou modifiez le menu de la semaine affiché sur le site. Vous pouvez publier plusieurs photos par menu (les clients pourront faire défiler les photos du menu avec des flèches).
+                    Créez ou modifiez le menu de la semaine affiché sur le site. Vous pouvez séparer les photos en français et en anglais : les visiteurs anglophones verront automatiquement la version anglaise (ou française si non renseignée).
                 </p>
                 {!isAdding && !editingId && (
                     <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">
@@ -576,9 +718,9 @@ export default function WeeklyMenuClient({ menus }) {
 
             {/* Formulaire Création */}
             {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '750px', marginBottom: '3rem' }}>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '850px', marginBottom: '3rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Nouveau menu</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Nouveau menu de la semaine</h2>
                         <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
                             <X size={20} />
                         </button>
@@ -589,7 +731,7 @@ export default function WeeklyMenuClient({ menus }) {
 
             {/* Formulaire Édition */}
             {editingId && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '750px', marginBottom: '3rem', border: '1px solid var(--admin-border)' }}>
+                <div className="admin-card" style={{ width: '100%', maxWidth: '850px', marginBottom: '3rem', border: '1px solid var(--admin-border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Modifier le menu</h2>
                         <button type="button" onClick={() => setEditingId(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
@@ -601,7 +743,7 @@ export default function WeeklyMenuClient({ menus }) {
             )}
 
             {/* Liste des Menus */}
-            <div style={{ width: '100%', maxWidth: '750px' }}>
+            <div style={{ width: '100%', maxWidth: '850px' }}>
                 <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1.25rem' }}>
                     Historique des menus ({menus.length})
                 </h2>
@@ -611,98 +753,107 @@ export default function WeeklyMenuClient({ menus }) {
                         Aucun menu publié pour le moment.
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--admin-border-soft)', border: '1px solid var(--admin-border)', borderRadius: '6px', overflow: 'hidden' }}>
-                        {menus.map(menu => (
-                            <div key={menu.id} className="admin-menu-item-row" style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'minmax(60px, 80px) 1fr auto',
-                                gap: '1rem',
-                                alignItems: 'center',
-                                padding: '1rem 1.25rem',
-                                background: 'var(--admin-card-bg)',
-                                transition: 'background 0.2s',
-                            }}>
-                                {/* Thumbnail */}
-                                <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: 'var(--admin-surface)', flexShrink: 0, border: '1px solid var(--admin-border)' }}>
-                                    {menu.images?.length > 0 ? (
-                                        <Image
-                                            src={menu.images[0].image_url}
-                                            alt={menu.title}
-                                            width={160}
-                                            height={120}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            unoptimized
-                                        />
-                                    ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--admin-text-subtle)' }}>
-                                            <ImageIcon size={24} />
-                                        </div>
-                                    )}
-                                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {menus.map(menu => {
+                            const frCount = menu.images_fr ? menu.images_fr.length : (menu.images?.filter(i => i.lang !== 'en').length || 0);
+                            const enCount = menu.images_en ? menu.images_en.length : (menu.images?.filter(i => i.lang === 'en').length || 0);
+                            const mainImg = menu.images_fr?.[0]?.image_url || menu.images?.[0]?.image_url || menu.image_url;
 
-                                {/* Details */}
-                                <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
-                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)' }}>{menu.title}</h3>
-                                        {menu.title_en && (
-                                            <span style={{ fontSize: '0.82rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                                                EN — {menu.title_en}
-                                            </span>
-                                        )}
-                                        {menu.is_current === 1 && (
-                                            <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(34,197,94,0.15)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px' }}>
-                                                En ligne
-                                            </span>
-                                        )}
-                                        {menu.images?.length > 1 && (
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--admin-gold)' }}>
-                                                📷 {menu.images.length} photos
-                                            </span>
+                            return (
+                                <div key={menu.id} className="admin-menu-item-row" style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'minmax(60px, 80px) 1fr auto',
+                                    gap: '1.25rem',
+                                    alignItems: 'center',
+                                    padding: '1.1rem 1.25rem',
+                                    background: 'var(--admin-surface, #1e1b18)',
+                                    border: '1px solid var(--admin-border, #332d27)',
+                                    borderRadius: '6px',
+                                    transition: 'background 0.2s',
+                                }}>
+                                    {/* Thumbnail */}
+                                    <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: '#000', flexShrink: 0, border: '1px solid var(--admin-border)' }}>
+                                        {mainImg ? (
+                                            <Image
+                                                src={mainImg}
+                                                alt={menu.title}
+                                                width={160}
+                                                height={120}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--admin-text-subtle)' }}>
+                                                <ImageIcon size={22} />
+                                            </div>
                                         )}
                                     </div>
-                                    <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>
-                                        {menu.week_dates ? `Période : ${menu.week_dates}` : `Créé le ${new Date(menu.created_at).toLocaleDateString('fr-FR')}`}
-                                    </p>
-                                </div>
 
-                                {/* Actions */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <button
-                                        onClick={() => { setEditingId(menu.id); setIsAdding(false); }}
-                                        title="Modifier ce menu"
-                                        style={{ width: '34px', height: '34px', background: 'rgba(200,169,110,0.12)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-                                    >
-                                        <Pencil size={15} />
-                                    </button>
-
-                                    {deleteId === menu.id ? (
-                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                            <button
-                                                onClick={() => handleDelete(menu.id)}
-                                                disabled={isPending}
-                                                style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
-                                            >
-                                                {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
-                                            </button>
-                                            <button
-                                                onClick={() => setDeleteId(null)}
-                                                style={{ width: '34px', height: '34px', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-subtle)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                            >
-                                                <X size={14} />
-                                            </button>
+                                    {/* Details */}
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                                            <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)', margin: 0 }}>
+                                                {menu.title}
+                                            </h3>
+                                            {menu.title_en && (
+                                                <span style={{ fontSize: '0.82rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
+                                                    EN — {menu.title_en}
+                                                </span>
+                                            )}
+                                            {menu.is_current === 1 && (
+                                                <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(34,197,94,0.15)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px' }}>
+                                                    En ligne
+                                                </span>
+                                            )}
                                         </div>
-                                    ) : (
+                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>
+                                            <span>📷 FR : {frCount} photo{frCount > 1 ? 's' : ''}</span>
+                                            <span>•</span>
+                                            <span>📷 EN : {enCount > 0 ? `${enCount} photo${enCount > 1 ? 's' : ''}` : 'Idem FR'}</span>
+                                            <span>•</span>
+                                            <span>Créé le {new Date(menu.created_at).toLocaleDateString('fr-FR')}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button
-                                            onClick={() => setDeleteId(menu.id)}
-                                            title="Supprimer ce menu"
-                                            style={{ width: '34px', height: '34px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                            onClick={() => { setEditingId(menu.id); setIsAdding(false); }}
+                                            title="Modifier ce menu"
+                                            style={{ width: '34px', height: '34px', background: 'rgba(200,169,110,0.15)', border: '1px solid var(--admin-gold)', color: 'var(--admin-gold)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
                                         >
-                                            <Trash2 size={15} />
+                                            <Pencil size={15} />
                                         </button>
-                                    )}
+
+                                        {deleteId === menu.id ? (
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <button
+                                                    onClick={() => handleDelete(menu.id)}
+                                                    disabled={isPending}
+                                                    style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                >
+                                                    {isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
+                                                </button>
+                                                <button
+                                                    onClick={() => setDeleteId(null)}
+                                                    style={{ width: '34px', height: '34px', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', color: 'var(--admin-text-subtle)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => setDeleteId(menu.id)}
+                                                title="Supprimer ce menu"
+                                                style={{ width: '34px', height: '34px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                            >
+                                                <Trash2 size={15} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

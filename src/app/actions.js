@@ -200,18 +200,28 @@ export async function addWeeklyMenu(formData) {
         return { error: 'Veuillez saisir un titre pour le menu.' };
     }
 
-    const files = formData.getAll('image_files');
-    const uploadedUrls = [];
+    const files_fr = formData.getAll('image_files_fr').length > 0 ? formData.getAll('image_files_fr') : formData.getAll('image_files');
+    const files_en = formData.getAll('image_files_en');
 
-    for (const file of files) {
+    const uploadedUrlsFr = [];
+    for (const file of files_fr) {
         if (file && file.size > 0) {
             const url = await saveUploadedFile(file);
-            if (url) uploadedUrls.push(url);
+            if (url) uploadedUrlsFr.push(url);
         }
     }
 
-    const imagesToAttach = uploadedUrls.length > 0 ? uploadedUrls : DEFAULT_MENU_IMAGES;
-    const mainImageUrl = imagesToAttach[0];
+    const uploadedUrlsEn = [];
+    for (const file of files_en) {
+        if (file && file.size > 0) {
+            const url = await saveUploadedFile(file);
+            if (url) uploadedUrlsEn.push(url);
+        }
+    }
+
+    const imagesFrToAttach = uploadedUrlsFr.length > 0 ? uploadedUrlsFr : DEFAULT_MENU_IMAGES;
+    const mainImageUrl = imagesFrToAttach[0];
+    const mainImageUrlEn = uploadedUrlsEn.length > 0 ? uploadedUrlsEn[0] : null;
 
     const db = getDb();
 
@@ -219,12 +229,17 @@ export async function addWeeklyMenu(formData) {
         await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    const result = await db.prepare('INSERT INTO weekly_menus (title, title_en, description, description_en, image_url, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, title_en, description, description_en, mainImageUrl, '', is_current);
+    const result = await db.prepare('INSERT INTO weekly_menus (title, title_en, description, description_en, image_url, image_url_en, embed_url, is_current) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+        title, title_en, description, description_en, mainImageUrl, mainImageUrlEn, '', is_current
+    );
     const menuId = result.lastInsertRowid;
 
-    const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-    for (let idx = 0; idx < imagesToAttach.length; idx++) {
-        await stmt.run(menuId, imagesToAttach[idx], idx + 1);
+    const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, ?)');
+    for (let idx = 0; idx < imagesFrToAttach.length; idx++) {
+        await stmt.run(menuId, imagesFrToAttach[idx], idx + 1, 'fr');
+    }
+    for (let idx = 0; idx < uploadedUrlsEn.length; idx++) {
+        await stmt.run(menuId, uploadedUrlsEn[idx], idx + 1, 'en');
     }
 
     // Nettoyage automatique : ne conserver que les 3 derniers menus
@@ -259,13 +274,22 @@ export async function editWeeklyMenu(formData) {
         return { error: 'Veuillez saisir un titre pour le menu.' };
     }
 
-    const files = formData.getAll('image_files');
-    const uploadedUrls = [];
+    const files_fr = formData.getAll('image_files_fr').length > 0 ? formData.getAll('image_files_fr') : formData.getAll('image_files');
+    const files_en = formData.getAll('image_files_en');
 
-    for (const file of files) {
+    const uploadedUrlsFr = [];
+    for (const file of files_fr) {
         if (file && file.size > 0) {
             const url = await saveUploadedFile(file);
-            if (url) uploadedUrls.push(url);
+            if (url) uploadedUrlsFr.push(url);
+        }
+    }
+
+    const uploadedUrlsEn = [];
+    for (const file of files_en) {
+        if (file && file.size > 0) {
+            const url = await saveUploadedFile(file);
+            if (url) uploadedUrlsEn.push(url);
         }
     }
 
@@ -275,25 +299,36 @@ export async function editWeeklyMenu(formData) {
         await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
     }
 
-    if (uploadedUrls.length > 0) {
-        await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, image_url=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, uploadedUrls[0], is_current, id);
-        await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
-        const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-        for (let idx = 0; idx < uploadedUrls.length; idx++) {
-            await stmt.run(id, uploadedUrls[idx], idx + 1);
-        }
-    } else {
-        const existingImages = await db.prepare('SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ?').get(id);
-        if (existingImages.count === 0) {
-            await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, image_url=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, DEFAULT_MENU_IMAGES[0], is_current, id);
-            const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order) VALUES (?, ?, ?)');
-            for (let idx = 0; idx < DEFAULT_MENU_IMAGES.length; idx++) {
-                await stmt.run(id, DEFAULT_MENU_IMAGES[idx], idx + 1);
-            }
-        } else {
-            await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, is_current=? WHERE id=?').run(title, title_en, description, description_en, is_current, id);
+    // Insert new FR images if uploaded
+    if (uploadedUrlsFr.length > 0) {
+        const highestOrderRow = await db.prepare('SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL)').get(id);
+        let startOrder = (highestOrderRow?.max_order || 0) + 1;
+        const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, "fr")');
+        for (const url of uploadedUrlsFr) {
+            await stmt.run(id, url, startOrder++);
         }
     }
+
+    // Insert new EN images if uploaded
+    if (uploadedUrlsEn.length > 0) {
+        const highestOrderRow = await db.prepare('SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND lang = "en"').get(id);
+        let startOrder = (highestOrderRow?.max_order || 0) + 1;
+        const stmt = db.prepare('INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, ?, "en")');
+        for (const url of uploadedUrlsEn) {
+            await stmt.run(id, url, startOrder++);
+        }
+    }
+
+    // Sync main image URLs with first image of each language
+    const firstFr = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC LIMIT 1').get(id);
+    const firstEn = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC LIMIT 1').get(id);
+
+    const mainImageUrl = firstFr?.image_url || null;
+    const mainImageUrlEn = firstEn?.image_url || null;
+
+    await db.prepare('UPDATE weekly_menus SET title=?, title_en=?, description=?, description_en=?, image_url=?, image_url_en=?, is_current=? WHERE id=?').run(
+        title, title_en, description, description_en, mainImageUrl, mainImageUrlEn, is_current, id
+    );
 
     revalidatePath('/');
     revalidatePath('/admin/dashboard/menu-semaine');
@@ -480,10 +515,10 @@ export async function addGalleryPost(formData) {
             title, title_en, caption, caption_en, image_url, media_type
         );
 
-        // Nettoyage automatique : limiter la galerie aux 15 plus récentes
+        // Nettoyage automatique : limiter la galerie aux 30 plus récentes
         const allPosts = await db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
-        if (allPosts.length > 15) {
-            const postsToDelete = allPosts.slice(15);
+        if (allPosts.length > 30) {
+            const postsToDelete = allPosts.slice(30);
             for (const oldPost of postsToDelete) {
                 deleteLocalFileIfPresent(oldPost.image_url);
                 await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
@@ -678,9 +713,17 @@ export async function deleteWeeklyMenuImage(imageId) {
     deleteLocalFileIfPresent(img.image_url);
     await db.prepare('DELETE FROM weekly_menu_images WHERE id = ?').run(imageId);
 
-    const remaining = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
-    if (remaining.length > 0) {
-        await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(remaining[0].image_url, img.menu_id);
+    const isEn = img.lang === 'en';
+    const remaining = isEn
+        ? await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC').all(img.menu_id)
+        : await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC').all(img.menu_id);
+
+    if (isEn) {
+        const nextUrlEn = remaining.length > 0 ? remaining[0].image_url : null;
+        await db.prepare('UPDATE weekly_menus SET image_url_en = ? WHERE id = ?').run(nextUrlEn, img.menu_id);
+    } else {
+        const nextUrl = remaining.length > 0 ? remaining[0].image_url : null;
+        await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(nextUrl, img.menu_id);
     }
 
     revalidatePath('/');
@@ -694,7 +737,11 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
     const img = await db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
     if (!img) return { error: 'Image non trouvée' };
 
-    const images = await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC, id ASC').all(img.menu_id);
+    const isEn = img.lang === 'en';
+    const images = isEn
+        ? await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC, id ASC').all(img.menu_id)
+        : await db.prepare('SELECT id, display_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC, id ASC').all(img.menu_id);
+
     const index = images.findIndex(i => i.id === imageId);
     if (index === -1) return { error: 'Image non trouvée' };
 
@@ -711,9 +758,18 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
     await stmt.run(targetOrder, currentImg.id);
     await stmt.run(currentOrder, targetImg.id);
 
-    const updatedImages = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? ORDER BY display_order ASC').all(img.menu_id);
-    if (updatedImages.length > 0) {
-        await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(updatedImages[0].image_url, img.menu_id);
+    const updatedImages = isEn
+        ? await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = "en" ORDER BY display_order ASC').all(img.menu_id)
+        : await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = "fr" OR lang IS NULL) ORDER BY display_order ASC').all(img.menu_id);
+
+    if (isEn) {
+        if (updatedImages.length > 0) {
+            await db.prepare('UPDATE weekly_menus SET image_url_en = ? WHERE id = ?').run(updatedImages[0].image_url, img.menu_id);
+        }
+    } else {
+        if (updatedImages.length > 0) {
+            await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(updatedImages[0].image_url, img.menu_id);
+        }
     }
 
     revalidatePath('/');

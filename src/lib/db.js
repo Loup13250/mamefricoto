@@ -56,20 +56,27 @@ export function getDb() {
 
 function toPlain(row) {
     if (!row || typeof row !== 'object') return row;
-    try {
-        return JSON.parse(
-            JSON.stringify(row, (key, value) =>
-                typeof value === 'bigint' ? Number(value) : value
-            )
-        );
-    } catch {
-        const plain = {};
-        for (const key of Object.keys(row)) {
-            const val = row[key];
-            plain[key] = typeof val === 'bigint' ? Number(val) : val;
+    const plain = {};
+    for (const key of Object.keys(row)) {
+        const val = row[key];
+        // Preserve binary blobs (ArrayBuffer, Uint8Array, Buffer) — do NOT JSON-serialize them
+        if (val instanceof ArrayBuffer || val instanceof Uint8Array || Buffer.isBuffer(val)) {
+            plain[key] = val;
+        } else if (typeof val === 'bigint') {
+            plain[key] = Number(val);
+        } else if (val !== null && val !== undefined && typeof val === 'object' && !Array.isArray(val)) {
+            // Shallow-copy nested plain objects but guard against hidden binary types
+            try {
+                const j = JSON.stringify(val);
+                plain[key] = j === '{}' ? val : JSON.parse(j);
+            } catch {
+                plain[key] = val;
+            }
+        } else {
+            plain[key] = val;
         }
-        return plain;
     }
+    return plain;
 }
 
             dbWrapper = {

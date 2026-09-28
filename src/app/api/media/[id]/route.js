@@ -17,12 +17,17 @@ export async function GET(request, { params }) {
         }
 
         let buffer;
-        if (typeof item.data === 'string') {
+        if (Buffer.isBuffer(item.data)) {
+            buffer = item.data;
+        } else if (item.data instanceof ArrayBuffer) {
+            buffer = Buffer.from(item.data);
+        } else if (item.data instanceof Uint8Array) {
+            buffer = Buffer.from(item.data);
+        } else if (typeof item.data === 'string') {
             const base64Data = item.data.replace(/^data:[^;]+;base64,/, '');
             buffer = Buffer.from(base64Data, 'base64');
-        } else if (Buffer.isBuffer(item.data)) {
-            buffer = item.data;
         } else {
+            // Last resort: try to convert whatever we got
             buffer = Buffer.from(item.data);
         }
 

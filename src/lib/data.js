@@ -199,11 +199,45 @@ export async function getPricingDocuments() {
     try {
         const docs = await db.prepare('SELECT * FROM pricing_documents ORDER BY display_order ASC, id ASC').all();
         if (docs && docs.length > 0) {
-            return Promise.all(docs.map(async doc => ({
-                ...doc,
-                file_url: await normalizeUrl(doc.file_url),
-                file_url_en: doc.file_url_en ? await normalizeUrl(doc.file_url_en) : null
-            })));
+            return Promise.all(docs.map(async doc => {
+                const normFileUrl = await normalizeUrl(doc.file_url);
+                const normFileUrlEn = doc.file_url_en ? await normalizeUrl(doc.file_url_en) : null;
+
+                let images_fr = [];
+                let images_en = [];
+
+                try {
+                    const rawImages = await db.prepare('SELECT * FROM pricing_document_images WHERE doc_id = ? ORDER BY display_order ASC, id ASC').all(doc.id);
+                    for (const img of rawImages) {
+                        const nUrl = await normalizeUrl(img.image_url);
+                        const item = { ...img, image_url: nUrl, lang: img.lang === 'en' ? 'en' : 'fr' };
+                        if (img.lang === 'en') {
+                            images_en.push(item);
+                        } else {
+                            images_fr.push(item);
+                        }
+                    }
+                } catch (e) {
+                    // Table might be initializing
+                }
+
+                // If no subtable images and this is an image type, populate from primary URLs
+                if (images_fr.length === 0 && doc.file_type !== 'pdf' && normFileUrl) {
+                    images_fr.push({ id: `legacy-${doc.id}-fr`, image_url: normFileUrl, lang: 'fr', display_order: 1 });
+                }
+                if (images_en.length === 0 && doc.file_type !== 'pdf' && normFileUrlEn) {
+                    images_en.push({ id: `legacy-${doc.id}-en`, image_url: normFileUrlEn, lang: 'en', display_order: 1 });
+                }
+
+                return {
+                    ...doc,
+                    file_url: normFileUrl,
+                    file_url_en: normFileUrlEn,
+                    images_fr,
+                    images_en,
+                    images: images_fr
+                };
+            }));
         }
     } catch (err) {
         console.error('getPricingDocuments error:', err);

@@ -822,228 +822,493 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
 
 // --- SERVICES / PRESTATIONS ---
 export async function addService(formData) {
-    await requireAdminAuth();
-    const title = (formData.get('title') || '').toString().trim();
-    const title_en = (formData.get('title_en') || '').toString().trim();
-    const description = (formData.get('description') || '').toString().trim();
-    const description_en = (formData.get('description_en') || '').toString().trim();
-    const badge = (formData.get('badge') || '').toString().trim();
-    const badge_en = (formData.get('badge_en') || '').toString().trim();
-    const num = (formData.get('num') || '').toString().trim();
+    try {
+        await requireAdminAuth();
+        const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
+        const description = (formData.get('description') || '').toString().trim();
+        const description_en = (formData.get('description_en') || '').toString().trim();
+        const badge = (formData.get('badge') || '').toString().trim();
+        const badge_en = (formData.get('badge_en') || '').toString().trim();
+        const num = (formData.get('num') || '').toString().trim();
 
-    if (!title || !description) {
-        return { error: 'Veuillez remplir le titre et la description.' };
+        if (!title || !description) {
+            return { error: 'Veuillez remplir le titre et la description.' };
+        }
+
+        const db = getDb();
+        const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM services').get();
+        const nextOrder = (maxRow?.maxOrder || 0) + 1;
+
+        const formattedNum = num || (nextOrder < 10 ? `0${nextOrder}` : `${nextOrder}`);
+
+        await db.prepare('INSERT INTO services (num, title, title_en, description, description_en, badge, badge_en, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+            formattedNum, title, title_en, description, description_en, badge, badge_en, nextOrder
+        );
+
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[addService Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de l\'ajout de la prestation.' };
     }
-
-    const db = getDb();
-    const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM services').get();
-    const nextOrder = (maxRow?.maxOrder || 0) + 1;
-
-    const formattedNum = num || (nextOrder < 10 ? `0${nextOrder}` : `${nextOrder}`);
-
-    await db.prepare('INSERT INTO services (num, title, title_en, description, description_en, badge, badge_en, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
-        formattedNum, title, title_en, description, description_en, badge, badge_en, nextOrder
-    );
-
-    revalidatePath('/');
-    revalidatePath('/');
-    revalidatePath('/a-propos');
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
 }
 
 export async function editService(formData) {
-    await requireAdminAuth();
-    const id = extractId(formData);
-    if (!id) return { error: 'ID invalide' };
+    try {
+        await requireAdminAuth();
+        const id = extractId(formData);
+        if (!id) return { error: 'ID invalide' };
 
-    const title = (formData.get('title') || '').toString().trim();
-    const title_en = (formData.get('title_en') || '').toString().trim();
-    const description = (formData.get('description') || '').toString().trim();
-    const description_en = (formData.get('description_en') || '').toString().trim();
-    const badge = (formData.get('badge') || '').toString().trim();
-    const badge_en = (formData.get('badge_en') || '').toString().trim();
-    const num = (formData.get('num') || '').toString().trim();
+        const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
+        const description = (formData.get('description') || '').toString().trim();
+        const description_en = (formData.get('description_en') || '').toString().trim();
+        const badge = (formData.get('badge') || '').toString().trim();
+        const badge_en = (formData.get('badge_en') || '').toString().trim();
+        const num = (formData.get('num') || '').toString().trim();
 
-    if (!title || !description) {
-        return { error: 'Veuillez remplir le titre et la description.' };
+        if (!title || !description) {
+            return { error: 'Veuillez remplir le titre et la description.' };
+        }
+
+        const db = getDb();
+        await db.prepare('UPDATE services SET num = ?, title = ?, title_en = ?, description = ?, description_en = ?, badge = ?, badge_en = ? WHERE id = ?').run(
+            num, title, title_en, description, description_en, badge, badge_en, id
+        );
+
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[editService Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la modification de la prestation.' };
     }
-
-    const db = getDb();
-    await db.prepare('UPDATE services SET num = ?, title = ?, title_en = ?, description = ?, description_en = ?, badge = ?, badge_en = ? WHERE id = ?').run(
-        num, title, title_en, description, description_en, badge, badge_en, id
-    );
-
-    revalidatePath('/');
-    revalidatePath('/a-propos');
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
 }
 
 export async function deleteService(idOrFormData) {
-    await requireAdminAuth();
-    const id = extractId(idOrFormData);
-    if (!id) return { error: 'ID invalide' };
+    try {
+        await requireAdminAuth();
+        const id = extractId(idOrFormData);
+        if (!id) return { error: 'ID invalide' };
 
-    const db = getDb();
-    await db.prepare('DELETE FROM services WHERE id = ?').run(id);
+        const db = getDb();
+        await db.prepare('DELETE FROM services WHERE id = ?').run(id);
 
-    revalidatePath('/');
-    revalidatePath('/a-propos');
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[deleteService Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la suppression de la prestation.' };
+    }
 }
 
 export async function reorderService(id, direction) {
-    await requireAdminAuth();
-    const targetId = Number(id);
-    const db = getDb();
-    const services = await db.prepare('SELECT id FROM services ORDER BY display_order ASC, id ASC').all();
-    const index = services.findIndex(s => Number(s.id) === targetId);
-    if (index === -1) return { error: 'Prestation non trouvée' };
+    try {
+        await requireAdminAuth();
+        const targetId = Number(id);
+        const db = getDb();
+        const services = await db.prepare('SELECT id FROM services ORDER BY display_order ASC, id ASC').all();
+        const index = services.findIndex(s => Number(s.id) === targetId);
+        if (index === -1) return { error: 'Prestation non trouvée' };
 
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= services.length) return { success: true };
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= services.length) return { success: true };
 
-    const temp = services[index];
-    services[index] = services[targetIndex];
-    services[targetIndex] = temp;
+        const temp = services[index];
+        services[index] = services[targetIndex];
+        services[targetIndex] = temp;
 
-    const stmt = db.prepare('UPDATE services SET display_order = ? WHERE id = ?');
-    for (let i = 0; i < services.length; i++) {
-        await stmt.run(i + 1, services[i].id);
+        const stmt = db.prepare('UPDATE services SET display_order = ? WHERE id = ?');
+        for (let i = 0; i < services.length; i++) {
+            await stmt.run(i + 1, services[i].id);
+        }
+
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[reorderService Error]:', err);
+        return { error: err.message || 'Une erreur est survenue.' };
     }
-
-    revalidatePath('/');
-    revalidatePath('/a-propos');
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
 }
 
-// --- PRICING DOCUMENTS (TARIFS IMAGES & PDFS) ---
+// --- À PROPOS (HISTOIRE & IMAGE) ---
+export async function updateAboutInfo(formData) {
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+
+        const about_text = (formData.get('about_text') || '').toString().trim();
+        const about_text_en = (formData.get('about_text_en') || '').toString().trim();
+        const tagline = (formData.get('tagline') || '').toString().trim();
+        const tagline_en = (formData.get('tagline_en') || '').toString().trim();
+
+        const stmt = db.prepare(`
+            INSERT INTO site_info (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `);
+
+        if (formData.has('about_text')) await stmt.run('about_text', (formData.get('about_text') || '').toString().trim());
+        if (formData.has('about_text_en')) await stmt.run('about_text_en', (formData.get('about_text_en') || '').toString().trim());
+        if (formData.has('tagline')) await stmt.run('tagline', (formData.get('tagline') || '').toString().trim());
+        if (formData.has('tagline_en')) await stmt.run('tagline_en', (formData.get('tagline_en') || '').toString().trim());
+
+
+        const aboutFile = formData.get('about_file');
+        if (aboutFile && aboutFile.size > 0) {
+            const aboutUrl = await saveUploadedFile(aboutFile);
+            if (aboutUrl) await stmt.run('about_image', aboutUrl);
+        }
+
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/settings');
+        return { success: true };
+    } catch (err) {
+        console.error('[updateAboutInfo Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de l\'enregistrement des informations À Propos.' };
+    }
+}
+
+// --- PRICING DOCUMENTS (TARIFS MULTI-IMAGES & PDFS) ---
 export async function addPricingDocument(formData) {
-    await requireAdminAuth();
-    const title = (formData.get('title') || '').toString().trim();
-    const title_en = (formData.get('title_en') || '').toString().trim();
-    const description = (formData.get('description') || '').toString().trim();
-    const description_en = (formData.get('description_en') || '').toString().trim();
-    const file_fr = formData.get('file_fr');
-    const file_en = formData.get('file_en');
-    let file_url = (formData.get('file_url') || '').toString().trim();
-    let file_url_en = (formData.get('file_url_en') || '').toString().trim();
+    try {
+        await requireAdminAuth();
+        const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
+        const description = (formData.get('description') || '').toString().trim();
+        const description_en = (formData.get('description_en') || '').toString().trim();
+        const file_type_param = (formData.get('file_type') || '').toString().trim();
 
-    if (!title) {
-        return { error: 'Veuillez saisir un titre pour le document de tarifs.' };
+        if (!title) {
+            return { error: 'Veuillez saisir un titre pour la carte / grille tarifaire.' };
+        }
+
+        const files_fr = formData.getAll('image_files_fr').length > 0 ? formData.getAll('image_files_fr') : formData.getAll('image_files');
+        const files_en = formData.getAll('image_files_en');
+        const singlePdfFr = formData.get('file_fr');
+        const singlePdfEn = formData.get('file_en');
+
+        const uploadedUrlsFr = [];
+        const uploadedUrlsEn = [];
+
+        const isPdf = file_type_param === 'pdf' || (singlePdfFr && singlePdfFr.size > 0 && singlePdfFr.name?.toLowerCase().endsWith('.pdf'));
+
+        if (isPdf) {
+            if (singlePdfFr && singlePdfFr.size > 0) {
+                const u = await saveUploadedFile(singlePdfFr);
+                if (u) uploadedUrlsFr.push(u);
+            }
+            if (singlePdfEn && singlePdfEn.size > 0) {
+                const u = await saveUploadedFile(singlePdfEn);
+                if (u) uploadedUrlsEn.push(u);
+            }
+        } else {
+            // Multiple images FR
+            for (const file of files_fr) {
+                if (file && file.size > 0) {
+                    const u = await saveUploadedFile(file);
+                    if (u) uploadedUrlsFr.push(u);
+                }
+            }
+            // Multiple images EN
+            for (const file of files_en) {
+                if (file && file.size > 0) {
+                    const u = await saveUploadedFile(file);
+                    if (u) uploadedUrlsEn.push(u);
+                }
+            }
+        }
+
+        if (uploadedUrlsFr.length === 0) {
+            return { error: 'Veuillez téléverser au moins une image ou un document PDF de tarif.' };
+        }
+
+        const mainUrlFr = uploadedUrlsFr[0];
+        const mainUrlEn = uploadedUrlsEn.length > 0 ? uploadedUrlsEn[0] : null;
+        const file_type = isPdf ? 'pdf' : 'image';
+
+        const db = getDb();
+        const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM pricing_documents').get();
+        const nextOrder = (maxRow?.maxOrder || 0) + 1;
+
+        const result = await db.prepare(`
+            INSERT INTO pricing_documents (title, title_en, description, description_en, file_url, file_url_en, file_type, display_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(title, title_en, description, description_en, mainUrlFr, mainUrlEn, file_type, nextOrder);
+        const docId = result.lastInsertRowid;
+
+        // If image collection, populate pricing_document_images subtable
+        if (!isPdf) {
+            const stmt = db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, ?, ?)");
+            for (let i = 0; i < uploadedUrlsFr.length; i++) {
+                await stmt.run(docId, uploadedUrlsFr[i], i + 1, 'fr');
+            }
+            for (let i = 0; i < uploadedUrlsEn.length; i++) {
+                await stmt.run(docId, uploadedUrlsEn[i], i + 1, 'en');
+            }
+        }
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[addPricingDocument Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de l\'enregistrement du tarif.' };
     }
-
-    if (file_fr && file_fr.size > 0) {
-        file_url = await saveUploadedFile(file_fr);
-    }
-    if (file_en && file_en.size > 0) {
-        file_url_en = await saveUploadedFile(file_en);
-    }
-
-    if (!file_url) {
-        return { error: 'Veuillez téléverser au moins un document ou une image de tarif.' };
-    }
-
-    const isPdf = (file_url || '').toLowerCase().endsWith('.pdf');
-    const file_type = isPdf ? 'pdf' : 'image';
-
-    const db = getDb();
-    const maxRow = await db.prepare('SELECT MAX(display_order) as maxOrder FROM pricing_documents').get();
-    const nextOrder = (maxRow?.maxOrder || 0) + 1;
-
-    await db.prepare(`
-        INSERT INTO pricing_documents (title, title_en, description, description_en, file_url, file_url_en, file_type, display_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, title_en, description, description_en, file_url, file_url_en || file_url, file_type, nextOrder);
-
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
 }
 
 export async function editPricingDocument(formData) {
-    await requireAdminAuth();
-    const id = extractId(formData);
-    if (!id) return { error: 'ID manquant' };
+    try {
+        await requireAdminAuth();
+        const id = extractId(formData);
+        if (!id) return { error: 'ID manquant' };
 
-    const title = (formData.get('title') || '').toString().trim();
-    const title_en = (formData.get('title_en') || '').toString().trim();
-    const description = (formData.get('description') || '').toString().trim();
-    const description_en = (formData.get('description_en') || '').toString().trim();
-    const file_fr = formData.get('file_fr');
-    const file_en = formData.get('file_en');
+        const title = (formData.get('title') || '').toString().trim();
+        const title_en = (formData.get('title_en') || '').toString().trim();
+        const description = (formData.get('description') || '').toString().trim();
+        const description_en = (formData.get('description_en') || '').toString().trim();
 
-    const db = getDb();
-    const existing = await db.prepare('SELECT * FROM pricing_documents WHERE id = ?').get(id);
-    if (!existing) return { error: 'Document introuvable' };
+        if (!title) {
+            return { error: 'Veuillez saisir un titre pour le tarif.' };
+        }
 
-    let file_url = existing.file_url;
-    let file_url_en = existing.file_url_en;
+        const db = getDb();
+        const existing = await db.prepare('SELECT * FROM pricing_documents WHERE id = ?').get(id);
+        if (!existing) return { error: 'Document introuvable' };
 
-    if (file_fr && file_fr.size > 0) {
-        file_url = await saveUploadedFile(file_fr);
+        const files_fr = formData.getAll('image_files_fr').length > 0 ? formData.getAll('image_files_fr') : formData.getAll('image_files');
+        const files_en = formData.getAll('image_files_en');
+        const singlePdfFr = formData.get('file_fr');
+        const singlePdfEn = formData.get('file_en');
+
+        let mainFileUrl = existing.file_url;
+        let mainFileUrlEn = existing.file_url_en;
+
+        const isPdf = existing.file_type === 'pdf' || (singlePdfFr && singlePdfFr.size > 0 && singlePdfFr.name?.toLowerCase().endsWith('.pdf'));
+
+        if (isPdf) {
+            if (singlePdfFr && singlePdfFr.size > 0) {
+                mainFileUrl = await saveUploadedFile(singlePdfFr);
+            }
+            if (singlePdfEn && singlePdfEn.size > 0) {
+                mainFileUrlEn = await saveUploadedFile(singlePdfEn);
+            }
+        } else {
+            // Upload newly attached FR images
+            const newFrUrls = [];
+            for (const f of files_fr) {
+                if (f && f.size > 0) {
+                    const u = await saveUploadedFile(f);
+                    if (u) newFrUrls.push(u);
+                }
+            }
+            if (newFrUrls.length > 0) {
+                const maxOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id);
+                let startOrder = (maxOrderRow?.max_order || 0) + 1;
+                const stmt = db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, ?, 'fr')");
+                for (const url of newFrUrls) {
+                    await stmt.run(id, url, startOrder++);
+                }
+            }
+
+            // Upload newly attached EN images
+            const newEnUrls = [];
+            for (const f of files_en) {
+                if (f && f.size > 0) {
+                    const u = await saveUploadedFile(f);
+                    if (u) newEnUrls.push(u);
+                }
+            }
+            if (newEnUrls.length > 0) {
+                const maxOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM pricing_document_images WHERE doc_id = ? AND lang = 'en'").get(id);
+                let startOrder = (maxOrderRow?.max_order || 0) + 1;
+                const stmt = db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, ?, 'en')");
+                for (const url of newEnUrls) {
+                    await stmt.run(id, url, startOrder++);
+                }
+            }
+
+            // Sync main file URLs with first image of each language
+            const firstFr = await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
+            const firstEn = await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
+
+            if (firstFr) mainFileUrl = firstFr.image_url;
+            if (firstEn) mainFileUrlEn = firstEn.image_url;
+        }
+
+        await db.prepare(`
+            UPDATE pricing_documents
+            SET title = ?, title_en = ?, description = ?, description_en = ?, file_url = ?, file_url_en = ?
+            WHERE id = ?
+        `).run(title, title_en, description, description_en, mainFileUrl, mainFileUrlEn, id);
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[editPricingDocument Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la modification du tarif.' };
     }
-    if (file_en && file_en.size > 0) {
-        file_url_en = await saveUploadedFile(file_en);
-    }
-
-    const isPdf = (file_url || '').toLowerCase().endsWith('.pdf');
-    const file_type = isPdf ? 'pdf' : 'image';
-
-    await db.prepare(`
-        UPDATE pricing_documents
-        SET title = ?, title_en = ?, description = ?, description_en = ?, file_url = ?, file_url_en = ?, file_type = ?
-        WHERE id = ?
-    `).run(title, title_en, description, description_en, file_url, file_url_en || file_url, file_type, id);
-
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
 }
 
 export async function deletePricingDocument(idOrFormData) {
-    await requireAdminAuth();
-    const id = extractId(idOrFormData);
-    if (!id) return { error: 'ID invalide' };
+    try {
+        await requireAdminAuth();
+        const id = extractId(idOrFormData);
+        if (!id) return { error: 'ID invalide' };
 
-    const db = getDb();
-    await db.prepare('DELETE FROM pricing_documents WHERE id = ?').run(id);
+        const db = getDb();
+        try {
+            const subImages = await db.prepare('SELECT image_url FROM pricing_document_images WHERE doc_id = ?').all(id);
+            subImages.forEach(img => deleteLocalFileIfPresent(img.image_url));
+            await db.prepare('DELETE FROM pricing_document_images WHERE doc_id = ?').run(id);
+        } catch {}
 
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
+        await db.prepare('DELETE FROM pricing_documents WHERE id = ?').run(id);
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[deletePricingDocument Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la suppression.' };
+    }
 }
 
 export async function reorderPricingDocument(id, direction) {
-    await requireAdminAuth();
-    const db = getDb();
-    const docs = await db.prepare('SELECT id, display_order FROM pricing_documents ORDER BY display_order ASC, id ASC').all();
-    const index = docs.findIndex(d => d.id === id);
-    if (index === -1) return { error: 'Document introuvable' };
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+        const docs = await db.prepare('SELECT id, display_order FROM pricing_documents ORDER BY display_order ASC, id ASC').all();
+        const index = docs.findIndex(d => d.id === id);
+        if (index === -1) return { error: 'Document introuvable' };
 
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= docs.length) return { success: true };
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= docs.length) return { success: true };
 
-    const currentDoc = docs[index];
-    const targetDoc = docs[targetIndex];
+        const currentDoc = docs[index];
+        const targetDoc = docs[targetIndex];
 
-    const currentOrder = currentDoc.display_order || index + 1;
-    const targetOrder = targetDoc.display_order || targetIndex + 1;
+        const currentOrder = currentDoc.display_order || index + 1;
+        const targetOrder = targetDoc.display_order || targetIndex + 1;
 
-    const stmt = db.prepare('UPDATE pricing_documents SET display_order = ? WHERE id = ?');
-    await stmt.run(targetOrder, currentDoc.id);
-    await stmt.run(currentOrder, targetDoc.id);
+        const stmt = db.prepare('UPDATE pricing_documents SET display_order = ? WHERE id = ?');
+        await stmt.run(targetOrder, currentDoc.id);
+        await stmt.run(currentOrder, targetDoc.id);
 
-    revalidatePath('/tarifs');
-    revalidatePath('/admin/dashboard/prestations');
-    return { success: true };
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[reorderPricingDocument Error]:', err);
+        return { error: err.message || 'Une erreur est survenue.' };
+    }
+}
+
+export async function deletePricingDocumentImage(imageId) {
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+        const img = await db.prepare('SELECT * FROM pricing_document_images WHERE id = ?').get(imageId);
+        if (!img) return { error: 'Image non trouvée' };
+
+        deleteLocalFileIfPresent(img.image_url);
+        await db.prepare('DELETE FROM pricing_document_images WHERE id = ?').run(imageId);
+
+        const isEn = img.lang === 'en';
+        const remaining = isEn
+            ? await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.doc_id)
+            : await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.doc_id);
+
+        if (isEn) {
+            const nextUrlEn = remaining.length > 0 ? remaining[0].image_url : null;
+            await db.prepare('UPDATE pricing_documents SET file_url_en = ? WHERE id = ?').run(nextUrlEn, img.doc_id);
+        } else {
+            const nextUrl = remaining.length > 0 ? remaining[0].image_url : null;
+            await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(nextUrl, img.doc_id);
+        }
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[deletePricingDocumentImage Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la suppression de l\'image.' };
+    }
+}
+
+export async function reorderPricingDocumentImage(imageId, direction) {
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+        const img = await db.prepare('SELECT * FROM pricing_document_images WHERE id = ?').get(imageId);
+        if (!img) return { error: 'Image non trouvée' };
+
+        const isEn = img.lang === 'en';
+        const images = isEn
+            ? await db.prepare("SELECT id, display_order FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.doc_id)
+            : await db.prepare("SELECT id, display_order FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.doc_id);
+
+        const index = images.findIndex(i => i.id === imageId);
+        if (index === -1) return { error: 'Image non trouvée' };
+
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= images.length) return { success: true };
+
+        const currentImg = images[index];
+        const targetImg = images[targetIndex];
+
+        const currentOrder = currentImg.display_order || index + 1;
+        const targetOrder = targetImg.display_order || targetIndex + 1;
+
+        const stmt = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
+        await stmt.run(targetOrder, currentImg.id);
+        await stmt.run(currentOrder, targetImg.id);
+
+        const updatedImages = isEn
+            ? await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.doc_id)
+            : await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.doc_id);
+
+        if (isEn) {
+            if (updatedImages.length > 0) {
+                await db.prepare('UPDATE pricing_documents SET file_url_en = ? WHERE id = ?').run(updatedImages[0].image_url, img.doc_id);
+            }
+        } else {
+            if (updatedImages.length > 0) {
+                await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(updatedImages[0].image_url, img.doc_id);
+            }
+        }
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[reorderPricingDocumentImage Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la réorganisation.' };
+    }
 }
 
 // --- FIXED MEAL PRICES ---

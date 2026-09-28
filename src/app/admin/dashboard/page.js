@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getSiteInfo, getCurrentWeeklyMenu, getContactMessages, getUnreadMessageCount, getGalleryPosts } from '@/lib/data';
-import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, Clock, Phone, MapPin, MessageSquare, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, Clock, Phone, MapPin, MessageSquare, Image as ImageIcon, Sparkles, Receipt, Heart } from 'lucide-react';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -161,13 +162,13 @@ export default async function DashboardOverview() {
                         </div>
                     </Link>
 
-                    <Link href="/admin/dashboard/messages" className="admin-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none' }}>
-                        <div style={{ padding: '0.6rem', background: 'rgba(196,89,58,0.1)', borderRadius: '8px', color: '#E06D53' }}>
-                            <MessageSquare size={20} />
+                    <Link href="/admin/dashboard/tarifs" className="admin-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none' }}>
+                        <div style={{ padding: '0.6rem', background: 'rgba(200,169,110,0.1)', borderRadius: '8px', color: 'var(--admin-gold)' }}>
+                            <Receipt size={20} />
                         </div>
                         <div>
-                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Voir les messages</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{unreadCount > 0 ? `${unreadCount} non lu(s)` : 'Aucun nouveau'}</span>
+                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Tarifs &amp; Cartes</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Cartes et formules</span>
                         </div>
                     </Link>
 
@@ -177,17 +178,27 @@ export default async function DashboardOverview() {
                         </div>
                         <div>
                             <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Galerie</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Publier une photo / vidéo</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Photos &amp; coulisses</span>
                         </div>
                     </Link>
 
-                    <Link href="/admin/dashboard/carousel" className="admin-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none' }}>
+                    <Link href="/admin/dashboard/a-propos" className="admin-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none' }}>
                         <div style={{ padding: '0.6rem', background: 'rgba(200,169,110,0.1)', borderRadius: '8px', color: 'var(--admin-gold)' }}>
-                            <ImageIcon size={20} />
+                            <Heart size={20} />
                         </div>
                         <div>
-                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Bannière Accueil</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Carrousel principal</span>
+                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>À Propos</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Histoire &amp; Prestations</span>
+                        </div>
+                    </Link>
+
+                    <Link href="/admin/dashboard/messages" className="admin-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none' }}>
+                        <div style={{ padding: '0.6rem', background: 'rgba(196,89,58,0.1)', borderRadius: '8px', color: '#E06D53' }}>
+                            <MessageSquare size={20} />
+                        </div>
+                        <div>
+                            <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Messages &amp; Devis</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{unreadCount > 0 ? `${unreadCount} non lu(s)` : 'Aucun nouveau'}</span>
                         </div>
                     </Link>
 
@@ -197,10 +208,11 @@ export default async function DashboardOverview() {
                         </div>
                         <div>
                             <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--admin-text)' }}>Infos du site</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Téléphone, À propos...</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Téléphone, logo...</span>
                         </div>
                     </Link>
                 </div>
+
             </div>
 
             {/* Recent Messages Section */}

@@ -5,7 +5,7 @@ const DICTIONARY = {
     fr: {
         // Navigation & Header
         'nav.home': 'Accueil',
-        'nav.tarifs': 'Tarifs & Prestations',
+        'nav.tarifs': 'Tarifs',
         'nav.creations': 'Galerie',
         'nav.about': 'À Propos',
         'nav.contact': 'Contact & Devis',
@@ -50,11 +50,11 @@ const DICTIONARY = {
         'services.title': 'Nos Prestations',
         'services.aboutTitle': 'Ce que Nous Proposons',
 
-        // Tarifs & Prestations page
-        'tarifs.badge': 'Tarifs & Formules',
-        'tarifs.title': 'Tarifs &',
-        'tarifs.titleItalic': 'Prestations',
-        'tarifs.desc': 'Consultez nos cartes et grilles tarifaires en format image ou PDF, ainsi que nos prestations traiteur sur mesure pour tous vos événements.',
+        // Tarifs page
+        'tarifs.badge': 'Nos Tarifs & Menus',
+        'tarifs.title': 'Cartes &',
+        'tarifs.titleItalic': 'Tarifs',
+        'tarifs.desc': 'Consultez nos cartes et grilles tarifaires en haute définition ou format PDF pour vos déjeuners, dîners et évènements.',
         'tarifs.tabAll': 'Tout afficher',
         'tarifs.tabPrices': 'Tarifs Repas',
         'tarifs.tabDocs': 'Cartes & Menus (PDF / Images)',
@@ -176,7 +176,7 @@ const DICTIONARY = {
     en: {
         // Navigation & Header
         'nav.home': 'Home',
-        'nav.tarifs': 'Rates & Services',
+        'nav.tarifs': 'Tariffs',
         'nav.creations': 'Gallery',
         'nav.about': 'About Us',
         'nav.contact': 'Contact & Quote',
@@ -221,11 +221,11 @@ const DICTIONARY = {
         'services.title': 'Our Catering Services',
         'services.aboutTitle': 'What We Offer',
 
-        // Tarifs & Prestations page
-        'tarifs.badge': 'Rates & Formulas',
-        'tarifs.title': 'Rates &',
-        'tarifs.titleItalic': 'Catering Services',
-        'tarifs.desc': 'Browse our pricing sheets and menus in full-resolution image or PDF format, along with our bespoke catering services for all your events.',
+        // Tarifs page
+        'tarifs.badge': 'Rates & Menus',
+        'tarifs.title': 'Menus &',
+        'tarifs.titleItalic': 'Rates',
+        'tarifs.desc': 'Browse our menus and pricing sheets in high definition image or PDF format for your daily meals, celebrations and events.',
         'tarifs.tabAll': 'All',
         'tarifs.tabPrices': 'Meal Rates',
         'tarifs.tabDocs': 'Menus & Pricing Sheets (PDF / Images)',

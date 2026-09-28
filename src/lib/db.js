@@ -31,6 +31,7 @@ export function getDb() {
                     await Promise.allSettled([
                         client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
                         client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_document_images (id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, image_url TEXT NOT NULL, display_order INTEGER DEFAULT 0, lang TEXT DEFAULT 'fr', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
                         client.execute(`CREATE TABLE IF NOT EXISTS fixed_prices (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT DEFAULT 'Repas', category_en TEXT DEFAULT 'Meals', name TEXT NOT NULL, name_en TEXT, price TEXT NOT NULL, price_en TEXT, details TEXT, details_en TEXT, badge TEXT, badge_en TEXT, display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
                         client.execute(`ALTER TABLE weekly_menu_images ADD COLUMN lang TEXT DEFAULT 'fr'`),
                         client.execute(`ALTER TABLE weekly_menus ADD COLUMN image_url_en TEXT`),
@@ -193,6 +194,14 @@ function toPlain(row) {
                         id TEXT PRIMARY KEY,
                         mime_type TEXT NOT NULL,
                         data BLOB NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS pricing_document_images (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        doc_id INTEGER NOT NULL,
+                        image_url TEXT NOT NULL,
+                        display_order INTEGER DEFAULT 0,
+                        lang TEXT DEFAULT 'fr',
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                 `);

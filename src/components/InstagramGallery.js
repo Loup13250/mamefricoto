@@ -196,7 +196,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                 <div className="modal-cta">
                                     <a href={`tel:${(siteInfo?.phone || '07 43 64 64 11').replace(/\s+/g, '')}`} className="btn-terra modal-cta-btn">
                                         <Phone size={15} />
-                                        {lang === 'en' ? 'Order' : 'Commander'} — {siteInfo?.phone || '07 43 64 64 11'}
+                                        {lang === 'en' ? 'Order' : 'Commander'} - {siteInfo?.phone || '07 43 64 64 11'}
                                     </a>
                                 </div>
                             </div>

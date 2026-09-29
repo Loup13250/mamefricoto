@@ -89,7 +89,7 @@ export async function sendContactNotification(data) {
 `;
 
     const textContent = `
-NOUVELLE DEMANDE TRAITEUR — MAMÉ FRICOTO
+NOUVELLE DEMANDE TRAITEUR - MAMÉ FRICOTO
 ---------------------------------------------
 Client : ${name}
 Email : ${email}

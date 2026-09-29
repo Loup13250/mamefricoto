@@ -64,7 +64,7 @@ export default function Header({ siteInfo }) {
     return (
         <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
             <div className="container header-inner">
-                <Link href="/" className="logo-link" aria-label={`Mamé Fricoto — ${t('nav.home')}`}>
+                <Link href="/" className="logo-link" aria-label={`Mamé Fricoto - ${t('nav.home')}`}>
                     <div className="logo-round-wrap">
                         <Image
                             src={logoSrc}

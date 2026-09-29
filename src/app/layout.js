@@ -201,6 +201,24 @@ export default async function RootLayout({ children }) {
             `,
           }}
         />
+        <Script
+          id="dev-console-signature"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  console.log(
+                    "%c  Mamé Fricoto  %c\\n\\n%cSi vous observez un bug ou souhaitez me contacter :\\nEmail : loupferri@gmail.com\\n\\nSite conçu et développé par Loup — JL-Développement\\nSite web : https://jl-developpement.com/\\n",
+                    "background: #C2572D; color: #FFFFFF; font-size: 14px; font-weight: bold; padding: 5px 12px; border-radius: 4px;",
+                    "",
+                    "font-size: 12px; color: #2A1E17; line-height: 1.6; font-family: system-ui, -apple-system, sans-serif;"
+                  );
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
         <a href="#main-content" className="sr-only focus:not-sr-only">

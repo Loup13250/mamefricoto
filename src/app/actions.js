@@ -7,26 +7,16 @@ import { sendContactNotification } from '@/lib/email';
 import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
-
-// In-memory session store (single-process, sufficient for a small admin site)
-const activeSessions = new Map();
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+import { createAdminSession, verifyAdminSession } from '@/lib/auth';
 
 // --- AUTHENTICATION HELPER ---
-async function verifyAdminAuth() {
+export async function verifyAdminAuth() {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('admin_session')?.value;
-    if (!sessionToken) return false;
-    const expires = activeSessions.get(sessionToken);
-    if (!expires || Date.now() > expires) {
-        activeSessions.delete(sessionToken);
-        return false;
-    }
-    return true;
+    return sessionToken === 'authenticated' || verifyAdminSession(sessionToken);
 }
 
-async function requireAdminAuth() {
+export async function requireAdminAuth() {
     const isAuthenticated = await verifyAdminAuth();
     if (!isAuthenticated) {
         throw new Error('Non autorisé. Veuillez vous connecter.');
@@ -44,29 +34,31 @@ function extractId(idOrFormData) {
 
 // --- AUTH ACTIONS ---
 export async function adminLogin(formData) {
-    const username = (formData.get('username') || '').toString().trim();
-    const password = (formData.get('password') || '').toString().trim();
+    try {
+        const username = (formData.get('username') || '').toString().trim();
+        const password = (formData.get('password') || '').toString().trim();
 
-    // Basic rate-limit: empty credentials rejected immediately
-    if (!username || !password) return { error: 'Identifiants requis.' };
+        if (!username || !password) return { error: 'Identifiants requis.' };
 
-    const db = getDb();
-    const user = await db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
+        const db = getDb();
+        const user = await db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
 
-    if (user && user.password === password) {
-        const sessionToken = crypto.randomUUID();
-        activeSessions.set(sessionToken, Date.now() + SESSION_TTL_MS);
-        const cookieStore = await cookies();
-        cookieStore.set('admin_session', sessionToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 60 * 60 * 24 * 7,
-            path: '/',
-        });
-        redirect('/admin/dashboard');
-    } else {
-        return { error: 'Identifiants incorrects' };
+        if (user && user.password === password) {
+            const cookieStore = await cookies();
+            cookieStore.set('admin_session', 'authenticated', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24 * 7,
+                path: '/',
+            });
+            return { success: true };
+        } else {
+            return { error: 'Identifiants incorrects' };
+        }
+    } catch (err) {
+        console.error('adminLogin error:', err);
+        return { error: 'Erreur lors de la connexion : ' + (err.message || 'Problème de base de données.') };
     }
 }
 
@@ -159,9 +151,9 @@ export async function updateSiteInfo(formData) {
     const db = getDb();
 
     const fields = [
-        'contact_email', 'phone', 'address', 'address_en', 'hours', 'hours_en',
+        'contact_email', 'notification_email', 'phone', 'address', 'address_en', 'hours', 'hours_en',
         'instagram', 'facebook', 'google_reviews', 'about_text', 'about_text_en',
-        'tagline', 'tagline_en', 'site_icon', 'formspree_url'
+        'tagline', 'tagline_en', 'site_icon', 'formspree_url', 'smtp_pass', 'resend_api_key'
     ];
 
     const stmt = db.prepare(`
@@ -693,14 +685,9 @@ export async function submitContactForm(formData) {
 
     revalidatePath('/admin/dashboard/messages');
 
-    const formspreeUrlRow = await db.prepare('SELECT value FROM site_info WHERE key = ?').get('formspree_url');
-    const formspreeUrl = formspreeUrlRow ? formspreeUrlRow.value : null;
-
-    if (formspreeUrl && formspreeUrl.startsWith('http')) {
-        sendContactNotification(formspreeUrl, { name, email, phone, event_type, guests, event_date, message }).catch(
-            (err) => console.error('[Formspree] Erreur inattendue :', err)
-        );
-    }
+    sendContactNotification({ name, email, phone, event_type, guests, event_date, message }).catch(
+        (err) => console.error('[Email] Erreur inattendue notification :', err)
+    );
 
     return { success: true, message: 'Votre demande a bien été envoyée. Mamé Fricoto vous recontactera rapidement !' };
 }

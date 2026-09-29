@@ -354,17 +354,62 @@ export default function SettingsFormClient({ info }) {
                 </div>
 
 
-                {/* Notification Email (Optionnel) */}
-                <div>
+                {/* Notification Email pour Léa */}
+                <div style={{ background: 'rgba(200, 169, 110, 0.05)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Mail size={18} style={{ color: 'var(--admin-gold)' }} /> Notifications Email (Formspree)
+                        <Mail size={18} style={{ color: 'var(--admin-gold)' }} /> Réception des Demandes par Email
                     </h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1rem' }}>
-                        Tous les messages du formulaire sont automatiquement sauvegardés dans votre onglet <strong>Messages</strong>. Si vous souhaitez recevoir un vrai mail en plus, vous pouvez créer un formulaire sur <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--admin-gold)' }}>Formspree.io</a> et coller l&apos;URL ci-dessous.
+                    <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                        Tous les messages du formulaire arrivent dans l&apos;onglet <strong>Messages</strong>. Pour recevoir également chaque demande complète par email directement dans votre boîte (pour que Léa puisse voir les demandes sans aller sur l&apos;admin), configurez les options ci-dessous.
                     </p>
-                    <div>
-                        <label className="admin-label">URL Endpoint Formspree (ex: https://formspree.io/f/xxxxx)</label>
-                        <input type="url" name="formspree_url" defaultValue={info.formspree_url} placeholder="https://formspree.io/f/..." className="admin-input" />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                        <div>
+                            <label className="admin-label">Adresse email de réception</label>
+                            <input
+                                type="email"
+                                name="notification_email"
+                                defaultValue={info.notification_email || 'mamefricoto@gmail.com'}
+                                placeholder="mamefricoto@gmail.com"
+                                className="admin-input"
+                            />
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>L&apos;adresse où Léa reçoit les emails du formulaire.</span>
+                        </div>
+                        <div>
+                            <label className="admin-label">Mot de passe d&apos;application Gmail (16 caractères)</label>
+                            <input
+                                type="password"
+                                name="smtp_pass"
+                                defaultValue={info.smtp_pass || ''}
+                                placeholder="ex: abcd efgh ijkl mnop"
+                                className="admin-input"
+                                autoComplete="new-password"
+                            />
+                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Généré sur compte Google &gt; Sécurité &gt; Mots de passe d&apos;application.</span>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+                        <div>
+                            <label className="admin-label">Ou Clé API Resend (Optionnel)</label>
+                            <input
+                                type="text"
+                                name="resend_api_key"
+                                defaultValue={info.resend_api_key || ''}
+                                placeholder="re_123456789..."
+                                className="admin-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="admin-label">Ou Endpoint Formspree (Optionnel)</label>
+                            <input
+                                type="url"
+                                name="formspree_url"
+                                defaultValue={info.formspree_url || ''}
+                                placeholder="https://formspree.io/f/..."
+                                className="admin-input"
+                            />
+                        </div>
                     </div>
                 </div>
 

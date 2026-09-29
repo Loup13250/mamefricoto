@@ -166,6 +166,26 @@ Espace admin : https://mamefricoto.vercel.app/admin/dashboard/messages
     // 3. Tenter via Formspree si URL fournie
     if (formspreeUrl && formspreeUrl.startsWith('http')) {
         try {
+            // Formatage convivial de la date en français (ex: Vendredi 2 octobre 2026)
+            let dateAffichee = event_date || 'Non précisée';
+            if (event_date && /^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+                try {
+                    const [y, m, d] = event_date.split('-');
+                    const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+                    const formatter = new Intl.DateTimeFormat('fr-FR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                    const formatted = formatter.format(dateObj);
+                    dateAffichee = formatted.charAt(0).toUpperCase() + formatted.slice(1) + ` (${d}/${m}/${y})`;
+                } catch {
+                    const [y, m, d] = event_date.split('-');
+                    dateAffichee = `${d}/${m}/${y}`;
+                }
+            }
+
             const res = await fetch(formspreeUrl, {
                 method: 'POST',
                 headers: {
@@ -174,18 +194,19 @@ Espace admin : https://mamefricoto.vercel.app/admin/dashboard/messages
                 },
                 body: JSON.stringify({
                     _subject: subject,
-                    name,
-                    email,
-                    phone,
-                    event_type,
-                    guests,
-                    event_date,
-                    message,
+                    _replyto: email,
+                    "Nom du client": name,
+                    "Email": email,
+                    "Téléphone": phone || 'Non renseigné',
+                    "Prestation souhaitée": event_type || 'Demande générale',
+                    "Nombre de personnes": guests ? `${guests} personnes` : 'Non précisé',
+                    "Date de l'événement": dateAffichee,
+                    "Message": message,
                 }),
             });
 
             if (res.ok) {
-                console.log(`[Email] Notification envoyée via Formspree`);
+                console.log(`[Email] Notification envoyée via Formspree en français`);
                 return { success: true, method: 'formspree' };
             }
         } catch (formspreeErr) {

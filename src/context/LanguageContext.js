@@ -159,6 +159,12 @@ const DICTIONARY = {
         'contact.hoursVal': 'Avant 10h le matin',
         'contact.socialTitle': 'Mamé Fricoto sur Google',
         'contact.socialDesc': 'Consultez les avis de nos clients ou suivez nos actualités sur les réseaux.',
+        'contact.errorPhone': 'Veuillez saisir un numéro de téléphone valide (ex : 06 12 34 56 78).',
+        'contact.errorName': 'Veuillez renseigner votre nom complet.',
+        'contact.errorEmail': 'Veuillez saisir une adresse email valide.',
+        'contact.errorMessage': 'Veuillez préciser votre demande dans le message (au moins 5 caractères).',
+        'contact.errorGuests': 'Veuillez indiquer un nombre de convives valide (ex : 20).',
+        'contact.errorPastDate': 'La date souhaitée ne peut pas être déjà passée.',
 
         // Prestation types in form
         'type.private': 'Événement Privé',
@@ -331,6 +337,12 @@ const DICTIONARY = {
         'contact.hoursVal': 'Before 10 AM',
         'contact.socialTitle': 'Mamé Fricoto on Google',
         'contact.socialDesc': 'Read verified reviews from our clients or follow our culinary journey on social media.',
+        'contact.errorPhone': 'Please enter a valid phone number (e.g. +33 6 12 34 56 78).',
+        'contact.errorName': 'Please enter your full name.',
+        'contact.errorEmail': 'Please enter a valid email address.',
+        'contact.errorMessage': 'Please describe your request (at least 5 characters).',
+        'contact.errorGuests': 'Please enter a valid number of guests (e.g. 20).',
+        'contact.errorPastDate': 'The requested date cannot be in the past.',
 
         // Prestation types in form
         'type.private': 'Private Event',

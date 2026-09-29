@@ -653,6 +653,13 @@ export async function reorderGalleryPost(idOrFormData, direction) {
 
 // --- CONTACT & DEVIS FORM (PUBLIC) ---
 export async function submitContactForm(formData) {
+    // 1. Anti-spam honeypot check
+    const honeypot = (formData.get('_hp_check') || '').toString().trim();
+    if (honeypot) {
+        // Silently succeed to trick spam bots without storing garbage in database
+        return { success: true, message: 'Votre demande a bien été envoyée.' };
+    }
+
     const name = (formData.get('name') || '').toString().trim();
     const email = (formData.get('email') || '').toString().trim();
     const phone = (formData.get('phone') || '').toString().trim();
@@ -661,20 +668,70 @@ export async function submitContactForm(formData) {
     const event_date = (formData.get('event_date') || '').toString().trim();
     const message = (formData.get('message') || '').toString().trim();
 
+    // 2. Validation Nom
+    if (!name || name.length < 2) {
+        return { error: 'Veuillez renseigner votre nom complet (au moins 2 caractères).' };
+    }
+    if (name.length > 100) {
+        return { error: 'Le nom est trop long (maximum 100 caractères).' };
+    }
+
+    // 3. Validation Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!email || !emailRegex.test(email) || email.length > 150) {
+        return { error: 'Veuillez saisir une adresse email valide (ex : nom@domaine.fr).' };
+    }
+
+    // 4. Validation Téléphone (si renseigné)
+    if (phone) {
+        // Rejeter formellement si l'utilisateur a écrit du texte / des lettres
+        if (/[a-zA-Z]/.test(phone)) {
+            return { error: 'Le champ téléphone ne doit pas contenir de texte. Veuillez saisir un numéro valide (ex : 06 12 34 56 78).' };
+        }
+        // Autoriser uniquement chiffres, espaces, tirets, points, parenthèses, et préfixe +
+        if (!/^(\+?[0-9\s().-]{8,25})$/.test(phone)) {
+            return { error: 'Format de téléphone invalide. Veuillez saisir un numéro valide (ex : 06 12 34 56 78 ou +33 6 12 34 56 78).' };
+        }
+        const pureDigits = phone.replace(/\D/g, '');
+        if (pureDigits.length < 8 || pureDigits.length > 15) {
+            return { error: 'Le numéro de téléphone doit comporter entre 8 et 15 chiffres.' };
+        }
+    }
+
+    // 5. Validation Nombre de convives (si renseigné)
+    if (guests) {
+        const guestNum = parseInt(guests, 10);
+        if (isNaN(guestNum) || guestNum <= 0 || guestNum > 5000) {
+            return { error: 'Veuillez indiquer un nombre de convives valide (entre 1 et 5 000).' };
+        }
+        if (/[a-zA-Z]/.test(guests) && !/^\d+\s*(personnes|pers|pax|invités|guests)?$/i.test(guests)) {
+            return { error: 'Veuillez indiquer un nombre de convives valide (ex : 20).' };
+        }
+    }
+
+    // 6. Validation Date de l'événement (si renseignée)
     if (event_date) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+            return { error: 'Format de date invalide.' };
+        }
         const todayStr = new Date().toISOString().split('T')[0];
         if (event_date < todayStr) {
             return { error: 'La date souhaitée ne peut pas être une date déjà passée.' };
         }
+        const maxDate = new Date();
+        maxDate.setFullYear(maxDate.getFullYear() + 5);
+        const maxDateStr = maxDate.toISOString().split('T')[0];
+        if (event_date > maxDateStr) {
+            return { error: 'La date souhaitée est trop éloignée dans le futur.' };
+        }
     }
 
-    if (!name || !email || !message) {
-        return { error: 'Veuillez remplir les champs obligatoires (nom, email, message).' };
+    // 7. Validation Message
+    if (!message || message.length < 5) {
+        return { error: 'Veuillez écrire un message détaillant votre demande (au moins 5 caractères).' };
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return { error: 'Adresse email invalide.' };
+    if (message.length > 5000) {
+        return { error: 'Votre message est trop volumineux (maximum 5 000 caractères).' };
     }
 
     const db = getDb();

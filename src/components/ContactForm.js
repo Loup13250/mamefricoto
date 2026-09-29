@@ -27,6 +27,53 @@ export default function ContactForm() {
         const formData = new FormData(e.target);
         formData.set('event_type', selectedEventType);
 
+        const nameVal = (formData.get('name') || '').toString().trim();
+        const emailVal = (formData.get('email') || '').toString().trim();
+        const phoneVal = (formData.get('phone') || '').toString().trim();
+        const guestsVal = (formData.get('guests') || '').toString().trim();
+        const messageVal = (formData.get('message') || '').toString().trim();
+
+        // 1. Validation Nom
+        if (!nameVal || nameVal.length < 2) {
+            setError(t('contact.errorName') || 'Veuillez renseigner votre nom complet.');
+            setLoading(false);
+            return;
+        }
+
+        // 2. Validation Email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!emailVal || !emailRegex.test(emailVal)) {
+            setError(t('contact.errorEmail') || 'Veuillez saisir une adresse email valide.');
+            setLoading(false);
+            return;
+        }
+
+        // 3. Validation Téléphone (si renseigné)
+        if (phoneVal) {
+            if (/[a-zA-Z]/.test(phoneVal) || !/^(\+?[0-9\s().-]{8,25})$/.test(phoneVal) || phoneVal.replace(/\D/g, '').length < 8) {
+                setError(t('contact.errorPhone') || 'Veuillez saisir un numéro de téléphone valide (ex : 06 12 34 56 78).');
+                setLoading(false);
+                return;
+            }
+        }
+
+        // 4. Validation Convives (si renseigné)
+        if (guestsVal) {
+            const num = parseInt(guestsVal, 10);
+            if (isNaN(num) || num <= 0 || (/[a-zA-Z]/.test(guestsVal) && !/^\d+\s*(personnes|pers|pax|invités|guests)?$/i.test(guestsVal))) {
+                setError(t('contact.errorGuests') || 'Veuillez indiquer un nombre de convives valide (ex : 20).');
+                setLoading(false);
+                return;
+            }
+        }
+
+        // 5. Validation Message
+        if (!messageVal || messageVal.length < 5) {
+            setError(t('contact.errorMessage') || 'Veuillez préciser votre demande dans le message (au moins 5 caractères).');
+            setLoading(false);
+            return;
+        }
+
         const res = await submitContactForm(formData);
 
         if (res?.error) {
@@ -65,6 +112,11 @@ export default function ContactForm() {
             )}
 
             <form onSubmit={handleSubmit} className="contact-form" aria-label={t('contact.formTitle')}>
+                {/* Champ piège anti-spam invisible */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                    <input type="text" name="_hp_check" tabIndex={-1} autoComplete="off" />
+                </div>
+
                 <div className="form-field">
                     <span className="form-label" id="label-prestation">{t('contact.typeLabel')}</span>
                     <div className="form-pills" role="radiogroup" aria-labelledby="label-prestation">
@@ -89,14 +141,32 @@ export default function ContactForm() {
                         <label htmlFor="contact-name" className="form-label">
                             <User size={13} /> {t('contact.nameLabel')}
                         </label>
-                        <input id="contact-name" type="text" name="name" required placeholder={t('contact.namePlaceholder')} className="form-input" />
+                        <input
+                            id="contact-name"
+                            type="text"
+                            name="name"
+                            required
+                            minLength={2}
+                            maxLength={100}
+                            placeholder={t('contact.namePlaceholder')}
+                            className="form-input"
+                        />
                     </div>
                     <div className="form-field">
                         <label htmlFor="contact-phone" className="form-label">
                             <span className="form-label-title"><Phone size={13} /> {t('contact.phoneLabel')}</span>
                             <span className="form-label-optional">{t('contact.optionalBadge')}</span>
                         </label>
-                        <input id="contact-phone" type="tel" name="phone" placeholder={t('contact.phonePlaceholder')} className="form-input" />
+                        <input
+                            id="contact-phone"
+                            type="tel"
+                            name="phone"
+                            inputMode="tel"
+                            pattern="[\+]?[0-9\s().-]{8,25}"
+                            title={t('contact.errorPhone')}
+                            placeholder={t('contact.phonePlaceholder')}
+                            className="form-input"
+                        />
                     </div>
                 </div>
 
@@ -104,7 +174,15 @@ export default function ContactForm() {
                     <label htmlFor="contact-email" className="form-label">
                         <Mail size={13} /> {t('contact.emailLabel')}
                     </label>
-                    <input id="contact-email" type="email" name="email" required placeholder={t('contact.emailPlaceholder')} className="form-input" />
+                    <input
+                        id="contact-email"
+                        type="email"
+                        name="email"
+                        required
+                        maxLength={150}
+                        placeholder={t('contact.emailPlaceholder')}
+                        className="form-input"
+                    />
                 </div>
 
                 <div className="form-row">
@@ -124,7 +202,16 @@ export default function ContactForm() {
                         <label htmlFor="contact-guests" className="form-label">
                             <Users size={13} /> {t('contact.guestsLabel')}
                         </label>
-                        <input id="contact-guests" type="text" name="guests" placeholder={t('contact.guestsPlaceholder')} className="form-input" />
+                        <input
+                            id="contact-guests"
+                            type="number"
+                            name="guests"
+                            min="1"
+                            max="5000"
+                            inputMode="numeric"
+                            placeholder={t('contact.guestsPlaceholder')}
+                            className="form-input"
+                        />
                     </div>
                 </div>
 
@@ -134,6 +221,8 @@ export default function ContactForm() {
                         id="contact-message"
                         name="message"
                         required
+                        minLength={5}
+                        maxLength={5000}
                         rows="4"
                         placeholder={t('contact.messagePlaceholder')}
                         className="form-input form-textarea"

@@ -355,45 +355,42 @@ const LanguageContext = createContext({
 });
 
 export function LanguageProvider({ children, initialLang = 'fr' }) {
-    const [lang, setLangState] = useState(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const saved = localStorage.getItem('mamefricoto-lang');
-                if (saved === 'en' || saved === 'fr') return saved;
-                // Détection automatique de la langue du navigateur :
-                // Si francophone (fr, fr-FR, fr-BE, fr-CA...), le site reste en FR.
-                // Si non francophone (en, de, es, it, etc.), le site s'affiche automatiquement en EN.
-                const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
-                const firstLang = (navLangs[0] || '').toLowerCase();
-                return firstLang.startsWith('fr') ? 'fr' : 'en';
-            } catch {
-                return 'fr';
-            }
-        }
-        return initialLang;
-    });
+    // Always start with 'fr' to prevent SSR/client hydration mismatch.
+    // The useEffect below will immediately correct the lang after mount
+    // based on localStorage and browser language preferences.
+    const [lang, setLangState] = useState(initialLang);
+    const [mounted, setMounted] = useState(false);
 
+    // Run once after mount: detect language from storage or browser prefs
     useEffect(() => {
+        setMounted(true);
         try {
             const saved = localStorage.getItem('mamefricoto-lang');
             if (saved === 'en' || saved === 'fr') {
-                if (saved !== lang) setLangState(saved);
+                setLangState(saved);
                 document.documentElement.lang = saved;
                 return;
             }
 
             // Premier accès sans choix manuel enregistré
-            const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+            const navLangs = navigator.languages || [navigator.language || ''];
             const firstLang = (navLangs[0] || '').toLowerCase();
             const autoLang = firstLang.startsWith('fr') ? 'fr' : 'en';
 
-            if (autoLang !== lang) {
-                setLangState(autoLang);
-            }
+            setLangState(autoLang);
             document.documentElement.lang = autoLang;
             document.cookie = `mamefricoto-lang=${autoLang}; path=/; max-age=31536000; SameSite=Lax`;
         } catch {}
-    }, [lang]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Sync document.documentElement.lang whenever lang changes after mount
+    useEffect(() => {
+        if (!mounted) return;
+        try {
+            document.documentElement.lang = lang;
+        } catch {}
+    }, [lang, mounted]);
 
     const setLang = useCallback((newLang) => {
         const validLang = newLang === 'en' ? 'en' : 'fr';

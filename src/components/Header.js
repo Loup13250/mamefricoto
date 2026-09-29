@@ -129,7 +129,7 @@ export default function Header({ siteInfo }) {
                     role="dialog"
                     aria-modal="true"
                     aria-hidden={!mobileMenuOpen}
-                    inert={!mobileMenuOpen}
+                    {...(!mobileMenuOpen ? { inert: '' } : {})}
                 >
                     {/* Drawer Header */}
                     <div className="mobile-drawer-header">

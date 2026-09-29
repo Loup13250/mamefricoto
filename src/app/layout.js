@@ -123,7 +123,7 @@ export default async function RootLayout({ children }) {
   const iconUrl = siteInfo?.site_icon || '/icon.svg';
 
   return (
-    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`} data-scroll-behavior="smooth">
+    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
       <head>
         <link rel="icon" type="image/svg+xml" href={iconUrl} />
         <Script
@@ -191,7 +191,7 @@ export default async function RootLayout({ children }) {
                   var saved = localStorage.getItem('mamefricoto-lang');
                   var lang = saved;
                   if (!lang || (lang !== 'fr' && lang !== 'en')) {
-                    var navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+                    var navLangs = navigator.languages || [navigator.language || ''];
                     var firstLang = (navLangs[0] || '').toLowerCase();
                     lang = firstLang.indexOf('fr') === 0 ? 'fr' : 'en';
                   }

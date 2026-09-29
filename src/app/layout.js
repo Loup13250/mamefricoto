@@ -173,6 +173,8 @@ export default async function RootLayout({ children }) {
               (function() {
                 try {
                   localStorage.removeItem('mamefricoto-theme');
+                  localStorage.removeItem('mamefricoto-da');
+                  document.documentElement.removeAttribute('data-da');
                   document.documentElement.setAttribute('data-theme', 'light');
                 } catch (e) {}
               })();

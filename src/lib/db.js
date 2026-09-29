@@ -8,14 +8,13 @@ const require = createRequire(import.meta.url);
 let dbWrapper;
 let localDbInstance;
 
-const DEFAULT_TURSO_URL = 'libsql://mamefricoto-db-loup13250.aws-eu-west-1.turso.io';
-const DEFAULT_TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODQ5Mjc4ODMsImlkIjoiMDE5Zjk1ZmQtZDIwMS03ZjhkLTk2OGEtYmViNDUyYTYxYjVkIiwia2lkIjoiVWhSd2Q2N19CaUVoUTdudEd6WkdhQUdfZndpOEcyZldHeFppd2phOHhtbyIsInJpZCI6Ijg4ODY4NzYwLTIwYTgtNDBmOS05ZjIxLTdmMWViNWQwY2RhYyJ9.26o-n5GBlcsxqwBN8E8kdiG-g0aQQTBX4ttcE5BINf_onthFX-BWrkFbUdiAP029QRIxUvIH5d8RehRzhC8CDQ';
-
+// NOTE: All credentials MUST be provided via environment variables.
+// Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in your .env.local and Vercel dashboard.
 export function getDb() {
     if (dbWrapper) return dbWrapper;
 
-    const tursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL || DEFAULT_TURSO_URL;
-    const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN || DEFAULT_TURSO_TOKEN;
+    const tursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL;
+    const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN || '';
 
     if (tursoUrl && (tursoUrl.startsWith('libsql') || tursoUrl.startsWith('https'))) {
         try {

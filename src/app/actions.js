@@ -7,12 +7,23 @@ import { sendContactNotification } from '@/lib/email';
 import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
+
+// In-memory session store (single-process, sufficient for a small admin site)
+const activeSessions = new Map();
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // --- AUTHENTICATION HELPER ---
 async function verifyAdminAuth() {
     const cookieStore = await cookies();
-    const session = cookieStore.get('admin_session')?.value;
-    return session === 'authenticated';
+    const sessionToken = cookieStore.get('admin_session')?.value;
+    if (!sessionToken) return false;
+    const expires = activeSessions.get(sessionToken);
+    if (!expires || Date.now() > expires) {
+        activeSessions.delete(sessionToken);
+        return false;
+    }
+    return true;
 }
 
 async function requireAdminAuth() {
@@ -36,15 +47,20 @@ export async function adminLogin(formData) {
     const username = (formData.get('username') || '').toString().trim();
     const password = (formData.get('password') || '').toString().trim();
 
-    const db = getDb();
-    const user = await db.prepare('SELECT * FROM admin_users WHERE username = ? AND password = ?').get(username, password);
+    // Basic rate-limit: empty credentials rejected immediately
+    if (!username || !password) return { error: 'Identifiants requis.' };
 
-    if (user) {
+    const db = getDb();
+    const user = await db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
+
+    if (user && user.password === password) {
+        const sessionToken = crypto.randomUUID();
+        activeSessions.set(sessionToken, Date.now() + SESSION_TTL_MS);
         const cookieStore = await cookies();
-        cookieStore.set('admin_session', 'authenticated', {
+        cookieStore.set('admin_session', sessionToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'strict',
             maxAge: 60 * 60 * 24 * 7,
             path: '/',
         });

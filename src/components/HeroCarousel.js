@@ -97,9 +97,9 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
                                     alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
                                     fill
                                     sizes="100vw"
-                                    priority={index === 0}
+                                    priority={index < 2}
                                     fetchPriority={index === 0 ? 'high' : 'auto'}
-                                    loading={index === 0 ? 'eager' : 'lazy'}
+                                    loading={index < 2 ? 'eager' : 'lazy'}
                                     unoptimized
                                 />
                             </div>
@@ -112,9 +112,9 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
                                         alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
                                         fill
                                         sizes="100vw"
-                                        priority={index === 0}
-                                        fetchPriority={index === 0 ? 'high' : 'auto'}
-                                        loading={index === 0 ? 'eager' : 'lazy'}
+                                        priority={index < 2}
+                                        fetchPriority={index < 2 ? 'high' : 'auto'}
+                                        loading={index < 2 ? 'eager' : 'lazy'}
                                         unoptimized
                                     />
                                 </div>

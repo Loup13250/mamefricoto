@@ -13,33 +13,33 @@
 :root,
 [data-theme="light"],
 [data-theme="dark"] {
-  /* Mamé Fricoto — Mode Clair Gastronomique Chaud, Lumineux & Élégant */
-  --bg:          #FAF7F2;
-  --bg-2:        #F3EDE4;
+  /* Mamé Fricoto — Esprit Traiteur Maison Provençal : Chaleureux, Gourmand & Lumineux */
+  --bg:          #FAF6F0;
+  --bg-2:        #F3ECE1;
   --bg-card:     #FFFFFF;
-  --surface:     #EBE3D7;
+  --surface:     #EAE1D2;
 
-  --text-1:      #1F1A15;
-  --text-2:      #4A3F35;
-  --text-3:      #5C5045;
+  --text-1:      #2A1E17;
+  --text-2:      #4D3B31;
+  --text-3:      #6B5447;
 
-  --gold:        #94681E;
-  --gold-light:  #7D5616;
-  --gold-dark:   #63430D;
+  --gold:        #C2572D;
+  --gold-light:  #D4693F;
+  --gold-dark:   #A3431E;
 
-  --terracotta:  #C85B3F;
-  --terra-light: #D96B4F;
-  --terra-dark:  #A34229;
+  --terracotta:  #C2572D;
+  --terra-light: #D4693F;
+  --terra-dark:  #A3431E;
 
-  --cream:       #1F1A15;
-  --cream-dim:   #4A3F35;
+  --cream:       #2A1E17;
+  --cream-dim:   #4D3B31;
 
-  --border:      rgba(148, 104, 30, 0.28);
-  --border-soft: rgba(148, 104, 30, 0.14);
+  --border:      rgba(194, 87, 45, 0.22);
+  --border-soft: rgba(194, 87, 45, 0.12);
 
-  --radius-sm:   8px;
-  --radius-md:   16px;
-  --radius-lg:   24px;
+  --radius-sm:   10px;
+  --radius-md:   20px;
+  --radius-lg:   28px;
   --radius-xl:   36px;
 
   --ease:        cubic-bezier(0.22, 1, 0.36, 1);
@@ -206,22 +206,23 @@ img {
   justify-content: center;
   gap: 0.6rem;
   background: var(--gold);
-  color: #0E0D0C;
-  padding: 15px 32px;
-  border-radius: 4px;
+  color: #FFFFFF;
+  padding: 14px 30px;
+  border-radius: 28px;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.88rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   transition: var(--transition);
   border: 1px solid transparent;
+  box-shadow: 0 4px 18px rgba(194, 87, 45, 0.35);
 }
 
 .btn-gold:hover {
   background: var(--gold-light);
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(200, 169, 110, 0.25);
+  box-shadow: 0 10px 25px rgba(194, 87, 45, 0.45);
 }
 
 .btn-outline {
@@ -229,24 +230,25 @@ img {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: rgba(253, 251, 247, 0.04);
-  color: var(--cream);
-  padding: 15px 32px;
-  border-radius: 4px;
+  background: transparent;
+  color: var(--gold);
+  padding: 14px 30px;
+  border-radius: 28px;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.88rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  border: 1.5px solid rgba(245, 240, 232, 0.35);
+  border: 1.5px solid var(--gold);
   transition: var(--transition);
 }
 
 .btn-outline:hover {
-  background: rgba(245, 240, 232, 0.15);
-  border-color: rgba(245, 240, 232, 0.85);
+  background: var(--gold);
+  border-color: var(--gold);
   color: #FFFFFF;
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(194, 87, 45, 0.3);
 }
 
 .btn-outline:hover * {
@@ -254,21 +256,21 @@ img {
 }
 
 [data-theme="light"] .btn-outline {
-  color: var(--text-1);
-  background: rgba(36, 30, 25, 0.04);
-  border: 1.5px solid rgba(36, 30, 25, 0.4);
+  color: var(--gold);
+  background: transparent;
+  border: 1.5px solid var(--gold);
 }
 
 [data-theme="light"] .btn-outline:hover {
-  background: #241E19 !important;
-  color: #FAF7F2 !important;
-  border-color: #241E19 !important;
-  box-shadow: 0 8px 25px rgba(36, 30, 25, 0.2);
+  background: var(--gold) !important;
+  color: #FFFFFF !important;
+  border-color: var(--gold) !important;
+  box-shadow: 0 8px 25px rgba(194, 87, 45, 0.35);
   transform: translateY(-2px);
 }
 
 [data-theme="light"] .btn-outline:hover * {
-  color: #FAF7F2 !important;
+  color: #FFFFFF !important;
 }
 
 .btn-terra {
@@ -278,15 +280,16 @@ img {
   gap: 0.6rem;
   background: var(--terracotta);
   color: #FFFFFF;
-  padding: 15px 32px;
-  border-radius: 4px;
+  padding: 14px 30px;
+  border-radius: 28px;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.88rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   transition: var(--transition);
   border: 1px solid transparent;
+  box-shadow: 0 4px 18px rgba(194, 87, 45, 0.35);
 }
 
 .btn-terra:hover {

@@ -27,7 +27,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
         },
         {
             id: 3,
-            author: 'Camille (millou b)',
+            author: 'Camille (millou\u00A0b)',
             initials: 'CB',
             date: 'Il y a 3 mois',
             stars: 5,

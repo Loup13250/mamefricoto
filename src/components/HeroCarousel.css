@@ -64,17 +64,17 @@
     display: none;
 }
 
-/* Gradient overlay — strong at bottom, light at top */
+/* Gradient overlay — warm terracotta & ambre doux */
 .hero-slide::after {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(
         to bottom,
-        rgba(14, 13, 12, 0.35) 0%,
-        rgba(14, 13, 12, 0.1) 30%,
-        rgba(14, 13, 12, 0.7) 65%,
-        rgba(14, 13, 12, 0.96) 100%
+        rgba(42, 30, 23, 0.25) 0%,
+        rgba(42, 30, 23, 0.05) 25%,
+        rgba(42, 30, 23, 0.55) 65%,
+        rgba(35, 23, 17, 0.88) 100%
     );
     z-index: 3;
     pointer-events: none;
@@ -96,10 +96,10 @@
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #F0D5A3 !important;
-    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.95);
+    color: #F8D3B6 !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -111,7 +111,7 @@
     display: block;
     width: 30px;
     height: 1px;
-    background: #F0D5A3;
+    background: #F8D3B6;
     flex-shrink: 0;
 }
 
@@ -152,7 +152,16 @@
 }
 
 .hero-actions .hero-btn-menu {
-    box-shadow: 0 6px 25px rgba(212, 180, 117, 0.35);
+    border-radius: 28px !important;
+    background: #C2572D !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 8px 25px rgba(194, 87, 45, 0.5) !important;
+}
+
+.hero-actions .hero-btn-menu:hover {
+    background: #D4693F !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(194, 87, 45, 0.6) !important;
 }
 
 .hero-actions .hero-btn-phone,
@@ -161,81 +170,81 @@
     align-items: center;
     justify-content: center;
     gap: 0.65rem;
-    padding: 15px 28px;
-    border-radius: 4px;
+    padding: 14px 28px;
+    border-radius: 28px !important;
     font-family: var(--font-body);
     font-weight: 700;
     font-size: 0.88rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #FFFFFF !important;
-    background: rgba(14, 13, 12, 0.65) !important;
-    border: 1.5px solid rgba(212, 180, 117, 0.8) !important;
+    color: #2A1E17 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
     transition: all 0.3s var(--ease);
 }
 
 .hero-actions .hero-btn-phone svg,
 .hero-actions .btn-outline svg {
-    color: #F0D5A3 !important;
-    stroke: #F0D5A3 !important;
+    color: #C2572D !important;
+    stroke: #C2572D !important;
     flex-shrink: 0;
     transition: transform 0.3s ease, color 0.3s ease, stroke 0.3s ease;
 }
 
 .hero-actions .hero-btn-phone span,
 .hero-actions .btn-outline span {
-    color: #FFFFFF !important;
+    color: #2A1E17 !important;
     font-weight: 700;
 }
 
 .hero-actions .hero-btn-phone:hover,
 .hero-actions .btn-outline:hover {
-    background: var(--gold) !important;
-    border-color: var(--gold) !important;
-    color: #0E0D0C !important;
+    background: #C2572D !important;
+    border-color: #C2572D !important;
+    color: #FFFFFF !important;
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(212, 180, 117, 0.45) !important;
+    box-shadow: 0 10px 30px rgba(194, 87, 45, 0.45) !important;
 }
 
 .hero-actions .hero-btn-phone:hover svg,
 .hero-actions .btn-outline:hover svg {
-    color: #0E0D0C !important;
-    stroke: #0E0D0C !important;
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
     transform: scale(1.1);
 }
 
 .hero-actions .hero-btn-phone:hover span,
 .hero-actions .btn-outline:hover span {
-    color: #0E0D0C !important;
+    color: #FFFFFF !important;
 }
 
-/* Guarantee visibility in Light Mode (since hero background is always dark) */
+/* Light Theme Hero Button Overrides */
 [data-theme="light"] .hero-actions .hero-btn-phone,
 [data-theme="light"] .hero-actions .btn-outline {
-    color: #FFFFFF !important;
-    background: rgba(14, 13, 12, 0.72) !important;
-    border: 1.5px solid rgba(212, 180, 117, 0.85) !important;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.55) !important;
+    color: #2A1E17 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
 [data-theme="light"] .hero-actions .hero-btn-phone svg,
 [data-theme="light"] .hero-actions .btn-outline svg {
-    color: #F0D5A3 !important;
-    stroke: #F0D5A3 !important;
+    color: #C2572D !important;
+    stroke: #C2572D !important;
 }
 
 [data-theme="light"] .hero-actions .hero-btn-phone span,
 [data-theme="light"] .hero-actions .btn-outline span {
-    color: #FFFFFF !important;
+    color: #2A1E17 !important;
 }
 
 [data-theme="light"] .hero-actions .hero-btn-phone:hover,
 [data-theme="light"] .hero-actions .btn-outline:hover {
-    background: #B88B46 !important;
-    border-color: #B88B46 !important;
+    background: #C2572D !important;
+    border-color: #C2572D !important;
     color: #FFFFFF !important;
 }
 
@@ -382,10 +391,10 @@
     .hero-slide::after {
         background: linear-gradient(
             to bottom,
-            rgba(14, 13, 12, 0.25) 0%,
-            rgba(14, 13, 12, 0.05) 25%,
-            rgba(14, 13, 12, 0.75) 60%,
-            rgba(14, 13, 12, 0.98) 100%
+            rgba(42, 30, 23, 0.2) 0%,
+            rgba(42, 30, 23, 0.04) 25%,
+            rgba(42, 30, 23, 0.6) 65%,
+            rgba(35, 23, 17, 0.92) 100%
         ) !important;
     }
 

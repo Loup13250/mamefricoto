@@ -82,7 +82,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
                     </h2>
                     <p>{t('reviews.subtitle')}</p>
 
-                    <div className="reviews-rating-pill" aria-label="Note de 5 sur 5 basée sur les avis Google vérifiés">
+                    <div className="reviews-rating-pill" role="img" aria-label="Note de 5 sur 5 basée sur les avis Google vérifiés">
                         <div className="reviews-rating-stars" aria-hidden="true">
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} size={15} fill="var(--gold)" color="var(--gold)" />
@@ -112,7 +112,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
                                 </div>
                             </div>
 
-                            <div className="review-stars" aria-label={`${rev.stars} étoiles sur 5`}>
+                            <div className="review-stars" role="img" aria-label={`${rev.stars} étoiles sur 5`}>
                                 {[...Array(rev.stars)].map((_, i) => (
                                     <Star key={i} size={15} fill="#D4AF37" color="#D4AF37" aria-hidden="true" />
                                 ))}

@@ -210,9 +210,9 @@
 }
 
 .pricing-doc-title {
-    font-family: var(--font-heading);
+    font-family: var(--font-body);
     font-size: 1.15rem;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--text);
     margin: 0 0 0.35rem;
 }

@@ -316,14 +316,16 @@
 }
 
 .mobile-link {
-    font-family: var(--font-heading), 'Cormorant Garamond', Georgia, serif;
-    font-size: 2.1rem;
-    font-weight: 400;
-    color: rgba(245, 240, 232, 0.75);
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(245, 240, 232, 0.85);
     text-align: center;
     transition: all 0.3s ease;
     position: relative;
-    padding: 0.25rem 0;
+    padding: 0.35rem 0;
 }
 
 .mobile-link:hover {

@@ -202,10 +202,11 @@
 
 .menu-title {
     font-family: var(--font-heading);
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     font-weight: 400;
     color: var(--text-1);
-    line-height: 1.15;
+    line-height: 1.2;
+    letter-spacing: 0.015em;
     margin-bottom: 1.25rem;
 }
 

@@ -133,11 +133,11 @@
 }
 
 .service-num {
-    font-family: var(--font-heading);
+    font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
     font-size: 3.5rem;
-    font-weight: 300;
+    font-weight: 400;
     font-style: italic;
-    color: rgba(148, 104, 30, 0.25);
+    color: rgba(148, 104, 30, 0.3);
     line-height: 1;
     padding-top: 0.2rem;
     margin-bottom: 0;

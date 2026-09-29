@@ -1,4 +1,5 @@
 import { DM_Sans, Cormorant_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { getSiteInfo } from "@/lib/data";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -16,6 +17,28 @@ const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
+});
+
+const momerkz = localFont({
+  src: [
+    {
+      path: "./fonts/Momerkz-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Momerkz-Regular.woff",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Momerkz-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-momerkz",
   display: "swap",
 });
 
@@ -100,7 +123,7 @@ export default async function RootLayout({ children }) {
   const iconUrl = siteInfo?.site_icon || '/icon.svg';
 
   return (
-    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable}`} data-scroll-behavior="smooth">
+    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`} data-scroll-behavior="smooth">
       <head>
         <link rel="icon" type="image/svg+xml" href={iconUrl} />
         <Script

@@ -179,6 +179,26 @@ export default async function RootLayout({ children }) {
             `,
           }}
         />
+        <Script
+          id="language-detect"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('mamefricoto-lang');
+                  var lang = saved;
+                  if (!lang || (lang !== 'fr' && lang !== 'en')) {
+                    var navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+                    var firstLang = (navLangs[0] || '').toLowerCase();
+                    lang = firstLang.indexOf('fr') === 0 ? 'fr' : 'en';
+                  }
+                  document.documentElement.lang = lang;
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
         <a href="#main-content" className="sr-only focus:not-sr-only">

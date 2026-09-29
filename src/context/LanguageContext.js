@@ -355,17 +355,45 @@ const LanguageContext = createContext({
 });
 
 export function LanguageProvider({ children, initialLang = 'fr' }) {
-    const [lang, setLangState] = useState(initialLang);
+    const [lang, setLangState] = useState(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const saved = localStorage.getItem('mamefricoto-lang');
+                if (saved === 'en' || saved === 'fr') return saved;
+                // Détection automatique de la langue du navigateur :
+                // Si francophone (fr, fr-FR, fr-BE, fr-CA...), le site reste en FR.
+                // Si non francophone (en, de, es, it, etc.), le site s'affiche automatiquement en EN.
+                const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+                const firstLang = (navLangs[0] || '').toLowerCase();
+                return firstLang.startsWith('fr') ? 'fr' : 'en';
+            } catch {
+                return 'fr';
+            }
+        }
+        return initialLang;
+    });
 
     useEffect(() => {
         try {
             const saved = localStorage.getItem('mamefricoto-lang');
             if (saved === 'en' || saved === 'fr') {
-                setLangState(saved);
+                if (saved !== lang) setLangState(saved);
                 document.documentElement.lang = saved;
+                return;
             }
+
+            // Premier accès sans choix manuel enregistré
+            const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+            const firstLang = (navLangs[0] || '').toLowerCase();
+            const autoLang = firstLang.startsWith('fr') ? 'fr' : 'en';
+
+            if (autoLang !== lang) {
+                setLangState(autoLang);
+            }
+            document.documentElement.lang = autoLang;
+            document.cookie = `mamefricoto-lang=${autoLang}; path=/; max-age=31536000; SameSite=Lax`;
         } catch {}
-    }, []);
+    }, [lang]);
 
     const setLang = useCallback((newLang) => {
         const validLang = newLang === 'en' ? 'en' : 'fr';

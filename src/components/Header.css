@@ -442,6 +442,7 @@
 @media (max-width: 1040px) {
     .site-header {
         height: 64px;
+        transition: background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease;
     }
 
     .logo-round-wrap {

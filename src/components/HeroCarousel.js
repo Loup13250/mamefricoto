@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import './HeroCarousel.css';
 
@@ -137,10 +138,9 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
                         <a href="#menu-semaine" className="btn-gold hero-btn-menu">
                             {t('hero.viewMenu')}
                         </a>
-                        <a href={`tel:${phoneTel}`} className="btn-outline hero-btn-phone" aria-label={`${t('hero.call')} ${phone}`}>
-                            <Phone size={16} />
-                            <span>{phone}</span>
-                        </a>
+                        <Link href="/tarifs" className="btn-outline hero-btn-tarifs" aria-label={t('hero.viewTarifs')}>
+                            <span>{t('hero.viewTarifs')}</span>
+                        </Link>
                     </div>
                 </div>
             </div>

@@ -164,6 +164,7 @@
     box-shadow: 0 12px 30px rgba(194, 87, 45, 0.6) !important;
 }
 
+.hero-actions .hero-btn-tarifs,
 .hero-actions .hero-btn-phone,
 .hero-actions .btn-outline {
     display: inline-flex;
@@ -200,6 +201,7 @@
     font-weight: 700;
 }
 
+.hero-actions .hero-btn-tarifs:hover,
 .hero-actions .hero-btn-phone:hover,
 .hero-actions .btn-outline:hover {
     background: #C2572D !important;
@@ -465,6 +467,7 @@
     }
 
     .hero-actions .btn-outline,
+    .hero-actions .hero-btn-tarifs,
     .hero-actions .hero-btn-phone {
         width: 100%;
         max-width: 320px;

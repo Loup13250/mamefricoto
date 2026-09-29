@@ -23,6 +23,7 @@ const DICTIONARY = {
         // Hero
         'hero.eyebrow': 'Traiteur Maison · Eyguières',
         'hero.viewMenu': 'Voir le menu',
+        'hero.viewTarifs': 'Voir les tarifs',
         'hero.call': 'Appeler',
         'hero.prev': 'Diapositive précédente',
         'hero.next': 'Diapositive suivante',
@@ -194,6 +195,7 @@ const DICTIONARY = {
         // Hero
         'hero.eyebrow': 'Homemade Caterer · Eyguières, Provence',
         'hero.viewMenu': 'View Weekly Menu',
+        'hero.viewTarifs': 'View Pricing',
         'hero.call': 'Call',
         'hero.prev': 'Previous slide',
         'hero.next': 'Next slide',

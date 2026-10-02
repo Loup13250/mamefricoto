@@ -89,7 +89,7 @@ function MediaPreview({ file, onRemove }) {
 /* =====================================================
    COMPRESSION IMAGE
    ===================================================== */
-async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
+async function compressImageFile(file, maxDim = 1200, quality = 0.80) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -199,7 +199,7 @@ export default function GalleryClient({ posts }) {
         formData.delete('image_file');
         if (selectedFile) {
             if (selectedFile.type.startsWith('image/')) {
-                const compressed = await compressImageFile(selectedFile, 2048, 0.85);
+                const compressed = await compressImageFile(selectedFile, 1200, 0.80);
                 formData.append('image_file', compressed);
             } else {
                 formData.append('image_file', selectedFile);

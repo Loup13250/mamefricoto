@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { addCarouselImage, deleteCarouselImage, editCarouselImage, reorderCarouselImage } from '@/app/actions';
 import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
-async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
+async function compressImageFile(file, maxDim = 1920, quality = 0.82) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -120,11 +120,11 @@ function CarouselForm({ onCancel }) {
         setIsCompressing(true);
         try {
             if (desktopFile) {
-                const compressedDesktop = await compressImageFile(desktopFile, 2048, 0.85);
+                const compressedDesktop = await compressImageFile(desktopFile, 1920, 0.82);
                 formData.append('image_file', compressedDesktop);
             }
             if (mobileFile) {
-                const compressedMobile = await compressImageFile(mobileFile, 2048, 0.85);
+                const compressedMobile = await compressImageFile(mobileFile, 1080, 0.80);
                 formData.append('mobile_image_file', compressedMobile);
             }
         } catch (err) {
@@ -379,11 +379,11 @@ function EditCarouselForm({ item, onCancel }) {
         setIsCompressing(true);
         try {
             if (desktopFile) {
-                const compressedDesktop = await compressImageFile(desktopFile, 2048, 0.85);
+                const compressedDesktop = await compressImageFile(desktopFile, 1920, 0.82);
                 formData.append('image_file', compressedDesktop);
             }
             if (mobileFile) {
-                const compressedMobile = await compressImageFile(mobileFile, 2048, 0.85);
+                const compressedMobile = await compressImageFile(mobileFile, 1080, 0.80);
                 formData.append('mobile_image_file', compressedMobile);
             }
         } catch (err) {

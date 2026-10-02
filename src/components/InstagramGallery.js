@@ -51,8 +51,8 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                     return (
                         <div
                             key={post.id}
-                            className="gallery-item anim-up"
-                            style={{ animationDelay: `${(idx % 4) * 80}ms` }}
+                            className="gallery-item"
+                            style={{ animationDelay: `${(idx % 4) * 35}ms` }}
                             onClick={() => setSelectedIndex(idx)}
                             role="button"
                             tabIndex={0}
@@ -80,7 +80,10 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                     className="gallery-img"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                    loading="lazy"
+                                    priority={idx < 4}
+                                    fetchPriority={idx < 2 ? 'high' : 'auto'}
+                                    loading={idx < 6 ? 'eager' : 'lazy'}
+                                    decoding="async"
                                     unoptimized
                                 />
                             )}
@@ -179,6 +182,9 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                         className="modal-img"
                                         style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                                         sizes="(max-width: 768px) 100vw, 800px"
+                                        priority
+                                        decoding="async"
+                                        unoptimized
                                         key={selectedPost.image_url}
                                     />
                                 )}

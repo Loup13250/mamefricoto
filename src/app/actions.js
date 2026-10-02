@@ -305,9 +305,22 @@ export async function editWeeklyMenu(formData) {
         }
 
         const db = getDb();
+        const existing = await db.prepare('SELECT * FROM weekly_menus WHERE id = ?').get(id);
+        if (!existing) return { error: 'Menu introuvable' };
 
         if (is_current) {
             await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
+        }
+
+        // Migrate legacy single image into weekly_menu_images if subtable is empty before appending new ones
+        const existingFrCount = (await db.prepare("SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id))?.count || 0;
+        if (existingFrCount === 0 && existing.image_url) {
+            await db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, 1, 'fr')").run(id, existing.image_url);
+        }
+
+        const existingEnCount = (await db.prepare("SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en'").get(id))?.count || 0;
+        if (existingEnCount === 0 && existing.image_url_en) {
+            await db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, 1, 'en')").run(id, existing.image_url_en);
         }
 
         // Insert new FR images if uploaded
@@ -331,8 +344,8 @@ export async function editWeeklyMenu(formData) {
         }
 
         // Sync main image URLs with first image of each language
-        const firstFr = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC LIMIT 1").get(id);
-        const firstEn = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC LIMIT 1").get(id);
+        const firstFr = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
+        const firstEn = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
 
         const mainImageUrl = firstFr?.image_url || null;
         const mainImageUrlEn = firstEn?.image_url || null;
@@ -840,8 +853,13 @@ export async function deleteWeeklyMenuImage(imageId) {
 
         const isEn = img.lang === 'en';
         const remaining = isEn
-            ? await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.menu_id)
-            : await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.menu_id);
+            ? await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.menu_id)
+            : await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.menu_id);
+
+        const stmt = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
+        for (let i = 0; i < remaining.length; i++) {
+            await stmt.run(i + 1, remaining[i].id);
+        }
 
         if (isEn) {
             const nextUrlEn = remaining.length > 0 ? remaining[0].image_url : null;
@@ -857,6 +875,51 @@ export async function deleteWeeklyMenuImage(imageId) {
     } catch (err) {
         console.error('[deleteWeeklyMenuImage Error]:', err);
         return { error: err.message || 'Une erreur est survenue lors de la suppression de l\'image.' };
+    }
+}
+
+export async function deleteWeeklyMenuImages(imageIds) {
+    try {
+        await requireAdminAuth();
+        if (!Array.isArray(imageIds) || imageIds.length === 0) return { error: 'Aucune image sélectionnée.' };
+        const db = getDb();
+        
+        const affectedMenuIds = new Set();
+        for (const imgId of imageIds) {
+            const img = await db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imgId);
+            if (img) {
+                affectedMenuIds.add(img.menu_id);
+                deleteLocalFileIfPresent(img.image_url);
+                await db.prepare('DELETE FROM weekly_menu_images WHERE id = ?').run(imgId);
+            }
+        }
+
+        for (const menuId of affectedMenuIds) {
+            // Re-order and sync FR
+            const remainingFr = await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(menuId);
+            const stmtFr = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
+            for (let i = 0; i < remainingFr.length; i++) {
+                await stmtFr.run(i + 1, remainingFr[i].id);
+            }
+            const nextUrlFr = remainingFr.length > 0 ? remainingFr[0].image_url : null;
+            await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(nextUrlFr, menuId);
+
+            // Re-order and sync EN
+            const remainingEn = await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(menuId);
+            const stmtEn = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
+            for (let i = 0; i < remainingEn.length; i++) {
+                await stmtEn.run(i + 1, remainingEn[i].id);
+            }
+            const nextUrlEn = remainingEn.length > 0 ? remainingEn[0].image_url : null;
+            await db.prepare('UPDATE weekly_menus SET image_url_en = ? WHERE id = ?').run(nextUrlEn, menuId);
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/menu-semaine');
+        return { success: true };
+    } catch (err) {
+        console.error('[deleteWeeklyMenuImages Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la suppression des images.' };
     }
 }
 
@@ -1201,6 +1264,17 @@ export async function editPricingDocument(formData) {
                 mainFileUrlEn = await saveUploadedFile(singlePdfEn);
             }
         } else {
+            // Check and migrate legacy single images into pricing_document_images if subtable is empty before appending new ones
+            const existingFrCount = (await db.prepare("SELECT COUNT(*) as count FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id))?.count || 0;
+            if (existingFrCount === 0 && existing.file_url && existing.file_type !== 'pdf') {
+                await db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, 1, 'fr')").run(id, existing.file_url);
+            }
+
+            const existingEnCount = (await db.prepare("SELECT COUNT(*) as count FROM pricing_document_images WHERE doc_id = ? AND lang = 'en'").get(id))?.count || 0;
+            if (existingEnCount === 0 && existing.file_url_en && existing.file_type !== 'pdf') {
+                await db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, 1, 'en')").run(id, existing.file_url_en);
+            }
+
             // Upload newly attached FR images
             const newFrUrls = [];
             for (const f of files_fr) {
@@ -1317,6 +1391,25 @@ export async function deletePricingDocumentImage(imageId) {
     try {
         await requireAdminAuth();
         const db = getDb();
+
+        // Handle virtual legacy ID if passed
+        if (typeof imageId === 'string' && imageId.startsWith('legacy-')) {
+            const parts = imageId.split('-');
+            const docId = parseInt(parts[1], 10);
+            const lang = parts[2];
+            if (docId) {
+                if (lang === 'en') {
+                    await db.prepare('UPDATE pricing_documents SET file_url_en = NULL WHERE id = ?').run(docId);
+                } else {
+                    await db.prepare('UPDATE pricing_documents SET file_url = NULL WHERE id = ?').run(docId);
+                }
+                revalidatePath('/tarifs');
+                revalidatePath('/admin/dashboard/tarifs');
+                revalidatePath('/admin/dashboard/prestations');
+                return { success: true };
+            }
+        }
+
         const img = await db.prepare('SELECT * FROM pricing_document_images WHERE id = ?').get(imageId);
         if (!img) return { error: 'Image non trouvée' };
 
@@ -1325,8 +1418,13 @@ export async function deletePricingDocumentImage(imageId) {
 
         const isEn = img.lang === 'en';
         const remaining = isEn
-            ? await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.doc_id)
-            : await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.doc_id);
+            ? await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.doc_id)
+            : await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.doc_id);
+
+        const stmt = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
+        for (let i = 0; i < remaining.length; i++) {
+            await stmt.run(i + 1, remaining[i].id);
+        }
 
         if (isEn) {
             const nextUrlEn = remaining.length > 0 ? remaining[0].image_url : null;
@@ -1343,6 +1441,67 @@ export async function deletePricingDocumentImage(imageId) {
     } catch (err) {
         console.error('[deletePricingDocumentImage Error]:', err);
         return { error: err.message || 'Une erreur est survenue lors de la suppression de l\'image.' };
+    }
+}
+
+export async function deletePricingDocumentImages(imageIds) {
+    try {
+        await requireAdminAuth();
+        if (!Array.isArray(imageIds) || imageIds.length === 0) return { error: 'Aucune image sélectionnée.' };
+        const db = getDb();
+
+        const affectedDocIds = new Set();
+        for (const imgId of imageIds) {
+            if (typeof imgId === 'string' && imgId.startsWith('legacy-')) {
+                const parts = imgId.split('-');
+                const docId = parseInt(parts[1], 10);
+                const lang = parts[2];
+                if (docId) {
+                    affectedDocIds.add(docId);
+                    if (lang === 'en') {
+                        await db.prepare('UPDATE pricing_documents SET file_url_en = NULL WHERE id = ?').run(docId);
+                    } else {
+                        await db.prepare('UPDATE pricing_documents SET file_url = NULL WHERE id = ?').run(docId);
+                    }
+                }
+                continue;
+            }
+
+            const img = await db.prepare('SELECT * FROM pricing_document_images WHERE id = ?').get(imgId);
+            if (img) {
+                affectedDocIds.add(img.doc_id);
+                deleteLocalFileIfPresent(img.image_url);
+                await db.prepare('DELETE FROM pricing_document_images WHERE id = ?').run(imgId);
+            }
+        }
+
+        for (const docId of affectedDocIds) {
+            // Re-order and sync FR
+            const remainingFr = await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(docId);
+            const stmtFr = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
+            for (let i = 0; i < remainingFr.length; i++) {
+                await stmtFr.run(i + 1, remainingFr[i].id);
+            }
+            const nextUrlFr = remainingFr.length > 0 ? remainingFr[0].image_url : null;
+            await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(nextUrlFr, docId);
+
+            // Re-order and sync EN
+            const remainingEn = await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(docId);
+            const stmtEn = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
+            for (let i = 0; i < remainingEn.length; i++) {
+                await stmtEn.run(i + 1, remainingEn[i].id);
+            }
+            const nextUrlEn = remainingEn.length > 0 ? remainingEn[0].image_url : null;
+            await db.prepare('UPDATE pricing_documents SET file_url_en = ? WHERE id = ?').run(nextUrlEn, docId);
+        }
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true };
+    } catch (err) {
+        console.error('[deletePricingDocumentImages Error]:', err);
+        return { error: err.message || 'Une erreur est survenue lors de la suppression des images.' };
     }
 }
 

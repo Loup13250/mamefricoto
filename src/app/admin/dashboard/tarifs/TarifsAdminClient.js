@@ -7,6 +7,7 @@ import {
     deletePricingDocument, 
     reorderPricingDocument,
     deletePricingDocumentImage,
+    deletePricingDocumentImages,
     reorderPricingDocumentImage
 } from '@/app/actions';
 import { 
@@ -26,7 +27,9 @@ import {
     UploadCloud,
     ChevronLeft,
     ChevronRight,
-    Languages
+    Languages,
+    AlertTriangle,
+    Check
 } from 'lucide-react';
 
 /* Utilitaire de compression client-side haute performance */
@@ -88,16 +91,63 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
     const [isAddingDoc, setIsAddingDoc] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
 
+    // Multi-selection state for batch image deletion
+    const [selectedImagesFr, setSelectedImagesFr] = useState([]);
+    const [selectedImagesEn, setSelectedImagesEn] = useState([]);
+
+    // Confirmation pop-up for image deletion (single or batch)
+    const [deleteImageConfirm, setDeleteImageConfirm] = useState(null); // { type: 'single' | 'batch', id?: string, ids?: [], lang: 'fr' | 'en' }
+
     // Form state pour ajout
     const [addDocType, setAddDocType] = useState('image'); // 'image' | 'pdf'
     const [addImagesFr, setAddImagesFr] = useState([]); // Array of { file, preview }
     const [addImagesEn, setAddImagesEn] = useState([]); // Array of { file, preview }
+    const [addFormState, setAddFormState] = useState({ title: '', title_en: '', description: '', description_en: '' });
 
     // Form state pour édition
     const [editImagesFr, setEditImagesFr] = useState([]); // newly attached files
     const [editImagesEn, setEditImagesEn] = useState([]); // newly attached files
+    const [editFormState, setEditFormState] = useState({ title: '', title_en: '', description: '', description_en: '' });
+
+    // Pop-up confirmation pour quitter avec modifications non enregistrées
+    const [unsavedConfirmModal, setUnsavedConfirmModal] = useState(null); // 'add' | 'edit' | null
 
     const docFormRef = useRef(null);
+    const docEditFormRef = useRef(null);
+
+    const isAddDirty = Boolean(
+        addFormState.title.trim() !== '' ||
+        addFormState.title_en.trim() !== '' ||
+        addFormState.description.trim() !== '' ||
+        addFormState.description_en.trim() !== '' ||
+        addImagesFr.length > 0 ||
+        addImagesEn.length > 0
+    );
+
+    const isEditDirty = Boolean(
+        editingDoc && (
+            editFormState.title !== (editingDoc.title || '') ||
+            editFormState.title_en !== (editingDoc.title_en || '') ||
+            editFormState.description !== (editingDoc.description || '') ||
+            editFormState.description_en !== (editingDoc.description_en || '') ||
+            editImagesFr.length > 0 ||
+            editImagesEn.length > 0
+        )
+    );
+
+    // Navigation / beforeunload protection when form is dirty
+    useEffect(() => {
+        const isDirty = (isAddingDoc && isAddDirty) || (editingDoc && isEditDirty);
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isAddingDoc, isAddDirty, editingDoc, isEditDirty]);
 
     const showNotification = (msg, isErr = false) => {
         if (isErr) {
@@ -107,6 +157,75 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
             setSuccess(msg);
             setTimeout(() => setSuccess(''), 3500);
         }
+    };
+
+    const openAddModal = () => {
+        setIsAddingDoc(true);
+        setAddDocType('image');
+        setAddImagesFr([]);
+        setAddImagesEn([]);
+        setAddFormState({ title: '', title_en: '', description: '', description_en: '' });
+    };
+
+    const openEditModal = (doc) => {
+        setEditingDoc(doc);
+        setEditFormState({
+            title: doc.title || '',
+            title_en: doc.title_en || '',
+            description: doc.description || '',
+            description_en: doc.description_en || ''
+        });
+        setEditImagesFr([]);
+        setEditImagesEn([]);
+        setSelectedImagesFr([]);
+        setSelectedImagesEn([]);
+    };
+
+    const requestCloseAdd = () => {
+        if (isAddDirty) {
+            setUnsavedConfirmModal('add');
+        } else {
+            setIsAddingDoc(false);
+            setAddImagesFr([]);
+            setAddImagesEn([]);
+            setAddFormState({ title: '', title_en: '', description: '', description_en: '' });
+        }
+    };
+
+    const requestCloseEdit = () => {
+        if (isEditDirty) {
+            setUnsavedConfirmModal('edit');
+        } else {
+            setEditingDoc(null);
+            setEditImagesFr([]);
+            setEditImagesEn([]);
+            setSelectedImagesFr([]);
+            setSelectedImagesEn([]);
+        }
+    };
+
+    const toggleSelectImage = (imgId, lang = 'fr') => {
+        if (lang === 'fr') {
+            setSelectedImagesFr(prev => prev.includes(imgId) ? prev.filter(id => id !== imgId) : [...prev, imgId]);
+        } else {
+            setSelectedImagesEn(prev => prev.includes(imgId) ? prev.filter(id => id !== imgId) : [...prev, imgId]);
+        }
+    };
+
+    const selectAllImages = (lang = 'fr') => {
+        if (!editingDoc) return;
+        if (lang === 'fr') {
+            const allFr = (editingDoc.images_fr || []).map(img => img.id);
+            setSelectedImagesFr(allFr);
+        } else {
+            const allEn = (editingDoc.images_en || []).map(img => img.id);
+            setSelectedImagesEn(allEn);
+        }
+    };
+
+    const clearSelectedImages = (lang = 'fr') => {
+        if (lang === 'fr') setSelectedImagesFr([]);
+        else setSelectedImagesEn([]);
     };
 
     // Gestion de l'ajout d'images pour le formulaire de création
@@ -177,19 +296,51 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
             };
         });
 
+        setSelectedImagesFr(prev => prev.filter(id => id !== imageId));
+        setSelectedImagesEn(prev => prev.filter(id => id !== imageId));
+        setDeleteImageConfirm(null);
+
         startTransition(async () => {
             const res = await deletePricingDocumentImage(imageId);
             if (res?.error) {
                 showNotification(res.error, true);
             } else {
-                showNotification('Image supprimée.');
+                showNotification('Image supprimée de la carte.');
+            }
+        });
+    };
+
+    // Suppression groupée de sous-images existantes (édition)
+    const handleBatchDeleteExistingImages = (imageIds, lang = 'fr') => {
+        if (!imageIds || imageIds.length === 0) return;
+        const idsSet = new Set(imageIds);
+
+        // Optimistic removal
+        setEditingDoc(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                images_fr: prev.images_fr ? prev.images_fr.filter(img => !idsSet.has(img.id)) : [],
+                images_en: prev.images_en ? prev.images_en.filter(img => !idsSet.has(img.id)) : []
+            };
+        });
+
+        if (lang === 'fr') setSelectedImagesFr([]);
+        else setSelectedImagesEn([]);
+        setDeleteImageConfirm(null);
+
+        startTransition(async () => {
+            const res = await deletePricingDocumentImages(imageIds);
+            if (res?.error) {
+                showNotification(res.error, true);
+            } else {
+                showNotification(`${imageIds.length} image${imageIds.length > 1 ? 's' : ''} supprimée${imageIds.length > 1 ? 's' : ''} avec succès.`);
             }
         });
     };
 
     // Réordonner une sous-image existante (édition)
     const handleReorderExistingImage = (imageId, direction) => {
-        // Mise à jour immédiate et optimiste de l'ordre des images dans la modal
         setEditingDoc(prev => {
             if (!prev) return prev;
             const isFr = prev.images_fr?.some(img => img.id === imageId);
@@ -255,6 +406,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                 setIsAddingDoc(false);
                 setAddImagesFr([]);
                 setAddImagesEn([]);
+                setAddFormState({ title: '', title_en: '', description: '', description_en: '' });
                 docFormRef.current?.reset();
             }
         });
@@ -294,6 +446,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                 setEditingDoc(null);
                 setEditImagesFr([]);
                 setEditImagesEn([]);
+                setSelectedImagesFr([]);
+                setSelectedImagesEn([]);
             }
         });
     };
@@ -365,11 +519,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                     {!isAddingDoc && (
                         <button
                             type="button"
-                            onClick={() => {
-                                setIsAddingDoc(true);
-                                setAddImagesFr([]);
-                                setAddImagesEn([]);
-                            }}
+                            onClick={openAddModal}
                             className="admin-btn admin-btn-primary"
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
                         >
@@ -403,11 +553,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                         </h2>
                         <button
                             type="button"
-                            onClick={() => {
-                                setIsAddingDoc(false);
-                                setAddImagesFr([]);
-                                setAddImagesEn([]);
-                            }}
+                            onClick={requestCloseAdd}
                             className="admin-btn admin-btn-secondary"
                             style={{ padding: '6px 12px', fontSize: '0.8rem' }}
                         >
@@ -480,6 +626,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     type="text"
                                     name="title"
                                     required
+                                    value={addFormState.title}
+                                    onChange={(e) => setAddFormState(prev => ({ ...prev, title: e.target.value }))}
                                     placeholder="Ex: Carte des Buffets & Cocktails"
                                     className="admin-input"
                                 />
@@ -492,6 +640,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     id="doc_title_en"
                                     type="text"
                                     name="title_en"
+                                    value={addFormState.title_en}
+                                    onChange={(e) => setAddFormState(prev => ({ ...prev, title_en: e.target.value }))}
                                     placeholder="Ex: Buffet & Cocktail Menu"
                                     className="admin-input"
                                 />
@@ -508,6 +658,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     id="doc_desc_fr"
                                     name="description"
                                     rows={2}
+                                    value={addFormState.description}
+                                    onChange={(e) => setAddFormState(prev => ({ ...prev, description: e.target.value }))}
                                     placeholder="Ex: Formules complètes pour réceptions, mariages et séminaires."
                                     className="admin-textarea"
                                 />
@@ -520,6 +672,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     id="doc_desc_en"
                                     name="description_en"
                                     rows={2}
+                                    value={addFormState.description_en}
+                                    onChange={(e) => setAddFormState(prev => ({ ...prev, description_en: e.target.value }))}
                                     placeholder="Ex: Complete packages for receptions, weddings and corporate events."
                                     className="admin-textarea"
                                 />
@@ -659,11 +813,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setIsAddingDoc(false);
-                                    setAddImagesFr([]);
-                                    setAddImagesEn([]);
-                                }}
+                                onClick={requestCloseAdd}
                                 className="admin-btn admin-btn-secondary"
                             >
                                 Annuler
@@ -684,19 +834,26 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
             {/* MODAL: ÉDITION */}
             {editingDoc && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.7)',
-                    backdropFilter: 'blur(5px)',
-                    zIndex: 200,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '1.5rem',
-                    overflowY: 'auto'
-                }}>
-                    <div className="admin-card anim-fade" style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', margin: 'auto' }}>
+                <div 
+                    onClick={requestCloseEdit}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.7)',
+                        backdropFilter: 'blur(5px)',
+                        zIndex: 200,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '1.5rem',
+                        overflowY: 'auto'
+                    }}
+                >
+                    <div 
+                        className="admin-card anim-fade" 
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', margin: 'auto' }}
+                    >
                         <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h2 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <Edit3 size={18} style={{ color: 'var(--admin-gold)' }} />
@@ -704,18 +861,14 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             </h2>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setEditingDoc(null);
-                                    setEditImagesFr([]);
-                                    setEditImagesEn([]);
-                                }}
+                                onClick={requestCloseEdit}
                                 style={{ background: 'none', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer' }}
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleEditDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <form ref={docEditFormRef} onSubmit={handleEditDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                             {/* Titres FR / EN */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
                                 <div>
@@ -727,7 +880,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         type="text"
                                         name="title"
                                         required
-                                        defaultValue={editingDoc.title}
+                                        value={editFormState.title}
+                                        onChange={(e) => setEditFormState(prev => ({ ...prev, title: e.target.value }))}
                                         className="admin-input"
                                     />
                                 </div>
@@ -739,7 +893,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         id="edit_doc_title_en"
                                         type="text"
                                         name="title_en"
-                                        defaultValue={editingDoc.title_en || ''}
+                                        value={editFormState.title_en}
+                                        onChange={(e) => setEditFormState(prev => ({ ...prev, title_en: e.target.value }))}
                                         className="admin-input"
                                     />
                                 </div>
@@ -755,7 +910,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         id="edit_doc_desc_fr"
                                         name="description"
                                         rows={2}
-                                        defaultValue={editingDoc.description || ''}
+                                        value={editFormState.description}
+                                        onChange={(e) => setEditFormState(prev => ({ ...prev, description: e.target.value }))}
                                         className="admin-textarea"
                                     />
                                 </div>
@@ -767,7 +923,8 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         id="edit_doc_desc_en"
                                         name="description_en"
                                         rows={2}
-                                        defaultValue={editingDoc.description_en || ''}
+                                        value={editFormState.description_en}
+                                        onChange={(e) => setEditFormState(prev => ({ ...prev, description_en: e.target.value }))}
                                         className="admin-textarea"
                                     />
                                 </div>
@@ -798,52 +955,134 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
                                     {/* GESTION IMAGES FR */}
                                     <div style={{ background: 'var(--admin-surface)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
-                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.5rem' }}>
-                                            🇫🇷 Images Françaises ({editingDoc.images_fr?.length || 0})
-                                        </h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                            <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)', margin: 0 }}>
+                                                🇫🇷 Images Françaises ({editingDoc.images_fr?.length || 0})
+                                            </h3>
+                                            {(editingDoc.images_fr?.length || 0) > 0 && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (selectedImagesFr.length === editingDoc.images_fr.length) {
+                                                                clearSelectedImages('fr');
+                                                            } else {
+                                                                selectAllImages('fr');
+                                                            }
+                                                        }}
+                                                        className="admin-btn admin-btn-secondary"
+                                                        style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                                                    >
+                                                        {selectedImagesFr.length === editingDoc.images_fr.length ? 'Désélectionner tout' : 'Tout sélectionner'}
+                                                    </button>
+                                                    {selectedImagesFr.length > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteImageConfirm({ type: 'batch', ids: [...selectedImagesFr], lang: 'fr' })}
+                                                            style={{
+                                                                padding: '3px 9px',
+                                                                fontSize: '0.72rem',
+                                                                background: '#ef4444',
+                                                                color: '#fff',
+                                                                border: 'none',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                fontWeight: '600'
+                                                            }}
+                                                        >
+                                                            <Trash2 size={12} /> Supprimer sélection ({selectedImagesFr.length})
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
 
                                         {/* Existing images list */}
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                                            {(editingDoc.images_fr || []).map((img, idx) => (
-                                                <div key={img.id} style={{ position: 'relative', width: '90px', height: '120px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--admin-border)' }}>
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px' }}>
-                                                        #{idx + 1}
-                                                    </span>
-                                                    
-                                                    {/* Boutons réordonner */}
-                                                    <div style={{ position: 'absolute', top: '2px', left: '2px', display: 'flex', gap: '2px' }}>
-                                                        {idx > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleReorderExistingImage(img.id, 'up')}
-                                                                style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            >
-                                                                <ChevronLeft size={12} />
-                                                            </button>
-                                                        )}
-                                                        {idx < (editingDoc.images_fr.length - 1) && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleReorderExistingImage(img.id, 'down')}
-                                                                style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            >
-                                                                <ChevronRight size={12} />
-                                                            </button>
-                                                        )}
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteExistingImage(img.id)}
-                                                        title="Supprimer cette image"
-                                                        style={{ position: 'absolute', top: '2px', right: '2px', background: '#C4593A', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            {(editingDoc.images_fr || []).map((img, idx) => {
+                                                const isSelected = selectedImagesFr.includes(img.id);
+                                                return (
+                                                    <div 
+                                                        key={img.id} 
+                                                        style={{ 
+                                                            position: 'relative', 
+                                                            width: '90px', 
+                                                            height: '120px', 
+                                                            borderRadius: '6px', 
+                                                            overflow: 'hidden', 
+                                                            border: isSelected ? '2px solid var(--admin-gold)' : '1px solid var(--admin-border)',
+                                                            boxShadow: isSelected ? '0 0 8px rgba(200, 169, 110, 0.4)' : 'none'
+                                                        }}
                                                     >
-                                                        <Trash2 size={11} />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px' }}>
+                                                            #{idx + 1}
+                                                        </span>
+                                                        
+                                                        {/* Boutons réordonner */}
+                                                        <div style={{ position: 'absolute', top: '2px', left: '2px', display: 'flex', gap: '2px' }}>
+                                                            {idx > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReorderExistingImage(img.id, 'up')}
+                                                                    style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                >
+                                                                    <ChevronLeft size={12} />
+                                                                </button>
+                                                            )}
+                                                            {idx < (editingDoc.images_fr.length - 1) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReorderExistingImage(img.id, 'down')}
+                                                                    style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                >
+                                                                    <ChevronRight size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Bouton suppression unique avec confirmation pop-up */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteImageConfirm({ type: 'single', id: img.id, lang: 'fr' })}
+                                                            title="Supprimer cette image"
+                                                            style={{ position: 'absolute', top: '2px', right: '2px', background: '#C4593A', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
+                                                        >
+                                                            <Trash2 size={11} />
+                                                        </button>
+
+                                                        {/* Checkbox sélection groupée */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleSelectImage(img.id, 'fr')}
+                                                            title={isSelected ? "Désélectionner" : "Sélectionner pour suppression multiple"}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '2px',
+                                                                right: '2px',
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                borderRadius: '4px',
+                                                                background: isSelected ? 'var(--admin-gold)' : 'rgba(0,0,0,0.65)',
+                                                                border: isSelected ? '1px solid var(--admin-gold)' : '1px solid rgba(255,255,255,0.4)',
+                                                                color: isSelected ? '#000' : 'transparent',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                cursor: 'pointer',
+                                                                zIndex: 2,
+                                                                padding: 0
+                                                            }}
+                                                        >
+                                                            <Check size={13} strokeWidth={3} />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
 
                                         {/* Dropzone pour ajouter de nouvelles images FR */}
@@ -888,52 +1127,134 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
                                     {/* GESTION IMAGES EN */}
                                     <div style={{ background: 'var(--admin-surface)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
-                                        <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.5rem' }}>
-                                            🇬🇧 Images Anglaises ({editingDoc.images_en?.length || 0})
-                                        </h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                            <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text)', margin: 0 }}>
+                                                🇬🇧 Images Anglaises ({editingDoc.images_en?.length || 0})
+                                            </h3>
+                                            {(editingDoc.images_en?.length || 0) > 0 && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (selectedImagesEn.length === editingDoc.images_en.length) {
+                                                                clearSelectedImages('en');
+                                                            } else {
+                                                                selectAllImages('en');
+                                                            }
+                                                        }}
+                                                        className="admin-btn admin-btn-secondary"
+                                                        style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                                                    >
+                                                        {selectedImagesEn.length === editingDoc.images_en.length ? 'Désélectionner tout' : 'Tout sélectionner'}
+                                                    </button>
+                                                    {selectedImagesEn.length > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteImageConfirm({ type: 'batch', ids: [...selectedImagesEn], lang: 'en' })}
+                                                            style={{
+                                                                padding: '3px 9px',
+                                                                fontSize: '0.72rem',
+                                                                background: '#ef4444',
+                                                                color: '#fff',
+                                                                border: 'none',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                fontWeight: '600'
+                                                            }}
+                                                        >
+                                                            <Trash2 size={12} /> Supprimer sélection ({selectedImagesEn.length})
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
 
                                         {/* Existing images EN */}
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                                            {(editingDoc.images_en || []).map((img, idx) => (
-                                                <div key={img.id} style={{ position: 'relative', width: '90px', height: '120px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--admin-border)' }}>
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px' }}>
-                                                        #{idx + 1}
-                                                    </span>
-
-                                                    {/* Boutons réordonner */}
-                                                    <div style={{ position: 'absolute', top: '2px', left: '2px', display: 'flex', gap: '2px' }}>
-                                                        {idx > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleReorderExistingImage(img.id, 'up')}
-                                                                style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            >
-                                                                <ChevronLeft size={12} />
-                                                            </button>
-                                                        )}
-                                                        {idx < (editingDoc.images_en.length - 1) && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleReorderExistingImage(img.id, 'down')}
-                                                                style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            >
-                                                                <ChevronRight size={12} />
-                                                            </button>
-                                                        )}
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteExistingImage(img.id)}
-                                                        title="Supprimer cette image"
-                                                        style={{ position: 'absolute', top: '2px', right: '2px', background: '#C4593A', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            {(editingDoc.images_en || []).map((img, idx) => {
+                                                const isSelected = selectedImagesEn.includes(img.id);
+                                                return (
+                                                    <div 
+                                                        key={img.id} 
+                                                        style={{ 
+                                                            position: 'relative', 
+                                                            width: '90px', 
+                                                            height: '120px', 
+                                                            borderRadius: '6px', 
+                                                            overflow: 'hidden', 
+                                                            border: isSelected ? '2px solid var(--admin-gold)' : '1px solid var(--admin-border)',
+                                                            boxShadow: isSelected ? '0 0 8px rgba(200, 169, 110, 0.4)' : 'none'
+                                                        }}
                                                     >
-                                                        <Trash2 size={11} />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px' }}>
+                                                            #{idx + 1}
+                                                        </span>
+
+                                                        {/* Boutons réordonner */}
+                                                        <div style={{ position: 'absolute', top: '2px', left: '2px', display: 'flex', gap: '2px' }}>
+                                                            {idx > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReorderExistingImage(img.id, 'up')}
+                                                                    style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                >
+                                                                    <ChevronLeft size={12} />
+                                                                </button>
+                                                            )}
+                                                            {idx < (editingDoc.images_en.length - 1) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReorderExistingImage(img.id, 'down')}
+                                                                    style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '3px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                >
+                                                                    <ChevronRight size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Bouton suppression unique avec confirmation pop-up */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteImageConfirm({ type: 'single', id: img.id, lang: 'en' })}
+                                                            title="Supprimer cette image"
+                                                            style={{ position: 'absolute', top: '2px', right: '2px', background: '#C4593A', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
+                                                        >
+                                                            <Trash2 size={11} />
+                                                        </button>
+
+                                                        {/* Checkbox sélection groupée */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleSelectImage(img.id, 'en')}
+                                                            title={isSelected ? "Désélectionner" : "Sélectionner pour suppression multiple"}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '2px',
+                                                                right: '2px',
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                borderRadius: '4px',
+                                                                background: isSelected ? 'var(--admin-gold)' : 'rgba(0,0,0,0.65)',
+                                                                border: isSelected ? '1px solid var(--admin-gold)' : '1px solid rgba(255,255,255,0.4)',
+                                                                color: isSelected ? '#000' : 'transparent',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                cursor: 'pointer',
+                                                                zIndex: 2,
+                                                                padding: 0
+                                                            }}
+                                                        >
+                                                            <Check size={13} strokeWidth={3} />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
 
                                         {/* Dropzone pour ajouter de nouvelles images EN */}
@@ -981,11 +1302,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setEditingDoc(null);
-                                        setEditImagesFr([]);
-                                        setEditImagesEn([]);
-                                    }}
+                                    onClick={requestCloseEdit}
                                     className="admin-btn admin-btn-secondary"
                                 >
                                     Annuler
@@ -1027,7 +1344,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                         </p>
                         <button
                             type="button"
-                            onClick={() => setIsAddingDoc(true)}
+                            onClick={openAddModal}
                             className="admin-btn admin-btn-primary"
                         >
                             <Plus size={16} /> Ajouter une Carte de Tarif
@@ -1153,11 +1470,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                setEditingDoc(doc);
-                                                setEditImagesFr([]);
-                                                setEditImagesEn([]);
-                                            }}
+                                            onClick={() => openEditModal(doc)}
                                             className="admin-btn admin-btn-secondary"
                                             style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                                         >
@@ -1180,7 +1493,154 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                 )}
             </div>
 
-            {/* MODAL DE CONFIRMATION DE SUPPRESSION */}
+            {/* MINI POP-UP DE CONFIRMATION: SUPPRESSION D'IMAGE(S) */}
+            {deleteImageConfirm && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.75)',
+                    backdropFilter: 'blur(4px)',
+                    zIndex: 350,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div className="admin-card anim-fade" style={{ maxWidth: '420px', width: '100%', border: '1px solid rgba(220, 38, 38, 0.4)' }}>
+                        <h3 style={{ fontSize: '1.15rem', color: 'var(--admin-text)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AlertTriangle size={20} style={{ color: '#C4593A' }} />
+                            {deleteImageConfirm.type === 'batch' 
+                                ? `Supprimer ${deleteImageConfirm.lang === 'fr' ? selectedImagesFr.length : selectedImagesEn.length} image(s) ?`
+                                : "Supprimer cette image ?"
+                            }
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+                            {deleteImageConfirm.type === 'batch'
+                                ? "Cette action supprimera définitivement toutes les images sélectionnées de cette carte. Êtes-vous sûr(e) ?"
+                                : "Cette action supprimera définitivement cette photo de la carte. Cette action est irréversible."
+                            }
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                            <button
+                                type="button"
+                                onClick={() => setDeleteImageConfirm(null)}
+                                className="admin-btn admin-btn-secondary"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                    const target = deleteImageConfirm;
+                                    setDeleteImageConfirm(null);
+                                    if (target.type === 'single') {
+                                        handleDeleteExistingImage(target.id, target.lang);
+                                    } else if (target.type === 'batch') {
+                                        handleBatchDeleteExistingImages(target.lang);
+                                    }
+                                }}
+                                className="admin-btn admin-btn-danger"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                            >
+                                {isPending ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+                                Confirmer la suppression
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DE CONFIRMATION: MODIFICATIONS NON ENREGISTRÉES */}
+            {unsavedConfirmModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.75)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 350,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div className="admin-card anim-fade" style={{ maxWidth: '460px', width: '100%', border: '1px solid rgba(200, 169, 110, 0.5)' }}>
+                        <h3 style={{ fontSize: '1.15rem', color: 'var(--admin-text)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AlertCircle size={20} style={{ color: 'var(--admin-gold)' }} />
+                            Modifications non enregistrées
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+                            Vous avez apporté des modifications qui n&apos;ont pas encore été enregistrées. Que souhaitez-vous faire ?
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                    const target = unsavedConfirmModal;
+                                    setUnsavedConfirmModal(null);
+                                    if (target === 'add') {
+                                        docFormRef.current?.requestSubmit();
+                                    } else if (target === 'edit') {
+                                        docEditFormRef.current?.requestSubmit();
+                                    }
+                                }}
+                                className="admin-btn admin-btn-primary"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}
+                            >
+                                <CheckCircle2 size={16} /> Enregistrer les modifications
+                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setUnsavedConfirmModal(null)}
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{ flex: 1, textAlign: 'center' }}
+                                >
+                                    Continuer l&apos;édition
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const target = unsavedConfirmModal;
+                                        setUnsavedConfirmModal(null);
+                                        if (target === 'add') {
+                                            setIsAddingDoc(false);
+                                            setAddImagesFr([]);
+                                            setAddImagesEn([]);
+                                            setAddFormState({ title: '', title_en: '', description: '', description_en: '' });
+                                            docFormRef.current?.reset();
+                                        } else if (target === 'edit') {
+                                            setEditingDoc(null);
+                                            setEditImagesFr([]);
+                                            setEditImagesEn([]);
+                                            setSelectedImagesFr([]);
+                                            setSelectedImagesEn([]);
+                                            setEditFormState({ title: '', title_en: '', description: '', description_en: '' });
+                                        }
+                                    }}
+                                    className="admin-btn"
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(196, 89, 58, 0.15)',
+                                        border: '1px solid rgba(196, 89, 58, 0.5)',
+                                        color: '#E06D53',
+                                        cursor: 'pointer',
+                                        borderRadius: '6px',
+                                        fontWeight: '600',
+                                        fontSize: '0.85rem',
+                                        padding: '0.6rem 0.8rem'
+                                    }}
+                                >
+                                    Quitter sans sauvegarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DE CONFIRMATION DE SUPPRESSION DE DOCUMENT */}
             {deleteModal && (
                 <div style={{
                     position: 'fixed',

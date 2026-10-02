@@ -1,11 +1,11 @@
 'use client';
-import { useState, useRef, useTransition, useCallback } from 'react';
+import { useState, useRef, useTransition, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage } from '@/app/actions';
+import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage, deleteWeeklyMenuImages } from '@/app/actions';
 import {
     Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays,
     CheckCircle2, Images, ArrowUp, ArrowDown,
-    Loader2, UploadCloud, AlertCircle
+    Loader2, UploadCloud, AlertCircle, AlertTriangle, Check
 } from 'lucide-react';
 
 /* =====================================================
@@ -279,11 +279,72 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || [])
     );
 
+    // Champs de formulaire pour détection des modifications non sauvegardées
+    const [title, setTitle] = useState(activeMenu?.title || '');
+    const [titleEn, setTitleEn] = useState(activeMenu?.title_en || '');
+    const [description, setDescription] = useState(activeMenu?.description || '');
+    const [descriptionEn, setDescriptionEn] = useState(activeMenu?.description_en || '');
+
+    // États de multi-sélection pour suppression groupée
+    const [selectedFr, setSelectedFr] = useState([]);
+    const [selectedEn, setSelectedEn] = useState([]);
+
+    // Modal de confirmation de suppression d'image ({ type: 'single' | 'batch', id, lang })
+    const [deleteImageConfirm, setDeleteImageConfirm] = useState(null);
+
+    // Modal de confirmation si modifications non enregistrées
+    const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
+    const formRef = useRef(null);
+
     if (activeMenu !== prevMenu) {
         setPrevMenu(activeMenu);
         setExistingFrImages(activeMenu?.images_fr || (activeMenu?.images?.filter(img => img.lang !== 'en') || []));
         setExistingEnImages(activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || []));
+        setTitle(activeMenu?.title || '');
+        setTitleEn(activeMenu?.title_en || '');
+        setDescription(activeMenu?.description || '');
+        setDescriptionEn(activeMenu?.description_en || '');
+        setSelectedFr([]);
+        setSelectedEn([]);
     }
+
+    const isDirty = (
+        title !== (activeMenu?.title || '') ||
+        titleEn !== (activeMenu?.title_en || '') ||
+        description !== (activeMenu?.description || '') ||
+        descriptionEn !== (activeMenu?.description_en || '') ||
+        filesFr.length > 0 ||
+        filesEn.length > 0
+    );
+
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isDirty]);
+
+    const requestClose = () => {
+        if (isDirty) {
+            setShowUnsavedModal(true);
+        } else {
+            onCancel();
+        }
+    };
+
+    const toggleSelectImage = (id, lang) => {
+        if (lang === 'fr') {
+            setSelectedFr(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+        } else {
+            setSelectedEn(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+        }
+    };
 
     const handleReorderExisting = (imgId, direction) => {
         setError('');
@@ -315,14 +376,37 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         });
     };
 
-    const handleDeleteExisting = (imgId) => {
+    const handleDeleteExisting = (imgId, lang = 'fr') => {
         setError('');
-        // Optimistic removal immédiat
-        setExistingFrImages(prev => prev.filter(img => img.id !== imgId));
-        setExistingEnImages(prev => prev.filter(img => img.id !== imgId));
+        if (lang === 'fr') {
+            setExistingFrImages(prev => prev.filter(img => img.id !== imgId));
+            setSelectedFr(prev => prev.filter(x => x !== imgId));
+        } else {
+            setExistingEnImages(prev => prev.filter(img => img.id !== imgId));
+            setSelectedEn(prev => prev.filter(x => x !== imgId));
+        }
 
         startTransition(async () => {
             const res = await deleteWeeklyMenuImage(imgId);
+            if (res?.error) setError(res.error);
+        });
+    };
+
+    const handleBatchDeleteExisting = (lang) => {
+        const targetIds = lang === 'fr' ? selectedFr : selectedEn;
+        if (!targetIds || targetIds.length === 0) return;
+
+        setError('');
+        if (lang === 'fr') {
+            setExistingFrImages(prev => prev.filter(img => !targetIds.includes(img.id)));
+            setSelectedFr([]);
+        } else {
+            setExistingEnImages(prev => prev.filter(img => !targetIds.includes(img.id)));
+            setSelectedEn([]);
+        }
+
+        startTransition(async () => {
+            const res = await deleteWeeklyMenuImages(targetIds);
             if (res?.error) setError(res.error);
         });
     };
@@ -386,388 +470,642 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
     const currentEnImages = existingEnImages;
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {isEdit && <input type="hidden" name="id" value={activeMenu.id} />}
-
-            {/* Titre FR / EN */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                <div>
-                    <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
-                        FR — Titre du menu (Français) *
-                    </label>
-                    <input
-                        type="text"
-                        name="title"
-                        className="admin-input"
-                        placeholder="Ex : Menu du 15 au 18 Juillet"
-                        defaultValue={activeMenu?.title || ''}
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
-                        EN — Menu Title (English)
-                    </label>
-                    <input
-                        type="text"
-                        name="title_en"
-                        className="admin-input"
-                        placeholder="e.g. Menu for July 15th to 18th"
-                        defaultValue={activeMenu?.title_en || ''}
-                    />
-                </div>
-            </div>
-
-            {/* Description FR / EN */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                <div>
-                    <label className="admin-label">FR — Description des plats (Français)</label>
-                    <textarea
-                        name="description"
-                        className="admin-input"
-                        rows="3"
-                        placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
-                        defaultValue={activeMenu?.description || ''}
-                    />
-                </div>
-                <div>
-                    <label className="admin-label">EN — Dishes description (English)</label>
-                    <textarea
-                        name="description_en"
-                        className="admin-input"
-                        rows="3"
-                        placeholder="e.g. Eggplant tatin, Lemon drizzle cake, Saffron rice..."
-                        defaultValue={activeMenu?.description_en || ''}
-                    />
-                </div>
-            </div>
-
-            {/* =========================================================
-                SECTION 1 : PHOTOS EN FRANÇAIS (FR)
-                ========================================================= */}
-            <div style={{
-                background: 'rgba(0, 0, 0, 0.18)',
-                border: '1px solid var(--admin-border)',
-                borderRadius: '8px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.25rem'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(200,169,110,0.2)', color: 'var(--admin-gold)', fontWeight: '700' }}>FR</span>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
-                            Photos du menu en Français
-                        </h3>
-                    </div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>
-                        {currentFrImages.length + filesFr.length} photo{(currentFrImages.length + filesFr.length) > 1 ? 's' : ''}
-                    </span>
-                </div>
-
-                {/* Photos actuelles FR (mode édition) */}
-                {isEdit && currentFrImages.length > 0 && (
-                    <div>
-                        <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', marginBottom: '0.6rem' }}>
-                            Photos actuelles en ligne — Utilisez la croix rouge pour supprimer n&apos;importe quelle photo :
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
-                            {currentFrImages.map((img, idx) => (
-                                <div key={img.id} style={{
-                                    border: '1px solid var(--admin-border)',
-                                    borderRadius: '6px', overflow: 'hidden',
-                                    aspectRatio: '1 / 1', position: 'relative',
-                                    background: 'var(--admin-surface)',
-                                }}>
-                                    <Image
-                                        src={img.image_url}
-                                        alt={`Photo FR ${idx + 1}`}
-                                        width={200}
-                                        height={200}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        unoptimized
-                                    />
-                                    <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px' }}>
-                                        #{idx + 1}
-                                    </div>
-                                    <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReorderExisting(img.id, 'up')}
-                                            disabled={idx === 0 || isPending}
-                                            title="Monter"
-                                            aria-label={`Monter la photo FR numéro ${idx + 1}`}
-                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <ArrowUp size={11} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReorderExisting(img.id, 'down')}
-                                            disabled={idx === currentFrImages.length - 1 || isPending}
-                                            title="Descendre"
-                                            aria-label={`Descendre la photo FR numéro ${idx + 1}`}
-                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <ArrowDown size={11} />
-                                        </button>
-                                    </div>
-                                    {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDeleteExisting(img.id)}
-                                        disabled={isPending}
-                                        title="Supprimer définitivement cette photo"
-                                        aria-label={`Supprimer définitivement la photo FR numéro ${idx + 1}`}
-                                        style={{
-                                            position: 'absolute', bottom: '5px', right: '5px',
-                                            width: '24px', height: '24px',
-                                            background: 'rgba(239,68,68,0.95)',
-                                            border: 'none', borderRadius: '3px', color: 'white',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
-                                        }}
-                                    >
-                                        <X size={13} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Dropzone FR */}
-                <DropZone
-                    onFiles={handleNewFilesFr}
-                    isDragging={isDraggingFr}
-                    setIsDragging={setIsDraggingFr}
-                    inputName="image_files_fr"
-                    label="Ajouter des photos pour le menu Français"
-                />
-
-                {/* Aperçu nouvelles photos FR */}
-                {filesFr.length > 0 && (
-                    <div>
-                        <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
-                            Nouvelles photos FR prêtes à être ajoutées :
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
-                            {filesFr.map((file, idx) => (
-                                <PreviewItem
-                                    key={idx}
-                                    file={file}
-                                    index={idx}
-                                    total={filesFr.length}
-                                    onRemove={handleRemoveFr}
-                                    onMoveUp={handleMoveUpFr}
-                                    onMoveDown={handleMoveDownFr}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* =========================================================
-                SECTION 2 : PHOTOS EN ANGLAIS (EN) — OPTIONNEL
-                ========================================================= */}
-            <div style={{
-                background: 'rgba(0, 0, 0, 0.18)',
-                border: '1px solid var(--admin-border)',
-                borderRadius: '8px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.25rem'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', color: 'var(--admin-text-subtle)', fontWeight: '700' }}>EN</span>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
-                            Photos du menu en Anglais (Optionnel)
-                        </h3>
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                        Si aucune photo n&apos;est ajoutée ici, le site affichera automatiquement les photos françaises
-                    </span>
-                </div>
-
-                {/* Photos actuelles EN (mode édition) */}
-                {isEdit && currentEnImages.length > 0 && (
-                    <div>
-                        <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', marginBottom: '0.6rem' }}>
-                            Photos actuelles en version anglaise :
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
-                            {currentEnImages.map((img, idx) => (
-                                <div key={img.id} style={{
-                                    border: '1px solid var(--admin-border)',
-                                    borderRadius: '6px', overflow: 'hidden',
-                                    aspectRatio: '1 / 1', position: 'relative',
-                                    background: 'var(--admin-surface)',
-                                }}>
-                                    <Image
-                                        src={img.image_url}
-                                        alt={`Photo EN ${idx + 1}`}
-                                        width={200}
-                                        height={200}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        unoptimized
-                                    />
-                                    <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px' }}>
-                                        #{idx + 1}
-                                    </div>
-                                    <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReorderExisting(img.id, 'up')}
-                                            disabled={idx === 0 || isPending}
-                                            title="Monter"
-                                            aria-label={`Monter la photo EN numéro ${idx + 1}`}
-                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <ArrowUp size={11} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleReorderExisting(img.id, 'down')}
-                                            disabled={idx === currentEnImages.length - 1 || isPending}
-                                            title="Descendre"
-                                            aria-label={`Descendre la photo EN numéro ${idx + 1}`}
-                                            style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <ArrowDown size={11} />
-                                        </button>
-                                    </div>
-                                    {/* BOUTON SUPPRIMER : TOUJOURS ACTIF */}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDeleteExisting(img.id)}
-                                        disabled={isPending}
-                                        title="Supprimer cette photo anglaise"
-                                        aria-label={`Supprimer la photo EN numéro ${idx + 1}`}
-                                        style={{
-                                            position: 'absolute', bottom: '5px', right: '5px',
-                                            width: '24px', height: '24px',
-                                            background: 'rgba(239,68,68,0.95)',
-                                            border: 'none', borderRadius: '3px', color: 'white',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
-                                        }}
-                                    >
-                                        <X size={13} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Dropzone EN */}
-                <DropZone
-                    onFiles={handleNewFilesEn}
-                    isDragging={isDraggingEn}
-                    setIsDragging={setIsDraggingEn}
-                    inputName="image_files_en"
-                    label="Ajouter des photos spécifiques pour la version Anglaise (Optionnel)"
-                />
-
-                {/* Aperçu nouvelles photos EN */}
-                {filesEn.length > 0 && (
-                    <div>
-                        <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
-                            Nouvelles photos EN prêtes à être ajoutées :
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
-                            {filesEn.map((file, idx) => (
-                                <PreviewItem
-                                    key={idx}
-                                    file={file}
-                                    index={idx}
-                                    total={filesEn.length}
-                                    onRemove={handleRemoveEn}
-                                    onMoveUp={handleMoveUpEn}
-                                    onMoveDown={handleMoveDownEn}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Statut menu en cours */}
-            {isEdit && activeMenu?.is_current === 1 ? (
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.85rem 1.25rem',
-                    background: 'rgba(34,197,94,0.08)',
-                    border: '1px solid rgba(34,197,94,0.25)',
-                    borderRadius: '6px',
-                }}>
-                    <input type="hidden" name="is_current" value="on" />
-                    <span style={{
-                        fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em',
-                        padding: '3px 9px', background: 'rgba(34,197,94,0.2)', color: '#22c55e',
-                        border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px'
-                    }}>
-                        En ligne
-                    </span>
-                    <span style={{ color: '#86efac', fontSize: '0.88rem', fontWeight: '600' }}>
-                        Ce menu est actuellement le menu en cours affiché sur la page d&apos;accueil.
-                    </span>
-                </div>
-            ) : (
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '1rem 1.25rem',
-                    background: 'rgba(34,197,94,0.05)',
-                    border: '1px solid rgba(34,197,94,0.15)',
-                    borderRadius: '4px',
-                }}>
-                    <input
-                        type="checkbox"
-                        name="is_current"
-                        id={`is_current_${activeMenu?.id || 'new'}`}
-                        defaultChecked={activeMenu ? !!activeMenu.is_current : true}
-                        style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
-                    />
-                    <label htmlFor={`is_current_${activeMenu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
-                        {isEdit ? 'Définir comme menu en cours sur la page d\'accueil' : 'Afficher comme menu en cours sur la page d\'accueil'}
-                    </label>
-                </div>
-            )}
-
-            {/* Erreur */}
-            {error && (
-                <div style={{
-                    display: 'flex', gap: '0.75rem', alignItems: 'center',
-                    padding: '1rem', borderRadius: '4px',
-                    background: 'rgba(239,68,68,0.08)',
-                    border: '1px solid rgba(239,68,68,0.2)',
-                    color: '#fca5a5', fontSize: '0.9rem',
-                }}>
-                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
-                    {error}
-                </div>
-            )}
-
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(200,169,110,0.08)' }}>
-                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
-                    Annuler
+        <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)', margin: 0 }}>
+                    {isEdit ? 'Modifier le menu' : 'Nouveau menu de la semaine'}
+                </h2>
+                <button
+                    type="button"
+                    onClick={requestClose}
+                    style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}
+                    title="Fermer"
+                >
+                    <X size={20} />
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '160px' }}>
-                    {isPending ? (
-                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Upload en cours...</>
-                    ) : (
-                        isEdit ? 'Enregistrer les modifications' : 'Publier ce menu'
+            </div>
+
+            <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {isEdit && <input type="hidden" name="id" value={activeMenu.id} />}
+
+                {/* Titre FR / EN */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                    <div>
+                        <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
+                            FR — Titre du menu (Français) *
+                        </label>
+                        <input
+                            type="text"
+                            name="title"
+                            className="admin-input"
+                            placeholder="Ex : Menu du 15 au 18 Juillet"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
+                            EN — Menu Title (English)
+                        </label>
+                        <input
+                            type="text"
+                            name="title_en"
+                            className="admin-input"
+                            placeholder="e.g. Menu for July 15th to 18th"
+                            value={titleEn}
+                            onChange={(e) => setTitleEn(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                {/* Description FR / EN */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                    <div>
+                        <label className="admin-label">FR — Description des plats (Français)</label>
+                        <textarea
+                            name="description"
+                            className="admin-input"
+                            rows="3"
+                            placeholder="Ex : Tarte tatin aubergines, Cake citron, Riz safran..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="admin-label">EN — Dishes description (English)</label>
+                        <textarea
+                            name="description_en"
+                            className="admin-input"
+                            rows="3"
+                            placeholder="e.g. Eggplant tatin, Lemon drizzle cake, Saffron rice..."
+                            value={descriptionEn}
+                            onChange={(e) => setDescriptionEn(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                {/* =========================================================
+                    SECTION 1 : PHOTOS EN FRANÇAIS (FR)
+                    ========================================================= */}
+                <div style={{
+                    background: 'rgba(0, 0, 0, 0.18)',
+                    border: '1px solid var(--admin-border)',
+                    borderRadius: '8px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1.25rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(200,169,110,0.2)', color: 'var(--admin-gold)', fontWeight: '700' }}>FR</span>
+                            <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
+                                Photos du menu en Français
+                            </h3>
+                        </div>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-subtle)' }}>
+                            {currentFrImages.length + filesFr.length} photo{(currentFrImages.length + filesFr.length) > 1 ? 's' : ''}
+                        </span>
+                    </div>
+
+                    {/* Photos actuelles FR (mode édition) */}
+                    {isEdit && currentFrImages.length > 0 && (
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
+                                <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', margin: 0 }}>
+                                    Photos actuelles en ligne ({currentFrImages.length}) :
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (selectedFr.length === currentFrImages.length) {
+                                                setSelectedFr([]);
+                                            } else {
+                                                setSelectedFr(currentFrImages.map(img => img.id));
+                                            }
+                                        }}
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                    >
+                                        {selectedFr.length === currentFrImages.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                                    </button>
+                                    {selectedFr.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeleteImageConfirm({ type: 'batch', lang: 'fr' })}
+                                            className="admin-btn admin-btn-danger"
+                                            style={{ fontSize: '0.72rem', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                            <Trash2 size={12} /> Supprimer sélection ({selectedFr.length})
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                                {currentFrImages.map((img, idx) => {
+                                    const isSelected = selectedFr.includes(img.id);
+                                    return (
+                                        <div key={img.id} style={{
+                                            border: isSelected ? '2px solid var(--admin-gold)' : '1px solid var(--admin-border)',
+                                            boxShadow: isSelected ? '0 0 8px rgba(200, 169, 110, 0.4)' : 'none',
+                                            borderRadius: '6px', overflow: 'hidden',
+                                            aspectRatio: '1 / 1', position: 'relative',
+                                            background: 'var(--admin-surface)',
+                                        }}>
+                                            <Image
+                                                src={img.image_url}
+                                                alt={`Photo FR ${idx + 1}`}
+                                                width={200}
+                                                height={200}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                unoptimized
+                                            />
+                                            <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px', zIndex: 2 }}>
+                                                #{idx + 1}
+                                            </div>
+                                            <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 2 }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReorderExisting(img.id, 'up')}
+                                                    disabled={idx === 0 || isPending}
+                                                    title="Monter"
+                                                    aria-label={`Monter la photo FR numéro ${idx + 1}`}
+                                                    style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                >
+                                                    <ArrowUp size={11} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReorderExisting(img.id, 'down')}
+                                                    disabled={idx === currentFrImages.length - 1 || isPending}
+                                                    title="Descendre"
+                                                    aria-label={`Descendre la photo FR numéro ${idx + 1}`}
+                                                    style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                >
+                                                    <ArrowDown size={11} />
+                                                </button>
+                                            </div>
+
+                                            {/* Checkbox sélection groupée */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSelectImage(img.id, 'fr')}
+                                                title={isSelected ? "Désélectionner" : "Sélectionner pour suppression multiple"}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', left: '5px',
+                                                    width: '22px', height: '22px',
+                                                    borderRadius: '4px',
+                                                    background: isSelected ? 'var(--admin-gold)' : 'rgba(0,0,0,0.65)',
+                                                    border: isSelected ? '1px solid var(--admin-gold)' : '1px solid rgba(255,255,255,0.4)',
+                                                    color: isSelected ? '#000' : 'transparent',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2, padding: 0
+                                                }}
+                                            >
+                                                <Check size={13} strokeWidth={3} />
+                                            </button>
+
+                                            {/* Bouton supprimer individuel avec confirmation */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleteImageConfirm({ type: 'single', id: img.id, lang: 'fr' })}
+                                                disabled={isPending}
+                                                title="Supprimer cette photo"
+                                                aria-label={`Supprimer la photo FR numéro ${idx + 1}`}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', right: '5px',
+                                                    width: '24px', height: '24px',
+                                                    background: 'rgba(239,68,68,0.95)',
+                                                    border: 'none', borderRadius: '3px', color: 'white',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2,
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                                }}
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     )}
-                </button>
-            </div>
-        </form>
+
+                    {/* Dropzone FR */}
+                    <DropZone
+                        onFiles={handleNewFilesFr}
+                        isDragging={isDraggingFr}
+                        setIsDragging={setIsDraggingFr}
+                        inputName="image_files_fr"
+                        label="Ajouter des photos pour le menu Français"
+                    />
+
+                    {/* Aperçu nouvelles photos FR */}
+                    {filesFr.length > 0 && (
+                        <div>
+                            <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
+                                Nouvelles photos FR prêtes à être ajoutées :
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                                {filesFr.map((file, idx) => (
+                                    <PreviewItem
+                                        key={idx}
+                                        file={file}
+                                        index={idx}
+                                        total={filesFr.length}
+                                        onRemove={handleRemoveFr}
+                                        onMoveUp={handleMoveUpFr}
+                                        onMoveDown={handleMoveDownFr}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* =========================================================
+                    SECTION 2 : PHOTOS EN ANGLAIS (EN) — OPTIONNEL
+                    ========================================================= */}
+                <div style={{
+                    background: 'rgba(0, 0, 0, 0.18)',
+                    border: '1px solid var(--admin-border)',
+                    borderRadius: '8px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1.25rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', color: 'var(--admin-text-subtle)', fontWeight: '700' }}>EN</span>
+                            <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', margin: 0 }}>
+                                Photos du menu en Anglais (Optionnel)
+                            </h3>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
+                            Si aucune photo n&apos;est ajoutée ici, le site affichera automatiquement les photos françaises
+                        </span>
+                    </div>
+
+                    {/* Photos actuelles EN (mode édition) */}
+                    {isEdit && currentEnImages.length > 0 && (
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
+                                <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-muted)', margin: 0 }}>
+                                    Photos actuelles en version anglaise ({currentEnImages.length}) :
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (selectedEn.length === currentEnImages.length) {
+                                                setSelectedEn([]);
+                                            } else {
+                                                setSelectedEn(currentEnImages.map(img => img.id));
+                                            }
+                                        }}
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                    >
+                                        {selectedEn.length === currentEnImages.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                                    </button>
+                                    {selectedEn.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeleteImageConfirm({ type: 'batch', lang: 'en' })}
+                                            className="admin-btn admin-btn-danger"
+                                            style={{ fontSize: '0.72rem', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                            <Trash2 size={12} /> Supprimer sélection ({selectedEn.length})
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                                {currentEnImages.map((img, idx) => {
+                                    const isSelected = selectedEn.includes(img.id);
+                                    return (
+                                        <div key={img.id} style={{
+                                            border: isSelected ? '2px solid var(--admin-gold)' : '1px solid var(--admin-border)',
+                                            boxShadow: isSelected ? '0 0 8px rgba(200, 169, 110, 0.4)' : 'none',
+                                            borderRadius: '6px', overflow: 'hidden',
+                                            aspectRatio: '1 / 1', position: 'relative',
+                                            background: 'var(--admin-surface)',
+                                        }}>
+                                            <Image
+                                                src={img.image_url}
+                                                alt={`Photo EN ${idx + 1}`}
+                                                width={200}
+                                                height={200}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                unoptimized
+                                            />
+                                            <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(14,13,12,0.85)', color: '#C8A96E', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '2px', zIndex: 2 }}>
+                                                #{idx + 1}
+                                            </div>
+                                            <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 2 }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReorderExisting(img.id, 'up')}
+                                                    disabled={idx === 0 || isPending}
+                                                    title="Monter"
+                                                    aria-label={`Monter la photo EN numéro ${idx + 1}`}
+                                                    style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                >
+                                                    <ArrowUp size={11} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReorderExisting(img.id, 'down')}
+                                                    disabled={idx === currentEnImages.length - 1 || isPending}
+                                                    title="Descendre"
+                                                    aria-label={`Descendre la photo EN numéro ${idx + 1}`}
+                                                    style={{ width: '22px', height: '22px', background: 'rgba(14,13,12,0.85)', border: 'none', color: '#C8A96E', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                >
+                                                    <ArrowDown size={11} />
+                                                </button>
+                                            </div>
+
+                                            {/* Checkbox sélection groupée */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSelectImage(img.id, 'en')}
+                                                title={isSelected ? "Désélectionner" : "Sélectionner pour suppression multiple"}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', left: '5px',
+                                                    width: '22px', height: '22px',
+                                                    borderRadius: '4px',
+                                                    background: isSelected ? 'var(--admin-gold)' : 'rgba(0,0,0,0.65)',
+                                                    border: isSelected ? '1px solid var(--admin-gold)' : '1px solid rgba(255,255,255,0.4)',
+                                                    color: isSelected ? '#000' : 'transparent',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2, padding: 0
+                                                }}
+                                            >
+                                                <Check size={13} strokeWidth={3} />
+                                            </button>
+
+                                            {/* Bouton supprimer individuel avec confirmation */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleteImageConfirm({ type: 'single', id: img.id, lang: 'en' })}
+                                                disabled={isPending}
+                                                title="Supprimer cette photo anglaise"
+                                                aria-label={`Supprimer la photo EN numéro ${idx + 1}`}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', right: '5px',
+                                                    width: '24px', height: '24px',
+                                                    background: 'rgba(239,68,68,0.95)',
+                                                    border: 'none', borderRadius: '3px', color: 'white',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2,
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                                }}
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Dropzone EN */}
+                    <DropZone
+                        onFiles={handleNewFilesEn}
+                        isDragging={isDraggingEn}
+                        setIsDragging={setIsDraggingEn}
+                        inputName="image_files_en"
+                        label="Ajouter des photos spécifiques pour la version Anglaise (Optionnel)"
+                    />
+
+                    {/* Aperçu nouvelles photos EN */}
+                    {filesEn.length > 0 && (
+                        <div>
+                            <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', marginBottom: '0.5rem' }}>
+                                Nouvelles photos EN prêtes à être ajoutées :
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' }}>
+                                {filesEn.map((file, idx) => (
+                                    <PreviewItem
+                                        key={idx}
+                                        file={file}
+                                        index={idx}
+                                        total={filesEn.length}
+                                        onRemove={handleRemoveEn}
+                                        onMoveUp={handleMoveUpEn}
+                                        onMoveDown={handleMoveDownEn}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Statut menu en cours */}
+                {isEdit && activeMenu?.is_current === 1 ? (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                        padding: '0.85rem 1.25rem',
+                        background: 'rgba(34,197,94,0.08)',
+                        border: '1px solid rgba(34,197,94,0.25)',
+                        borderRadius: '6px',
+                    }}>
+                        <input type="hidden" name="is_current" value="on" />
+                        <span style={{
+                            fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em',
+                            padding: '3px 9px', background: 'rgba(34,197,94,0.2)', color: '#22c55e',
+                            border: '1px solid rgba(34,197,94,0.3)', borderRadius: '3px'
+                        }}>
+                            En ligne
+                        </span>
+                        <span style={{ color: '#86efac', fontSize: '0.88rem', fontWeight: '600' }}>
+                            Ce menu est actuellement le menu en cours affiché sur la page d&apos;accueil.
+                        </span>
+                    </div>
+                ) : (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                        padding: '1rem 1.25rem',
+                        background: 'rgba(34,197,94,0.05)',
+                        border: '1px solid rgba(34,197,94,0.15)',
+                        borderRadius: '4px',
+                    }}>
+                        <input
+                            type="checkbox"
+                            name="is_current"
+                            id={`is_current_${activeMenu?.id || 'new'}`}
+                            defaultChecked={activeMenu ? !!activeMenu.is_current : true}
+                            style={{ width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: 0 }}
+                        />
+                        <label htmlFor={`is_current_${activeMenu?.id || 'new'}`} style={{ cursor: 'pointer', color: '#86efac', fontSize: '0.9rem', fontWeight: '600' }}>
+                            {isEdit ? 'Définir comme menu en cours sur la page d\'accueil' : 'Afficher comme menu en cours sur la page d\'accueil'}
+                        </label>
+                    </div>
+                )}
+
+                {/* Erreur */}
+                {error && (
+                    <div style={{
+                        display: 'flex', gap: '0.75rem', alignItems: 'center',
+                        padding: '1rem', borderRadius: '4px',
+                        background: 'rgba(239,68,68,0.08)',
+                        border: '1px solid rgba(239,68,68,0.2)',
+                        color: '#fca5a5', fontSize: '0.9rem',
+                    }}>
+                        <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                        {error}
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid rgba(200,169,110,0.08)' }}>
+                    <button type="button" onClick={requestClose} className="admin-btn admin-btn-secondary" disabled={isPending}>
+                        Annuler
+                    </button>
+                    <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending} style={{ minWidth: '160px' }}>
+                        {isPending ? (
+                            <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Upload en cours...</>
+                        ) : (
+                            isEdit ? 'Enregistrer les modifications' : 'Publier ce menu'
+                        )}
+                    </button>
+                </div>
+            </form>
+
+            {/* MINI POP-UP DE CONFIRMATION: SUPPRESSION D'IMAGE(S) */}
+            {deleteImageConfirm && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.75)',
+                    backdropFilter: 'blur(4px)',
+                    zIndex: 350,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div className="admin-card anim-fade" style={{ maxWidth: '420px', width: '100%', border: '1px solid rgba(220, 38, 38, 0.4)' }}>
+                        <h3 style={{ fontSize: '1.15rem', color: 'var(--admin-text)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AlertTriangle size={20} style={{ color: '#C4593A' }} />
+                            {deleteImageConfirm.type === 'batch' 
+                                ? `Supprimer ${deleteImageConfirm.lang === 'fr' ? selectedFr.length : selectedEn.length} image(s) ?`
+                                : "Supprimer cette photo ?"
+                            }
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+                            {deleteImageConfirm.type === 'batch'
+                                ? "Cette action supprimera définitivement toutes les images sélectionnées de ce menu. Êtes-vous sûr(e) ?"
+                                : "Cette action supprimera définitivement cette photo du menu. Cette action est irréversible."
+                            }
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                            <button
+                                type="button"
+                                onClick={() => setDeleteImageConfirm(null)}
+                                className="admin-btn admin-btn-secondary"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                    const target = deleteImageConfirm;
+                                    setDeleteImageConfirm(null);
+                                    if (target.type === 'single') {
+                                        handleDeleteExisting(target.id, target.lang);
+                                    } else if (target.type === 'batch') {
+                                        handleBatchDeleteExisting(target.lang);
+                                    }
+                                }}
+                                className="admin-btn admin-btn-danger"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                            >
+                                {isPending ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+                                Confirmer la suppression
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DE CONFIRMATION: MODIFICATIONS NON ENREGISTRÉES */}
+            {showUnsavedModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.75)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 350,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div className="admin-card anim-fade" style={{ maxWidth: '460px', width: '100%', border: '1px solid rgba(200, 169, 110, 0.5)' }}>
+                        <h3 style={{ fontSize: '1.15rem', color: 'var(--admin-text)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AlertCircle size={20} style={{ color: 'var(--admin-gold)' }} />
+                            Modifications non enregistrées
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+                            Vous avez apporté des modifications à ce menu qui n&apos;ont pas encore été enregistrées. Que souhaitez-vous faire ?
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                    setShowUnsavedModal(false);
+                                    formRef.current?.requestSubmit();
+                                }}
+                                className="admin-btn admin-btn-primary"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}
+                            >
+                                <CheckCircle2 size={16} /> Enregistrer les modifications
+                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUnsavedModal(false)}
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{ flex: 1, textAlign: 'center' }}
+                                >
+                                    Continuer l&apos;édition
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowUnsavedModal(false);
+                                        onCancel();
+                                    }}
+                                    className="admin-btn"
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(196, 89, 58, 0.15)',
+                                        border: '1px solid rgba(196, 89, 58, 0.5)',
+                                        color: '#E06D53',
+                                        cursor: 'pointer',
+                                        borderRadius: '6px',
+                                        fontWeight: '600',
+                                        fontSize: '0.85rem',
+                                        padding: '0.6rem 0.8rem'
+                                    }}
+                                >
+                                    Quitter sans sauvegarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -807,12 +1145,6 @@ export default function WeeklyMenuClient({ menus }) {
             {/* Formulaire Création */}
             {isAdding && (
                 <div className="admin-card" style={{ width: '100%', maxWidth: '850px', marginBottom: '3rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Nouveau menu de la semaine</h2>
-                        <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
-                            <X size={20} />
-                        </button>
-                    </div>
                     <WeeklyMenuForm onCancel={() => setIsAdding(false)} />
                 </div>
             )}
@@ -820,12 +1152,6 @@ export default function WeeklyMenuClient({ menus }) {
             {/* Formulaire Édition */}
             {editingId && (
                 <div className="admin-card" style={{ width: '100%', maxWidth: '850px', marginBottom: '3rem', border: '1px solid var(--admin-border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--admin-text)' }}>Modifier le menu</h2>
-                        <button type="button" onClick={() => setEditingId(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '6px', background: 'none', border: 'none' }}>
-                            <X size={20} />
-                        </button>
-                    </div>
                     <WeeklyMenuForm initialData={menus.find(m => m.id === editingId)} onCancel={() => setEditingId(null)} />
                 </div>
             )}

@@ -510,6 +510,37 @@ export async function editCarouselImage(formData) {
     }
 }
 
+export async function reorderCarouselImage(idOrFormData, direction) {
+    try {
+        await requireAdminAuth();
+        const id = extractId(idOrFormData);
+        if (!id) return { error: 'ID invalide' };
+
+        const db = getDb();
+        const images = await db.prepare('SELECT id, display_order FROM carousel_images ORDER BY display_order ASC, id ASC').all();
+        const index = images.findIndex(img => img.id === id);
+        if (index === -1) return { error: 'Photo du carrousel introuvable' };
+
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= images.length) return { success: true };
+
+        const [moved] = images.splice(index, 1);
+        images.splice(targetIndex, 0, moved);
+
+        const stmt = db.prepare('UPDATE carousel_images SET display_order = ? WHERE id = ?');
+        for (let i = 0; i < images.length; i++) {
+            await stmt.run(i + 1, images[i].id);
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/carousel');
+        return { success: true };
+    } catch (err) {
+        console.error('reorderCarouselImage error:', err);
+        return { error: err.message || 'Erreur lors de la réorganisation du carrousel.' };
+    }
+}
+
 // --- GALLERY ---
 export async function addGalleryPost(formData) {
     try {
@@ -847,19 +878,17 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= images.length) return { success: true };
 
-        const currentImg = images[index];
-        const targetImg = images[targetIndex];
-
-        const currentOrder = currentImg.display_order || index + 1;
-        const targetOrder = targetImg.display_order || targetIndex + 1;
+        const [moved] = images.splice(index, 1);
+        images.splice(targetIndex, 0, moved);
 
         const stmt = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
-        await stmt.run(targetOrder, currentImg.id);
-        await stmt.run(currentOrder, targetImg.id);
+        for (let i = 0; i < images.length; i++) {
+            await stmt.run(i + 1, images[i].id);
+        }
 
         const updatedImages = isEn
-            ? await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.menu_id)
-            : await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.menu_id);
+            ? await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.menu_id)
+            : await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.menu_id);
 
         if (isEn) {
             if (updatedImages.length > 0) {
@@ -1266,15 +1295,13 @@ export async function reorderPricingDocument(id, direction) {
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= docs.length) return { success: true };
 
-        const currentDoc = docs[index];
-        const targetDoc = docs[targetIndex];
-
-        const currentOrder = currentDoc.display_order || index + 1;
-        const targetOrder = targetDoc.display_order || targetIndex + 1;
+        const [moved] = docs.splice(index, 1);
+        docs.splice(targetIndex, 0, moved);
 
         const stmt = db.prepare('UPDATE pricing_documents SET display_order = ? WHERE id = ?');
-        await stmt.run(targetOrder, currentDoc.id);
-        await stmt.run(currentOrder, targetDoc.id);
+        for (let i = 0; i < docs.length; i++) {
+            await stmt.run(i + 1, docs[i].id);
+        }
 
         revalidatePath('/tarifs');
         revalidatePath('/admin/dashboard/tarifs');
@@ -1337,19 +1364,17 @@ export async function reorderPricingDocumentImage(imageId, direction) {
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= images.length) return { success: true };
 
-        const currentImg = images[index];
-        const targetImg = images[targetIndex];
-
-        const currentOrder = currentImg.display_order || index + 1;
-        const targetOrder = targetImg.display_order || targetIndex + 1;
+        const [moved] = images.splice(index, 1);
+        images.splice(targetIndex, 0, moved);
 
         const stmt = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
-        await stmt.run(targetOrder, currentImg.id);
-        await stmt.run(currentOrder, targetImg.id);
+        for (let i = 0; i < images.length; i++) {
+            await stmt.run(i + 1, images[i].id);
+        }
 
         const updatedImages = isEn
-            ? await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC").all(img.doc_id)
-            : await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC").all(img.doc_id);
+            ? await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(img.doc_id)
+            : await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(img.doc_id);
 
         if (isEn) {
             if (updatedImages.length > 0) {
@@ -1458,15 +1483,13 @@ export async function reorderFixedPrice(id, direction) {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= prices.length) return { success: true };
 
-    const currentPrice = prices[index];
-    const targetPrice = prices[targetIndex];
-
-    const currentOrder = currentPrice.display_order || index + 1;
-    const targetOrder = targetPrice.display_order || targetIndex + 1;
+    const [moved] = prices.splice(index, 1);
+    prices.splice(targetIndex, 0, moved);
 
     const stmt = db.prepare('UPDATE fixed_prices SET display_order = ? WHERE id = ?');
-    await stmt.run(targetOrder, currentPrice.id);
-    await stmt.run(currentOrder, targetPrice.id);
+    for (let i = 0; i < prices.length; i++) {
+        await stmt.run(i + 1, prices[i].id);
+    }
 
     revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');

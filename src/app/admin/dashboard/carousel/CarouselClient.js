@@ -1,8 +1,8 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
-import { addCarouselImage, deleteCarouselImage, editCarouselImage } from '@/app/actions';
-import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { addCarouselImage, deleteCarouselImage, editCarouselImage, reorderCarouselImage } from '@/app/actions';
+import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
     if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
@@ -563,10 +563,35 @@ function EditCarouselForm({ item, onCancel }) {
 }
 
 export default function CarouselClient({ images }) {
+    const [prevImages, setPrevImages] = useState(images);
+    const [carouselImages, setCarouselImages] = useState(images);
+    if (images !== prevImages) {
+        setPrevImages(images);
+        setCarouselImages(images);
+    }
+
     const [isAdding, setIsAdding] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
     const [isDeleting, startDeleteTransition] = useTransition();
+    const [isReordering, startReorderTransition] = useTransition();
+
+    const handleReorder = (id, direction) => {
+        setCarouselImages(prev => {
+            const idx = prev.findIndex(img => img.id === id);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
+
+        startReorderTransition(async () => {
+            await reorderCarouselImage(id, direction);
+        });
+    };
 
     const handleDelete = (id) => {
         startDeleteTransition(async () => {
@@ -622,16 +647,16 @@ export default function CarouselClient({ images }) {
 
             <div style={{ width: '100%', maxWidth: '800px' }}>
                 <h2 style={{ fontSize: '0.85rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1rem' }}>
-                    Bannières actuelles ({images.length})
+                    Bannières actuelles ({carouselImages.length})
                 </h2>
 
-                {images.length === 0 ? (
+                {carouselImages.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3.5rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
                         Aucune photo dans le carrousel.
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
-                        {images.map(img => (
+                        {carouselImages.map((img, idx) => (
                             <div key={img.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                 <div style={{ height: '150px', width: '100%', overflow: 'hidden', position: 'relative', background: 'var(--admin-surface)' }}>
                                     {img.image_url ? (
@@ -649,8 +674,61 @@ export default function CarouselClient({ images }) {
                                         </div>
                                     )}
 
+                                    {/* Position Badge & Reorder Buttons */}
+                                    <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2 }}>
+                                        <span style={{
+                                            background: 'rgba(14,13,12,0.85)',
+                                            border: '1px solid rgba(200,169,110,0.4)',
+                                            color: '#C8A96E',
+                                            fontSize: '0.68rem',
+                                            fontWeight: '700',
+                                            padding: '2px 6px',
+                                            borderRadius: '3px',
+                                        }}>
+                                            #{idx + 1}
+                                        </span>
+                                        <div style={{ display: 'flex', gap: '2px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReorder(img.id, 'up')}
+                                                disabled={idx === 0 || isReordering}
+                                                title="Monter / Déplacer vers la gauche"
+                                                aria-label="Monter d'une position"
+                                                style={{
+                                                    width: '24px', height: '24px',
+                                                    background: idx === 0 ? 'rgba(0,0,0,0.4)' : 'rgba(14,13,12,0.85)',
+                                                    border: '1px solid rgba(200,169,110,0.3)',
+                                                    color: idx === 0 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                    borderRadius: '3px',
+                                                    cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >
+                                                <ChevronLeft size={13} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReorder(img.id, 'down')}
+                                                disabled={idx === carouselImages.length - 1 || isReordering}
+                                                title="Descendre / Déplacer vers la droite"
+                                                aria-label="Descendre d'une position"
+                                                style={{
+                                                    width: '24px', height: '24px',
+                                                    background: idx === carouselImages.length - 1 ? 'rgba(0,0,0,0.4)' : 'rgba(14,13,12,0.85)',
+                                                    border: '1px solid rgba(200,169,110,0.3)',
+                                                    color: idx === carouselImages.length - 1 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
+                                                    borderRadius: '3px',
+                                                    cursor: idx === carouselImages.length - 1 ? 'not-allowed' : 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >
+                                                <ChevronRight size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Action Buttons: Edit + Delete */}
-                                    <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                                    <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px', zIndex: 2 }}>
                                         <button
                                             onClick={() => { setEditingItem(img); setIsAdding(false); }}
                                             style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}

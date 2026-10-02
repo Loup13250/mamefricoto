@@ -143,6 +143,13 @@ async function compressImageFile(file, maxDim = 2048, quality = 0.85) {
 }
 
 export default function GalleryClient({ posts }) {
+    const [prevPosts, setPrevPosts] = useState(posts);
+    const [items, setItems] = useState(posts);
+    if (posts !== prevPosts) {
+        setPrevPosts(posts);
+        setItems(posts);
+    }
+
     const [isAdding, setIsAdding] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -242,7 +249,40 @@ export default function GalleryClient({ posts }) {
         });
     };
 
+    const handleReorder = (id, direction) => {
+        setItems(prev => {
+            const idx = prev.findIndex(p => p.id === id);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
+        startDeleteTransition(async () => {
+            await reorderGalleryPost(id, direction);
+        });
+    };
+
+    const handleMovePosition = (id, targetPos) => {
+        setItems(prev => {
+            const idx = prev.findIndex(p => p.id === id);
+            if (idx === -1) return prev;
+            const targetIdx = Math.max(0, Math.min(prev.length - 1, targetPos - 1));
+            if (idx === targetIdx) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
+        startDeleteTransition(async () => {
+            await moveGalleryPostPosition(id, targetPos);
+        });
+    };
+
     const handleDelete = (id) => {
+        setItems(prev => prev.filter(p => p.id !== id));
         startDeleteTransition(async () => {
             await deleteGalleryPost(id);
             setDeleteId(null);
@@ -285,15 +325,15 @@ export default function GalleryClient({ posts }) {
                                 fontSize: '0.8rem',
                                 padding: '2px 8px',
                                 borderRadius: '12px',
-                                background: posts.length >= 30 ? 'rgba(239,68,68,0.2)' : 'rgba(200,169,110,0.2)',
-                                color: posts.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
+                                background: items.length >= 30 ? 'rgba(239,68,68,0.2)' : 'rgba(200,169,110,0.2)',
+                                color: items.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
                                 fontWeight: '700'
                             }}>
-                                {posts.length} / 30 médias
+                                {items.length} / 30 médias
                             </span>
                         </div>
                         <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle, #888)' }}>
-                            {posts.length >= 30 ? 'Capacité maximale atteinte (30/30)' : `${30 - posts.length} emplacement(s) disponible(s)`}
+                            {items.length >= 30 ? 'Capacité maximale atteinte (30/30)' : `${30 - items.length} emplacement(s) disponible(s)`}
                         </span>
                     </div>
 
@@ -306,9 +346,9 @@ export default function GalleryClient({ posts }) {
                         overflow: 'hidden',
                     }}>
                         <div style={{
-                            width: `${Math.min(100, (posts.length / 30) * 100)}%`,
+                            width: `${Math.min(100, (items.length / 30) * 100)}%`,
                             height: '100%',
-                            background: posts.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
+                            background: items.length >= 30 ? '#ef4444' : 'var(--admin-gold, #C8A96E)',
                             transition: 'width 0.4s ease',
                         }} />
                     </div>
@@ -636,20 +676,20 @@ export default function GalleryClient({ posts }) {
             <div style={{ width: '100%', maxWidth: '900px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <h2 style={{ fontSize: '1rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', margin: 0 }}>
-                        Publications ({posts.length})
+                        Publications ({items.length})
                     </h2>
                     <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>
                         Cliquez sur &quot;Modifier&quot; pour éditer les textes FR et EN
                     </span>
                 </div>
 
-                {posts.length === 0 ? (
+                {items.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
                         Aucune publication pour le moment.
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                        {posts.map((post, idx) => (
+                        {items.map((post, idx) => (
                             <div
                                 key={post.id}
                                 style={{
@@ -729,7 +769,7 @@ export default function GalleryClient({ posts }) {
                                     {/* Reorder Left/Right & Direct Position Select */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <button
-                                            onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'up'))}
+                                            onClick={() => handleReorder(post.id, 'up')}
                                             disabled={idx === 0 || isDeleting}
                                             title="Déplacer vers la gauche"
                                             aria-label={`Déplacer ${post.title || 'cette photo'} vers la gauche`}
@@ -745,16 +785,16 @@ export default function GalleryClient({ posts }) {
                                             <ArrowLeft size={13} />
                                         </button>
                                         <button
-                                            onClick={() => startDeleteTransition(() => reorderGalleryPost(post.id, 'down'))}
-                                            disabled={idx === posts.length - 1 || isDeleting}
+                                            onClick={() => handleReorder(post.id, 'down')}
+                                            disabled={idx === items.length - 1 || isDeleting}
                                             title="Déplacer vers la droite"
                                             aria-label={`Déplacer ${post.title || 'cette photo'} vers la droite`}
                                             style={{
                                                 width: '28px', height: '28px',
-                                                background: idx === posts.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
+                                                background: idx === items.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
                                                 border: '1px solid rgba(200,169,110,0.25)',
-                                                color: idx === posts.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
-                                                borderRadius: '3px', cursor: idx === posts.length - 1 ? 'default' : 'pointer',
+                                                color: idx === items.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
+                                                borderRadius: '3px', cursor: idx === items.length - 1 ? 'default' : 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             }}
                                         >
@@ -768,7 +808,7 @@ export default function GalleryClient({ posts }) {
                                             onChange={(e) => {
                                                 const targetPos = parseInt(e.target.value, 10);
                                                 if (targetPos && targetPos !== idx + 1) {
-                                                    startDeleteTransition(() => moveGalleryPostPosition(post.id, targetPos));
+                                                    handleMovePosition(post.id, targetPos);
                                                 }
                                             }}
                                             title="Changer directement l'emplacement (ex : placer en #4)"
@@ -786,7 +826,7 @@ export default function GalleryClient({ posts }) {
                                                 outline: 'none',
                                             }}
                                         >
-                                            {posts.map((_, pIdx) => (
+                                            {items.map((_, pIdx) => (
                                                 <option key={pIdx + 1} value={pIdx + 1} style={{ background: '#1e1b18', color: '#FDFBF7' }}>
                                                     #{pIdx + 1}
                                                 </option>

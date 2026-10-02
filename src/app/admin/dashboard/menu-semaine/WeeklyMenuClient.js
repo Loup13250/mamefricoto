@@ -270,8 +270,45 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         });
     }, []);
 
+    // Photos existantes en ligne (mode édition) avec mise à jour optimiste
+    const [prevMenu, setPrevMenu] = useState(activeMenu);
+    const [existingFrImages, setExistingFrImages] = useState(() => 
+        activeMenu?.images_fr || (activeMenu?.images?.filter(img => img.lang !== 'en') || [])
+    );
+    const [existingEnImages, setExistingEnImages] = useState(() => 
+        activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || [])
+    );
+
+    if (activeMenu !== prevMenu) {
+        setPrevMenu(activeMenu);
+        setExistingFrImages(activeMenu?.images_fr || (activeMenu?.images?.filter(img => img.lang !== 'en') || []));
+        setExistingEnImages(activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || []));
+    }
+
     const handleReorderExisting = (imgId, direction) => {
         setError('');
+        // Optimistic swap immédiat dans le formulaire
+        setExistingFrImages(prev => {
+            const idx = prev.findIndex(img => img.id === imgId);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
+        setExistingEnImages(prev => {
+            const idx = prev.findIndex(img => img.id === imgId);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
+
         startTransition(async () => {
             const res = await reorderWeeklyMenuImage(imgId, direction);
             if (res?.error) setError(res.error);
@@ -280,6 +317,10 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
 
     const handleDeleteExisting = (imgId) => {
         setError('');
+        // Optimistic removal immédiat
+        setExistingFrImages(prev => prev.filter(img => img.id !== imgId));
+        setExistingEnImages(prev => prev.filter(img => img.id !== imgId));
+
         startTransition(async () => {
             const res = await deleteWeeklyMenuImage(imgId);
             if (res?.error) setError(res.error);
@@ -341,8 +382,8 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
         );
     }
 
-    const currentFrImages = activeMenu?.images_fr || (activeMenu?.images?.filter(img => img.lang !== 'en') || []);
-    const currentEnImages = activeMenu?.images_en || (activeMenu?.images?.filter(img => img.lang === 'en') || []);
+    const currentFrImages = existingFrImages;
+    const currentEnImages = existingEnImages;
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

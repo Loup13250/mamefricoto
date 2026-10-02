@@ -11,6 +11,20 @@ import {
 } from 'lucide-react';
 
 export default function ServicesClient({ services = [], pricingDocuments = [] }) {
+    const [prevServices, setPrevServices] = useState(services);
+    const [servicesList, setServicesList] = useState(services);
+    if (services !== prevServices) {
+        setPrevServices(services);
+        setServicesList(services);
+    }
+
+    const [prevDocs, setPrevDocs] = useState(pricingDocuments);
+    const [docsList, setDocsList] = useState(pricingDocuments);
+    if (pricingDocuments !== prevDocs) {
+        setPrevDocs(pricingDocuments);
+        setDocsList(pricingDocuments);
+    }
+
     const [activeTab, setActiveTab] = useState('docs'); // 'docs' | 'services'
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
@@ -73,6 +87,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     const handleDeleteDoc = (id) => {
+        setDocsList(prev => prev.filter(d => d.id !== id));
         startTransition(async () => {
             const res = await deletePricingDocument(id);
             if (res?.error) {
@@ -85,6 +100,16 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     const handleReorderDoc = (id, direction) => {
+        setDocsList(prev => {
+            const idx = prev.findIndex(d => d.id === id);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
         startTransition(async () => {
             await reorderPricingDocument(id, direction);
         });
@@ -125,6 +150,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     const handleDeleteService = (id) => {
+        setServicesList(prev => prev.filter(s => s.id !== id));
         startTransition(async () => {
             const res = await deleteService(id);
             if (res?.error) {
@@ -137,6 +163,16 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     const handleReorderService = (id, direction) => {
+        setServicesList(prev => {
+            const idx = prev.findIndex(s => s.id === id);
+            if (idx === -1) return prev;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(idx, 1);
+            next.splice(targetIdx, 0, moved);
+            return next;
+        });
         startTransition(async () => {
             await reorderService(id, direction);
         });
@@ -187,7 +223,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                             background: activeTab === 'docs' ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.06)',
                             fontWeight: '700'
                         }}>
-                            {pricingDocuments.length}
+                            {docsList.length}
                         </span>
                     </button>
 
@@ -218,7 +254,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                             background: activeTab === 'services' ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.06)',
                             fontWeight: '700'
                         }}>
-                            {services.length}
+                            {servicesList.length}
                         </span>
                     </button>
                 </div>
@@ -418,7 +454,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
 
                     {/* Liste des Documents */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {pricingDocuments.length === 0 ? (
+                        {docsList.length === 0 ? (
                             <div className="admin-card" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--admin-text-muted)' }}>
                                 <FileText size={36} style={{ margin: '0 auto 1rem', color: 'var(--admin-gold)', opacity: 0.7 }} />
                                 <p>Aucun document ou carte tarifaire n&apos;est enregistré pour le moment.</p>
@@ -427,7 +463,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                 </button>
                             </div>
                         ) : (
-                            pricingDocuments.map((doc, idx) => {
+                            docsList.map((doc, idx) => {
                                 const isPdf = doc.file_type === 'pdf' || (doc.file_url && doc.file_url.toLowerCase().endsWith('.pdf'));
 
                                 return (
@@ -515,7 +551,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                             <button
                                                 type="button"
                                                 onClick={() => handleReorderDoc(doc.id, 'down')}
-                                                disabled={idx === pricingDocuments.length - 1 || isPending}
+                                                disabled={idx === docsList.length - 1 || isPending}
                                                 className="admin-btn-icon"
                                                 title="Descendre"
                                             >
@@ -685,7 +721,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
 
                     {/* Liste des Prestations */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {services.map((s, idx) => (
+                        {servicesList.map((s, idx) => (
                             <div key={s.id} className="admin-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flex: '1 1 300px' }}>
                                     <div style={{
@@ -730,7 +766,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                     <button
                                         type="button"
                                         onClick={() => handleReorderService(s.id, 'down')}
-                                        disabled={idx === services.length - 1 || isPending}
+                                        disabled={idx === servicesList.length - 1 || isPending}
                                         className="admin-btn-icon"
                                         title="Descendre"
                                     >

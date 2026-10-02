@@ -11,48 +11,6 @@ let localDbInstance;
 const DEFAULT_TURSO_URL = 'https://mamefricoto-db-loup13250.aws-eu-west-1.turso.io';
 const DEFAULT_TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODQ5Mjc4ODMsImlkIjoiMDE5Zjk1ZmQtZDIwMS03ZjhkLTk2OGEtYmViNDUyYTYxYjVkIiwia2lkIjoiVWhSd2Q2N19CaUVoUTdudEd6WkdhQUdfZndpOEcyZldHeFppd2phOHhtbyIsInJpZCI6Ijg4ODY4NzYwLTIwYTgtNDBmOS05ZjIxLTdmMWViNWQwY2RhYyJ9.26o-n5GBlcsxqwBN8E8kdiG-g0aQQTBX4ttcE5BINf_onthFX-BWrkFbUdiAP029QRIxUvIH5d8RehRzhC8CDQ';
 
-export function getDb() {
-    if (dbWrapper) return dbWrapper;
-
-    const rawTursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL || DEFAULT_TURSO_URL;
-    const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN || DEFAULT_TURSO_TOKEN;
-    // Always use https:// instead of libsql:// for rock-solid HTTP transport without WebSocket drops
-    const tursoUrl = rawTursoUrl ? rawTursoUrl.replace(/^libsql:\/\//i, 'https://') : null;
-
-    if (tursoUrl && tursoUrl.startsWith('https')) {
-        try {
-            const client = createClient({
-                url: tursoUrl,
-                authToken: tursoToken,
-            });
-
-            let tablesEnsured = false;
-            const ensureTables = async () => {
-                if (tablesEnsured) return;
-                try {
-                    await Promise.allSettled([
-                        client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
-                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
-                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_document_images (id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, image_url TEXT NOT NULL, display_order INTEGER DEFAULT 0, lang TEXT DEFAULT 'fr', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
-                        client.execute(`CREATE TABLE IF NOT EXISTS fixed_prices (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT DEFAULT 'Repas', category_en TEXT DEFAULT 'Meals', name TEXT NOT NULL, name_en TEXT, price TEXT NOT NULL, price_en TEXT, details TEXT, details_en TEXT, badge TEXT, badge_en TEXT, display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
-                        client.execute(`ALTER TABLE weekly_menu_images ADD COLUMN lang TEXT DEFAULT 'fr'`),
-                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN image_url_en TEXT`),
-                        client.execute(`ALTER TABLE services ADD COLUMN title_en TEXT`),
-                        client.execute(`ALTER TABLE services ADD COLUMN description_en TEXT`),
-                        client.execute(`ALTER TABLE services ADD COLUMN badge_en TEXT`),
-                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN title_en TEXT`),
-                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN description_en TEXT`),
-                        client.execute(`ALTER TABLE carousel_images ADD COLUMN title_en TEXT`),
-                        client.execute(`ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT`),
-                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN title_en TEXT`),
-                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT`)
-                    ]);
-                    tablesEnsured = true;
-                } catch (err) {
-                    tablesEnsured = true;
-                }
-            };
-
 function toPlain(row) {
     if (!row || typeof row !== 'object') return row;
     const plain = {};
@@ -77,6 +35,53 @@ function toPlain(row) {
     }
     return plain;
 }
+
+export function getDb() {
+    if (dbWrapper) return dbWrapper;
+
+    const rawTursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL || DEFAULT_TURSO_URL;
+    const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN || DEFAULT_TURSO_TOKEN;
+    // Always use https:// instead of libsql:// for rock-solid HTTP transport without WebSocket drops
+    const tursoUrl = rawTursoUrl ? rawTursoUrl.replace(/^libsql:\/\//i, 'https://') : null;
+
+    if (tursoUrl && tursoUrl.startsWith('https')) {
+        try {
+            const client = createClient({
+                url: tursoUrl,
+                authToken: tursoToken,
+            });
+
+            let tablesEnsured = false;
+            const ensureTables = async () => {
+                if (tablesEnsured) return;
+                try {
+                    await Promise.allSettled([
+                        client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS pricing_document_images (id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, image_url TEXT NOT NULL, display_order INTEGER DEFAULT 0, lang TEXT DEFAULT 'fr', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS fixed_prices (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT DEFAULT 'Repas', category_en TEXT DEFAULT 'Meals', name TEXT NOT NULL, name_en TEXT, price TEXT NOT NULL, price_en TEXT, details TEXT, details_en TEXT, badge TEXT, badge_en TEXT, display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+                        client.execute(`ALTER TABLE pricing_documents ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE pricing_documents ADD COLUMN description_en TEXT`),
+                        client.execute(`ALTER TABLE pricing_documents ADD COLUMN file_url_en TEXT`),
+                        client.execute(`ALTER TABLE pricing_documents ADD COLUMN file_type TEXT DEFAULT 'image'`),
+                        client.execute(`ALTER TABLE pricing_documents ADD COLUMN display_order INTEGER DEFAULT 0`),
+                        client.execute(`ALTER TABLE weekly_menu_images ADD COLUMN lang TEXT DEFAULT 'fr'`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN image_url_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN description_en TEXT`),
+                        client.execute(`ALTER TABLE services ADD COLUMN badge_en TEXT`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE weekly_menus ADD COLUMN description_en TEXT`),
+                        client.execute(`ALTER TABLE carousel_images ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT`),
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN title_en TEXT`),
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT`)
+                    ]);
+                    tablesEnsured = true;
+                } catch (err) {
+                    tablesEnsured = true;
+                }
+            };
 
             dbWrapper = {
                 prepare(sql) {

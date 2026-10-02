@@ -8,16 +8,19 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-        const savedTheme = localStorage.getItem('mamefricoto-theme');
-        if (savedTheme === 'light' || savedTheme === 'dark') {
-            setTheme(savedTheme);
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        } else {
-            const initialTheme = 'light';
-            setTheme(initialTheme);
-            document.documentElement.setAttribute('data-theme', initialTheme);
-        }
+        const raf = requestAnimationFrame(() => {
+            setMounted(true);
+            const savedTheme = localStorage.getItem('mamefricoto-theme');
+            if (savedTheme === 'light' || savedTheme === 'dark') {
+                setTheme(savedTheme);
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                const initialTheme = 'light';
+                setTheme(initialTheme);
+                document.documentElement.setAttribute('data-theme', initialTheme);
+            }
+        });
+        return () => cancelAnimationFrame(raf);
     }, []);
 
     const toggleTheme = () => {

@@ -123,7 +123,7 @@ export default async function RootLayout({ children }) {
   const iconUrl = siteInfo?.site_icon || '/icon.svg';
 
   return (
-    <html lang="fr" suppressHydrationWarning data-theme="light" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
+    <html lang="fr" suppressHydrationWarning data-theme="light" data-scroll-behavior="smooth" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
       <head>
         <link rel="icon" type="image/svg+xml" href={iconUrl} />
         <Script

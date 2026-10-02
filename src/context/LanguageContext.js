@@ -377,25 +377,27 @@ export function LanguageProvider({ children, initialLang = 'fr' }) {
 
     // Run once after mount: detect language from storage or browser prefs
     useEffect(() => {
-        setMounted(true);
-        try {
-            const saved = localStorage.getItem('mamefricoto-lang');
-            if (saved === 'en' || saved === 'fr') {
-                setLangState(saved);
-                document.documentElement.lang = saved;
-                return;
-            }
+        const raf = requestAnimationFrame(() => {
+            setMounted(true);
+            try {
+                const saved = localStorage.getItem('mamefricoto-lang');
+                if (saved === 'en' || saved === 'fr') {
+                    setLangState(saved);
+                    document.documentElement.lang = saved;
+                    return;
+                }
 
-            // Premier accès sans choix manuel enregistré
-            const navLangs = navigator.languages || [navigator.language || ''];
-            const firstLang = (navLangs[0] || '').toLowerCase();
-            const autoLang = firstLang.startsWith('fr') ? 'fr' : 'en';
+                // Premier accès sans choix manuel enregistré
+                const navLangs = navigator.languages || [navigator.language || ''];
+                const firstLang = (navLangs[0] || '').toLowerCase();
+                const autoLang = firstLang.startsWith('fr') ? 'fr' : 'en';
 
-            setLangState(autoLang);
-            document.documentElement.lang = autoLang;
-            document.cookie = `mamefricoto-lang=${autoLang}; path=/; max-age=31536000; SameSite=Lax`;
-        } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+                setLangState(autoLang);
+                document.documentElement.lang = autoLang;
+                document.cookie = `mamefricoto-lang=${autoLang}; path=/; max-age=31536000; SameSite=Lax`;
+            } catch {}
+        });
+        return () => cancelAnimationFrame(raf);
     }, []);
 
     // Sync document.documentElement.lang whenever lang changes after mount

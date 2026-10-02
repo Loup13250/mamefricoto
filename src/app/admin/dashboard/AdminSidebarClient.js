@@ -25,11 +25,11 @@ import {
 export default function AdminSidebarClient({ children, unreadCount = 0 }) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
-
-    // Fermer le tiroir mobile lors d'un changement de page
-    useEffect(() => {
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    if (prevPathname !== pathname) {
+        setPrevPathname(pathname);
         setMobileOpen(false);
-    }, [pathname]);
+    }
 
     // Helpers d'état actif
     const isAccueilActive = pathname === '/admin/dashboard';

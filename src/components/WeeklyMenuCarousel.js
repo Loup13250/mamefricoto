@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Phone } from 'lucide-react';
@@ -18,6 +18,21 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     const hideTimerRef = useRef(null);
     const { t, trans, lang } = useLanguage();
 
+    const [prevLang, setPrevLang] = useState(lang);
+    if (prevLang !== lang) {
+        setPrevLang(lang);
+        setCurrentIndex(0);
+    }
+
+    const images = useMemo(() => {
+        if (!menu) return [];
+        if (lang === 'en' && menu.images_en && menu.images_en.length > 0) return menu.images_en;
+        if (menu.images_fr && menu.images_fr.length > 0) return menu.images_fr;
+        if (menu.images && menu.images.length > 0) return menu.images;
+        if (menu.image_url) return [{ id: 0, image_url: menu.image_url }];
+        return [];
+    }, [menu, lang]);
+
     const triggerArrowVisibility = useCallback(() => {
         setArrowsVisible(true);
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -27,25 +42,12 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
     }, []);
 
     useEffect(() => {
-        triggerArrowVisibility();
+        const timer = setTimeout(() => triggerArrowVisibility(), 0);
         return () => {
+            clearTimeout(timer);
             if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
         };
     }, [currentIndex, triggerArrowVisibility]);
-
-    useEffect(() => {
-        setCurrentIndex(0);
-    }, [lang]);
-
-    if (!menu) return null;
-
-    const images = (lang === 'en' && menu.images_en && menu.images_en.length > 0)
-        ? menu.images_en
-        : ((menu.images_fr && menu.images_fr.length > 0)
-            ? menu.images_fr
-            : (menu.images && menu.images.length > 0
-                ? menu.images
-                : (menu.image_url ? [{ id: 0, image_url: menu.image_url }] : [])));
 
     const handlePrev = useCallback(() => {
         if (images.length <= 1) return;
@@ -94,6 +96,8 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
             }
         });
     }, [images]);
+
+    if (!menu) return null;
 
     return (
         <div className="menu-card anim-up" role="region" aria-label="Menu de la semaine">

@@ -10,9 +10,12 @@ export default function AdminFormWrapper({ children, action, className, style })
 
     useEffect(() => {
         if (searchParams.get('saved') === '1') {
-            setShowSavedToast(true);
-            const timer = setTimeout(() => setShowSavedToast(false), 4000);
-            return () => clearTimeout(timer);
+            const showTimer = setTimeout(() => setShowSavedToast(true), 0);
+            const hideTimer = setTimeout(() => setShowSavedToast(false), 4000);
+            return () => {
+                clearTimeout(showTimer);
+                clearTimeout(hideTimer);
+            };
         }
     }, [searchParams]);
 

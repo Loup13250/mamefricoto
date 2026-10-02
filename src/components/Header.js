@@ -20,10 +20,13 @@ export default function Header({ siteInfo }) {
     const logoSrc = siteInfo?.site_icon || siteInfo?.logo || '/icon.svg';
 
     useEffect(() => {
-        setScrolled(window.scrollY > 60);
         const onScroll = () => setScrolled(window.scrollY > 60);
+        const raf = requestAnimationFrame(onScroll);
         window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
+        return () => {
+            cancelAnimationFrame(raf);
+            window.removeEventListener('scroll', onScroll);
+        };
     }, []);
 
     const prevPathnameRef = useRef(pathname);
@@ -72,6 +75,7 @@ export default function Header({ siteInfo }) {
                             width={48}
                             height={48}
                             className="logo-img"
+                            style={{ width: '100%', height: '100%' }}
                             priority
                             unoptimized
                         />

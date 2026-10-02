@@ -35,12 +35,12 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
                 : (activeUrl ? [{ id: 1, image_url: activeUrl }] : [])));
 
     const [imgIdx, setImgIdx] = useState(0);
-    const touchStartX = useRef(0);
-
-    // Réinitialiser l'index lors du changement de langue
-    useEffect(() => {
+    const [prevLang, setPrevLang] = useState(lang);
+    if (prevLang !== lang) {
+        setPrevLang(lang);
         setImgIdx(0);
-    }, [lang]);
+    }
+    const touchStartX = useRef(0);
 
     const handlePrev = (e) => {
         e.stopPropagation();

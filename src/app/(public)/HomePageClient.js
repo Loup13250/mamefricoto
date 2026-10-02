@@ -115,7 +115,6 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
                             width={800}
                             height={900}
                             className="about-img"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             sizes="(max-width: 900px) 100vw, 50vw"
                             loading="lazy"
                             unoptimized

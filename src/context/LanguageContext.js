@@ -179,6 +179,11 @@ const DICTIONARY = {
         'footer.contactTitle': 'Contact',
         'footer.copyright': 'Mamé Fricoto. Tous droits réservés.',
         'footer.madeIn': 'Fait à Eyguières, Bouches-du-Rhône',
+        'footer.legalNotice': 'Mentions Légales',
+        'footer.privacyPolicy': 'Politique de Confidentialité',
+        'footer.credits': 'Conçu par JL-Développement',
+        'contact.rgpdNotice': 'Vos données sont collectées pour répondre à votre demande. Pour en savoir plus, consultez notre',
+        'contact.rgpdLink': 'Politique de Confidentialité',
     },
     en: {
         // Navigation & Header
@@ -357,6 +362,11 @@ const DICTIONARY = {
         'footer.contactTitle': 'Contact',
         'footer.copyright': 'Mamé Fricoto. All rights reserved.',
         'footer.madeIn': 'Handcrafted in Eyguières, Provence',
+        'footer.legalNotice': 'Legal Notices',
+        'footer.privacyPolicy': 'Privacy Policy',
+        'footer.credits': 'Designed by JL-Développement',
+        'contact.rgpdNotice': 'Your data is collected to answer your request. Learn more in our',
+        'contact.rgpdLink': 'Privacy Policy',
     }
 };
 

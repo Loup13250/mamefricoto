@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { submitContactForm } from '@/app/actions';
 import { useLanguage } from '@/context/LanguageContext';
-import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, PartyPopper, Building, HelpCircle } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, PartyPopper, Building, HelpCircle, ShieldCheck } from 'lucide-react';
 import './ContactForm.css';
 
 export default function ContactForm() {
@@ -238,6 +239,19 @@ export default function ContactForm() {
                             </>
                         )}
                     </button>
+                    <p style={{
+                        marginTop: '0.85rem',
+                        fontSize: '0.78rem',
+                        lineHeight: '1.5',
+                        color: 'var(--text-3)',
+                        textAlign: 'center',
+                    }}>
+                        <ShieldCheck size={13} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '4px', color: 'var(--gold)' }} />
+                        {t('contact.rgpdNotice')}{' '}
+                        <Link href="/politique-de-confidentialite" style={{ color: 'var(--gold)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                            {t('contact.rgpdLink')}
+                        </Link>.
+                    </p>
                 </div>
             </form>
         </div>

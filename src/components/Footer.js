@@ -92,8 +92,29 @@ export default function Footer({ siteInfo }) {
 
             <div className="footer-bottom">
                 <div className="container footer-bottom-inner">
-                    <p>&copy; {new Date().getFullYear()} {t('footer.copyright')}</p>
-                    <p>{t('footer.madeIn')}</p>
+                    <p className="footer-copyright">&copy; {new Date().getFullYear()} {t('footer.copyright')}</p>
+                    <div className="footer-legal-links">
+                        <Link href="/mentions-legales" className="footer-legal-link">
+                            {t('footer.legalNotice')}
+                        </Link>
+                        <span className="footer-legal-sep" aria-hidden="true">·</span>
+                        <Link href="/politique-de-confidentialite" className="footer-legal-link">
+                            {t('footer.privacyPolicy')}
+                        </Link>
+                    </div>
+                    <p className="footer-credits">
+                        <span>{t('footer.madeIn')}</span>
+                        <span className="footer-legal-sep" aria-hidden="true">·</span>
+                        <a
+                            href="https://jl-developpement.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="footer-dev-link"
+                            title="JL-Développement — Création de sites web professionnels"
+                        >
+                            {t('footer.credits')}
+                        </a>
+                    </p>
                 </div>
             </div>
         </footer>

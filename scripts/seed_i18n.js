@@ -7,7 +7,7 @@ async function seed() {
     // 1. site_info
     const siteInfoUpdates = [
         ['tagline_en', 'Homemade cuisine · Delivery · Pick-up'],
-        ['hours_en', 'Monday to Friday — Orders before 10 AM'],
+        ['hours_en', 'Monday to Friday - Orders before 10 AM'],
         ['address_en', 'Eyguières, Bouches-du-Rhône, France'],
         ['about_text_en', 'Mamé Fricoto is all about generous, authentic homemade cuisine prepared in Eyguières. Every week, we offer fresh seasonal menus, slow-cooked daily specials, and custom catering for your private events and cocktail receptions.'],
         ['site_icon', '/icon.svg'],
@@ -56,7 +56,7 @@ async function seed() {
     );
     await db.prepare('UPDATE carousel_images SET title_en = ?, subtitle_en = ? WHERE id = ?').run(
         'Tailored Private Events',
-        'Birthdays, christenings, family reunions — an exceptional bespoke menu',
+        'Birthdays, christenings, family reunions - an exceptional bespoke menu',
         3
     );
     await db.prepare('UPDATE carousel_images SET title_en = ?, subtitle_en = ? WHERE id = ?').run(
@@ -72,7 +72,7 @@ async function seed() {
         1
     );
     await db.prepare('UPDATE weekly_menus SET title_en = ?, description_en = ? WHERE id = ?').run(
-        'Weekly Menu — September',
+        'Weekly Menu - September',
         'Orders by phone before 10 AM. Fresh homemade dishes crafted with seasonal ingredients.',
         2
     );

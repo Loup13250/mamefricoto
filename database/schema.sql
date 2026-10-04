@@ -136,7 +136,7 @@ INSERT OR IGNORE INTO admin_users (username, password) VALUES ('mamefricoto', 'f
 
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('phone', '07 43 64 64 11');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('address', 'Eyguières, Bouches-du-Rhône');
-INSERT OR IGNORE INTO site_info (key, value) VALUES ('hours', 'Du Lundi au Vendredi — Commandes avant 10h');
+INSERT OR IGNORE INTO site_info (key, value) VALUES ('hours', 'Du Lundi au Vendredi - Commandes avant 10h');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('contact_email', 'mamefricoto@gmail.com');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('instagram', 'https://www.instagram.com/mamefricoto/');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('facebook', 'https://www.facebook.com/profile.php?id=61580170212207');

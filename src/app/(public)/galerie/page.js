@@ -2,7 +2,7 @@ import { getSiteInfo, getGalleryPosts } from '@/lib/data';
 import RealisationsClient from '../realisations/RealisationsClient';
 
 export const metadata = {
-    title: 'Galerie & Coulisses | Mamé Fricoto — Traiteur Maison Eyguières',
+    title: 'Galerie & Coulisses | Mamé Fricoto - Traiteur Maison Eyguières',
     description: "Découvrez en images nos buffets dînatoires, réceptions privées, plats faits maison et les coulisses de la cuisine de Mamé Fricoto à Eyguières.",
 };
 

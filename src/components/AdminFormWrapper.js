@@ -81,7 +81,7 @@ export default function AdminFormWrapper({ children, action, className, style })
                     }}
                 >
                     <AlertTriangle size={16} style={{ color: '#f59e0b' }} />
-                    <span>Modifications non enregistrées — Pensez à cliquer sur Sauvegarder avant de quitter !</span>
+                    <span>Modifications non enregistrées - Pensez à cliquer sur Sauvegarder avant de quitter !</span>
                 </div>
             )}
 

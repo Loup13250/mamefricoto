@@ -77,7 +77,7 @@ function MessageCard({ msg }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--admin-text)', fontFamily: 'var(--font-heading)' }}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--admin-text)', fontFamily: 'var(--font-body), system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                             {msg.name}
                         </h2>
                         {/* Status Badge */}

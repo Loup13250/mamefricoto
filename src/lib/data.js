@@ -175,7 +175,7 @@ export async function getCarouselImages() {
 // --- Services / Prestations ---
 const DEFAULT_SERVICES = [
     { id: 1, num: '01', title: 'Plats du Jour', description: 'Chaque jour, des plats mijotés frais. Commandez la veille ou le matin pour un repas livré ou à retirer.', badge: 'Quotidien' },
-    { id: 2, num: '02', title: 'Événements', description: 'Anniversaires, mariages, baptêmes — un menu sur mesure adapté à votre nombre de convives.', badge: 'Sur-mesure' },
+    { id: 2, num: '02', title: 'Événements', description: 'Anniversaires, mariages, baptêmes : un menu sur mesure adapté à votre nombre de convives.', badge: 'Sur-mesure' },
     { id: 3, num: '03', title: "Repas d'Entreprise", description: "Plateaux repas, buffets pour séminaires et déjeuners d'équipe. Des formules professionnelles.", badge: 'Pro' },
     { id: 4, num: '04', title: 'Buffets Dînatoires', description: 'Des mets élégants présentés en buffet pour vos soirées cocktails et réceptions.', badge: 'Cocktails' },
 ];

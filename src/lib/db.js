@@ -16,7 +16,7 @@ function toPlain(row) {
     const plain = {};
     for (const key of Object.keys(row)) {
         const val = row[key];
-        // Preserve binary blobs (ArrayBuffer, Uint8Array, Buffer) — do NOT JSON-serialize them
+        // Preserve binary blobs (ArrayBuffer, Uint8Array, Buffer) - do NOT JSON-serialize them
         if (val instanceof ArrayBuffer || val instanceof Uint8Array || Buffer.isBuffer(val)) {
             plain[key] = val;
         } else if (typeof val === 'bigint') {

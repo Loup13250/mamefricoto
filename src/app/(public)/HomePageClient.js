@@ -6,7 +6,7 @@ import HeroCarousel from '@/components/HeroCarousel';
 import WeeklyMenuCarousel from '@/components/WeeklyMenuCarousel';
 import GoogleReviewsSection from '@/components/GoogleReviewsSection';
 import { useLanguage } from '@/context/LanguageContext';
-import { Phone, ArrowRight, Truck } from 'lucide-react';
+import { Phone, ArrowRight, Truck, Clock } from 'lucide-react';
 import './home.css';
 
 export default function HomePageClient({ siteInfo, carousel, weeklyMenu, services }) {
@@ -16,6 +16,16 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
     const phoneTel = phone.replace(/\s+/g, '');
     const aboutText = trans(siteInfo, 'about_text');
     const address = trans(siteInfo, 'address') || (lang === 'en' ? 'Eyguières, Provence, France' : 'Eyguières, Bouches-du-Rhône');
+
+    const rawHours = trans(siteInfo, 'hours') || (lang === 'en' ? 'Monday to Friday - Orders before 10 AM' : 'Du Lundi au Vendredi - Commandes avant 10h');
+    let hoursDay = rawHours;
+    let hoursCutoff = '';
+
+    const sepMatch = rawHours.match(/\s*([—–\-])\s*(.+)$/);
+    if (sepMatch) {
+        hoursDay = rawHours.substring(0, sepMatch.index).trim();
+        hoursCutoff = sepMatch[2].trim();
+    }
 
     return (
         <main id="main-content" tabIndex="-1">
@@ -35,9 +45,17 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
                         <span>{t('strip.pickup')}</span>
                     </div>
                     <div className="info-strip-sep" />
-                    <div className="info-strip-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
-                        <span>{trans(siteInfo, 'hours') || t('strip.hours')}</span>
+                    <div className="info-strip-item info-strip-item-hours">
+                        <Clock size={14} />
+                        <span className="info-strip-hours-wrapper">
+                            <span className="info-strip-hours-days">{hoursDay}</span>
+                            {hoursCutoff && (
+                                <>
+                                    <span className="info-strip-hours-sep" aria-hidden="true"> - </span>
+                                    <span className="info-strip-hours-cutoff">{hoursCutoff}</span>
+                                </>
+                            )}
+                        </span>
                     </div>
                     <div className="info-strip-sep" />
                     <div className="info-strip-item">

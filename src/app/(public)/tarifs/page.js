@@ -2,7 +2,7 @@ import { getPricingDocuments, getSiteInfo } from '@/lib/data';
 import TarifsClient from './TarifsClient';
 
 export const metadata = {
-    title: 'Tarifs | Mamé Fricoto — Traiteur Maison Eyguières',
+    title: 'Tarifs | Mamé Fricoto - Traiteur Maison Eyguières',
     description: "Consultez les cartes et grilles tarifaires de nos repas faits maison, buffets dînatoires et formules traiteur à Eyguières et en Provence.",
 };
 

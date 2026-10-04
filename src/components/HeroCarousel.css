@@ -1,5 +1,5 @@
 /* ===========================
-   HERO CAROUSEL — DARK PREMIUM
+   HERO CAROUSEL - DARK PREMIUM
    =========================== */
 
 .hero {
@@ -64,7 +64,7 @@
     display: none;
 }
 
-/* Gradient overlay — warm terracotta & ambre doux */
+/* Gradient overlay - warm terracotta & ambre doux */
 .hero-slide::after {
     content: '';
     position: absolute;
@@ -382,7 +382,7 @@
         display: block !important;
     }
 
-    /* Framing optimized for mobile portraits — head, subject & buffet remain fully in view */
+    /* Framing optimized for mobile portraits - head, subject & buffet remain fully in view */
     .hero-slide img,
     .hero-layer-mobile img,
     .hero-slide-layer img {

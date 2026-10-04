@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { submitContactForm } from '@/app/actions';
 import { useLanguage } from '@/context/LanguageContext';
@@ -18,6 +18,23 @@ export default function ContactForm() {
         { id: 'Entreprise', labelKey: 'type.pro', icon: <Building size={14} /> },
         { id: 'Autre', labelKey: 'type.other', icon: <HelpCircle size={14} /> },
     ];
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const typeParam = params.get('type');
+            if (typeParam) {
+                const lower = typeParam.toLowerCase();
+                if (lower.includes('priv') || lower === 'private') {
+                    setSelectedEventType('Événement Privé');
+                } else if (lower.includes('entrep') || lower.includes('pro') || lower.includes('corp') || lower.includes('business')) {
+                    setSelectedEventType('Entreprise');
+                } else if (lower.includes('autr') || lower.includes('other')) {
+                    setSelectedEventType('Autre');
+                }
+            }
+        }
+    }, []);
 
     async function handleSubmit(e) {
         e.preventDefault();

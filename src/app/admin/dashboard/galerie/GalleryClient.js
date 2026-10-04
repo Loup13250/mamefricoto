@@ -302,7 +302,7 @@ export default function GalleryClient({ posts }) {
 
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem' }}>
-                <h1 className="admin-page-title">Galerie — Photos &amp; Vidéos</h1>
+                <h1 className="admin-page-title">Galerie - Photos &amp; Vidéos</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.25rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
                     Ajoutez et gérez vos photos et vidéos de cuisine. Modifiez leurs titres et légendes en français et en anglais pour la page publique <strong>Galerie</strong>.
                 </p>
@@ -435,7 +435,7 @@ export default function GalleryClient({ posts }) {
                                             {editingPost.title || 'Publication sans titre'}
                                         </div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle, #999)', marginTop: '2px' }}>
-                                            {editingPost.media_type === 'video' ? 'Vidéo' : 'Photo'} — Modification des textes en français et en anglais
+                                            {editingPost.media_type === 'video' ? 'Vidéo' : 'Photo'} - Modification des textes en français et en anglais
                                         </div>
                                     </div>
                                 </div>
@@ -444,7 +444,7 @@ export default function GalleryClient({ posts }) {
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-gold, #C8A96E)' }}>
-                                            FR — Titre / Plat (Français)
+                                            FR - Titre / Plat (Français)
                                         </label>
                                         <input
                                             type="text"
@@ -456,7 +456,7 @@ export default function GalleryClient({ posts }) {
                                     </div>
                                     <div>
                                         <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-gold, #C8A96E)' }}>
-                                            EN — Title / Dish (English)
+                                            EN - Title / Dish (English)
                                         </label>
                                         <input
                                             type="text"
@@ -471,7 +471,7 @@ export default function GalleryClient({ posts }) {
                                 {/* Légendes FR / EN */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                     <div>
-                                        <label className="admin-label">FR — Légende / Description (Français)</label>
+                                        <label className="admin-label">FR - Légende / Description (Français)</label>
                                         <textarea
                                             name="caption"
                                             defaultValue={editingPost.caption || ''}
@@ -481,7 +481,7 @@ export default function GalleryClient({ posts }) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="admin-label">EN — Caption / Description (English)</label>
+                                        <label className="admin-label">EN - Caption / Description (English)</label>
                                         <textarea
                                             name="caption_en"
                                             defaultValue={editingPost.caption_en || ''}
@@ -536,7 +536,7 @@ export default function GalleryClient({ posts }) {
                             {selectedFile ? (
                                 <div>
                                     <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-gold)', marginBottom: '0.75rem' }}>
-                                        Aperçu — Prêt à publier
+                                        Aperçu - Prêt à publier
                                     </p>
                                     <div style={{ maxWidth: '280px' }}>
                                         <MediaPreview file={selectedFile} onRemove={() => setSelectedFile(null)} />
@@ -609,7 +609,7 @@ export default function GalleryClient({ posts }) {
                             {/* Titres FR / EN */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                 <div>
-                                    <label className="admin-label">FR — Titre / Plat (Français)</label>
+                                    <label className="admin-label">FR - Titre / Plat (Français)</label>
                                     <input
                                         type="text"
                                         name="title"
@@ -618,7 +618,7 @@ export default function GalleryClient({ posts }) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="admin-label">EN — Title / Dish (English)</label>
+                                    <label className="admin-label">EN - Title / Dish (English)</label>
                                     <input
                                         type="text"
                                         name="title_en"
@@ -631,7 +631,7 @@ export default function GalleryClient({ posts }) {
                             {/* Légendes FR / EN */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                                 <div>
-                                    <label className="admin-label">FR — Légende (Français)</label>
+                                    <label className="admin-label">FR - Légende (Français)</label>
                                     <textarea
                                         name="caption"
                                         className="admin-input"
@@ -640,7 +640,7 @@ export default function GalleryClient({ posts }) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="admin-label">EN — Caption (English)</label>
+                                    <label className="admin-label">EN - Caption (English)</label>
                                     <textarea
                                         name="caption_en"
                                         className="admin-input"

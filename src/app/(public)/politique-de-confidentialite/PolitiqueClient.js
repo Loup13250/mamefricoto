@@ -560,7 +560,7 @@ export default function PolitiqueClient() {
                                 </li>
                                 <li>
                                     {isEn ? 'By Postal Mail: ' : 'Par courrier postal : '}
-                                    <strong>Mamé Fricoto — Attn: Léa Laurent</strong>, 59 Avenue des Alpilles, 13430 Eyguières, France.
+                                    <strong>Mamé Fricoto (Attn: Léa Laurent)</strong>, 59 Avenue des Alpilles, 13430 Eyguières, France.
                                 </li>
                                 <li>
                                     {isEn ? 'By Phone: ' : 'Par téléphone : '}
@@ -577,12 +577,12 @@ export default function PolitiqueClient() {
                                 {isEn ? (
                                     <>
                                         If, after contacting us, you believe your rights have not been respected, you have the right to lodge a complaint with the French Data Protection Authority (<strong>CNIL</strong>):<br />
-                                        Online at: <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">https://www.cnil.fr</a> or by post: CNIL — 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, France.
+                                        Online at: <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">https://www.cnil.fr</a> or by post: CNIL, 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, France.
                                     </>
                                 ) : (
                                     <>
                                         Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous avez la possibilité d’introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l’Informatique et des Libertés) :<br />
-                                        En ligne sur le site : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">https://www.cnil.fr</a> ou par courrier : CNIL — 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.
+                                        En ligne sur le site : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">https://www.cnil.fr</a> ou par courrier : CNIL, 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.
                                     </>
                                 )}
                             </p>

@@ -128,9 +128,6 @@ export default async function DashboardOverview() {
                             <div style={{ padding: '0.75rem', background: 'rgba(200, 169, 110, 0.1)', borderRadius: '10px', color: 'var(--admin-gold)' }}>
                                 <Camera size={24} />
                             </div>
-                            <span style={{ fontSize: '1.3rem', fontWeight: '700', fontFamily: 'var(--font-heading)', color: 'var(--admin-text)' }}>
-                                {galleryPosts.length}
-                            </span>
                         </div>
                         <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--admin-text)', marginBottom: '0.2rem' }}>
                             Galerie &amp; Coulisses
@@ -236,32 +233,37 @@ export default async function DashboardOverview() {
                             {recentMessages.map(msg => (
                                 <div key={msg.id} style={{
                                     padding: '1rem',
-                                    borderRadius: '6px',
+                                    borderRadius: '8px',
                                     background: msg.is_read ? 'var(--admin-surface)' : 'rgba(200,169,110,0.08)',
                                     border: `1px solid ${msg.is_read ? 'var(--admin-border)' : 'rgba(200,169,110,0.25)'}`,
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     flexWrap: 'wrap',
-                                    gap: '0.5rem'
+                                    gap: '0.75rem',
+                                    width: '100%',
+                                    minWidth: 0,
+                                    boxSizing: 'border-box'
                                 }}>
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                                            <strong style={{ fontSize: '0.95rem', color: 'var(--admin-text)' }}>{msg.name}</strong>
+                                    <div style={{ minWidth: 0, flex: '1 1 200px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                                            <strong style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
+                                                {msg.name}
+                                            </strong>
                                             {msg.event_type && (
                                                 <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(196,89,58,0.2)', color: '#E06D53', borderRadius: '4px', textTransform: 'uppercase', fontWeight: '700' }}>
                                                     {msg.event_type}
                                                 </span>
                                             )}
                                             {!msg.is_read && (
-                                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C4593A' }}></span>
+                                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C4593A', flexShrink: 0 }}></span>
                                             )}
                                         </div>
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '500px' }}>
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', maxWidth: '100%' }}>
                                             {msg.message}
                                         </p>
                                     </div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                         {msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR') : ''}
                                     </div>
                                 </div>

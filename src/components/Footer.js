@@ -10,16 +10,10 @@ export default function Footer({ siteInfo }) {
     const phone = info.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
 
-    const servicesList = lang === 'en' ? [
-        'Daily Homemade Specials',
-        'Tailored Private Events',
-        'Corporate Lunches & Seminars',
-        'Gourmet Cocktail Buffets',
-    ] : [
-        'Plat du Jour Fait Maison',
-        'Événements Privés Sur-Mesure',
-        "Repas d'Entreprise & Séminaires",
-        'Buffets Dînatoires & Cocktails',
+    const servicesList = [
+        { label: t('type.private'), href: '/contact?type=prive' },
+        { label: t('type.pro'), href: '/contact?type=entreprise' },
+        { label: t('type.other'), href: '/contact?type=autre' },
     ];
 
     return (
@@ -39,33 +33,63 @@ export default function Footer({ siteInfo }) {
                         <div className="social-links">
                             {info.instagram && (
                                 <a href={info.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram Mamé Fricoto">
-                                    <Instagram size={20} />
+                                    <Instagram size={18} />
                                 </a>
                             )}
                             {info.facebook && (
                                 <a href={info.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook Mamé Fricoto">
-                                    <Facebook size={20} />
+                                    <Facebook size={18} />
                                 </a>
                             )}
                         </div>
                     </div>
 
-                    <div className="footer-links">
+                    <div className="footer-links footer-nav-col">
                         <h3>{t('footer.navTitle')}</h3>
                         <ul>
-                            <li><Link href="/" prefetch={true}>{t('nav.home')}</Link></li>
-                            <li><Link href="/tarifs" prefetch={true}>{t('nav.tarifs')}</Link></li>
-                            <li><Link href="/galerie" prefetch={true}>{t('nav.creations')}</Link></li>
-                            <li><Link href="/a-propos" prefetch={true}>{t('nav.about')}</Link></li>
-                            <li><Link href="/contact" prefetch={true}>{t('nav.contact')}</Link></li>
+                            <li>
+                                <Link href="/" prefetch={true} className="footer-nav-link">
+                                    <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                    <span>{t('nav.home')}</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/tarifs" prefetch={true} className="footer-nav-link">
+                                    <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                    <span>{t('nav.tarifs')}</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/galerie" prefetch={true} className="footer-nav-link">
+                                    <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                    <span>{t('nav.creations')}</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/a-propos" prefetch={true} className="footer-nav-link">
+                                    <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                    <span>{t('nav.about')}</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/contact" prefetch={true} className="footer-nav-link">
+                                    <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                    <span>{t('nav.contact')}</span>
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
-                    <div className="footer-links">
+                    <div className="footer-links footer-services-col">
                         <h3>{t('footer.servicesTitle')}</h3>
                         <ul>
-                            {servicesList.map((serviceName, i) => (
-                                <li key={i}>{serviceName}</li>
+                            {servicesList.map((service, i) => (
+                                <li key={i}>
+                                    <Link href={service.href} prefetch={true} className="footer-nav-link">
+                                        <span className="footer-link-bullet" aria-hidden="true">›</span>
+                                        <span>{service.label}</span>
+                                    </Link>
+                                </li>
                             ))}
                         </ul>
                     </div>
@@ -74,15 +98,15 @@ export default function Footer({ siteInfo }) {
                         <h3>{t('footer.contactTitle')}</h3>
                         <ul>
                             <li>
-                                <MapPin size={16} />
+                                <MapPin size={15} />
                                 <span>{trans(info, 'address') || (lang === 'en' ? 'Eyguières, Provence, France' : 'Eyguières, Bouches-du-Rhône')}</span>
                             </li>
                             <li>
-                                <Phone size={16} />
+                                <Phone size={15} />
                                 <a href={`tel:${phoneTel}`}>{phone}</a>
                             </li>
                             <li>
-                                <Clock size={16} />
+                                <Clock size={15} />
                                 <span>{trans(info, 'hours') || (lang === 'en' ? 'Orders before 10 AM' : 'Commandes avant 10h')}</span>
                             </li>
                         </ul>
@@ -110,7 +134,7 @@ export default function Footer({ siteInfo }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="footer-dev-link"
-                            title="JL-Développement — Création de sites web professionnels"
+                            title="JL-Développement - Création de sites web professionnels"
                         >
                             {t('footer.credits')}
                         </a>

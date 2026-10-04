@@ -135,7 +135,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                                     ) : (
                                         <Image
                                             src={mediaUrl}
-                                            alt={`${menu.title} — photo ${idx + 1} sur ${images.length || 1}`}
+                                            alt={`${menu.title} - photo ${idx + 1} sur ${images.length || 1}`}
                                             width={900}
                                             height={1100}
                                             className="menu-img"

@@ -12,8 +12,8 @@ export default function AProposClient({ info, services }) {
     const aboutText = trans(info, 'about_text');
 
     const defaultStory = lang === 'en'
-        ? "Mamé Fricoto is the story of a passionate cook who decided to share her generous homemade recipes with you.\n\nEvery dish is prepared in our culinary workshop in Eyguières, using ingredients carefully sourced from local producers. No additives, no shortcuts — just genuine, heartfelt cuisine."
-        : "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis — juste de la vraie cuisine.";
+        ? "Mamé Fricoto is the story of a passionate cook who decided to share her generous homemade recipes with you.\n\nEvery dish is prepared in our culinary workshop in Eyguières, using ingredients carefully sourced from local producers. No additives, no shortcuts: just genuine, heartfelt cuisine."
+        : "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis : juste de la vraie cuisine.";
 
     const facts = [
         { label: t('about.method'), val: t('about.methodVal') },

@@ -244,7 +244,7 @@ export default function MentionsLegalesClient() {
                                         The website of <strong>Mamé Fricoto</strong> was custom-designed, engineered, and optimized by:
                                     </p>
                                     <div className="legal-callout">
-                                        <strong>Jean-Loup Ferrigno — JL-Développement</strong><br />
+                                        <strong>Jean-Loup Ferrigno - JL-Développement</strong><br />
                                         Crafting high-performance, elegant, and bespoke web solutions.<br />
                                         Official Website:{' '}
                                         <a
@@ -263,7 +263,7 @@ export default function MentionsLegalesClient() {
                                         Le site internet de <strong>Mamé Fricoto</strong> a été conçu, développé et optimisé sur-mesure par :
                                     </p>
                                     <div className="legal-callout">
-                                        <strong>Jean-Loup Ferrigno — JL-Développement</strong><br />
+                                        <strong>Jean-Loup Ferrigno - JL-Développement</strong><br />
                                         Créateur de solutions web modernes, performantes et sur-mesure.<br />
                                         Site internet :{' '}
                                         <a
@@ -358,7 +358,7 @@ export default function MentionsLegalesClient() {
                             {isEn ? (
                                 <>
                                     <p>
-                                        All contents featured on the <strong>Mamé Fricoto</strong> website — including, without limitation, brand names, logos, photographs of dishes and catered buffets, original illustrations, texts, recipes, design tokens, and site layouts — are governed by French and international intellectual property laws.
+                                        All contents featured on the <strong>Mamé Fricoto</strong> website (including, without limitation, brand names, logos, photographs of dishes and catered buffets, original illustrations, texts, recipes, design tokens, and site layouts) are governed by French and international intellectual property laws.
                                     </p>
                                     <p>
                                         <strong>Léa Laurent (Mamé Fricoto)</strong> holds the exclusive intellectual property rights or the necessary licenses for all original elements presented on this platform.
@@ -370,7 +370,7 @@ export default function MentionsLegalesClient() {
                             ) : (
                                 <>
                                     <p>
-                                        L’intégralité du contenu présent sur le site internet <strong>Mamé Fricoto</strong> — incluant, sans limitation, les marques, logotypes, photographies des plats et buffets, illustrations, textes, recettes, chartes graphiques, vidéos, structures et agencements du site — relève de la législation française et internationale sur le droit d’auteur et la propriété intellectuelle.
+                                        L’intégralité du contenu présent sur le site internet <strong>Mamé Fricoto</strong> (incluant, sans limitation, les marques, logotypes, photographies des plats et buffets, illustrations, textes, recettes, chartes graphiques, vidéos, structures et agencements du site) relève de la législation française et internationale sur le droit d’auteur et la propriété intellectuelle.
                                     </p>
                                     <p>
                                         <strong>Léa Laurent (Mamé Fricoto)</strong> est titulaire exclusive de l’ensemble des droits de propriété intellectuelle afférents aux éléments originaux du site, ou bénéficie des autorisations expresses d’utilisation des tiers.

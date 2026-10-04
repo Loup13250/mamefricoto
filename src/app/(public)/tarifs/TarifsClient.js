@@ -106,7 +106,7 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={currentImg}
-                alt={`${title || 'Tarif'} — Page ${imgIdx + 1}`}
+                alt={`${title || 'Tarif'} - Page ${imgIdx + 1}`}
                 className="pricing-doc-img"
                 loading="eager"
             />
@@ -468,7 +468,7 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={lightbox.images[lightbox.currentIndex]?.image_url || ''}
-                            alt={`${lightbox.title || 'Tarif'} — ${lightbox.currentIndex + 1}`}
+                            alt={`${lightbox.title || 'Tarif'} - ${lightbox.currentIndex + 1}`}
                             className="pricing-lightbox-img"
                         />
                         <div className="pricing-lightbox-caption">

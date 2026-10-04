@@ -492,7 +492,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                     <div>
                         <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
-                            FR — Titre du menu (Français) *
+                            FR - Titre du menu (Français) *
                         </label>
                         <input
                             type="text"
@@ -506,7 +506,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                     </div>
                     <div>
                         <label className="admin-label" style={{ color: 'var(--admin-gold)', fontWeight: '600' }}>
-                            EN — Menu Title (English)
+                            EN - Menu Title (English)
                         </label>
                         <input
                             type="text"
@@ -522,7 +522,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 {/* Description FR / EN */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                     <div>
-                        <label className="admin-label">FR — Description des plats (Français)</label>
+                        <label className="admin-label">FR - Description des plats (Français)</label>
                         <textarea
                             name="description"
                             className="admin-input"
@@ -533,7 +533,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                         />
                     </div>
                     <div>
-                        <label className="admin-label">EN — Dishes description (English)</label>
+                        <label className="admin-label">EN - Dishes description (English)</label>
                         <textarea
                             name="description_en"
                             className="admin-input"
@@ -727,7 +727,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                 </div>
 
                 {/* =========================================================
-                    SECTION 2 : PHOTOS EN ANGLAIS (EN) — OPTIONNEL
+                    SECTION 2 : PHOTOS EN ANGLAIS (EN) - OPTIONNEL
                     ========================================================= */}
                 <div style={{
                     background: 'rgba(0, 0, 0, 0.18)',
@@ -1211,7 +1211,7 @@ export default function WeeklyMenuClient({ menus }) {
                                             </h3>
                                             {menu.title_en && (
                                                 <span style={{ fontSize: '0.82rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
-                                                    EN — {menu.title_en}
+                                                    EN - {menu.title_en}
                                                 </span>
                                             )}
                                             {menu.is_current === 1 && (

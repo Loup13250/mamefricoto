@@ -245,7 +245,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                 </div>
 
                 <form ref={storyFormRef} onSubmit={handleSaveAboutStory} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+                    <div className="admin-story-grid">
                         {/* Colonne gauche : Textes FR / EN */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                             <div>
@@ -257,7 +257,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                     name="about_text"
                                     rows={6}
                                     required
-                                    defaultValue={info?.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis — juste de la vraie cuisine."}
+                                    defaultValue={info?.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis : juste de la vraie cuisine."}
                                     className="admin-textarea"
                                     placeholder="Racontez la passion de Mamé Fricoto..."
                                 />
@@ -271,14 +271,14 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                     id="about_story_en"
                                     name="about_text_en"
                                     rows={5}
-                                    defaultValue={info?.about_text_en || "Mamé Fricoto is the story of a passionate cook who decided to share her generous homemade recipes with you.\n\nEvery dish is prepared in our culinary workshop in Eyguières, using ingredients carefully sourced from local producers. No additives, no shortcuts — just genuine, heartfelt cuisine."}
+                                    defaultValue={info?.about_text_en || "Mamé Fricoto is the story of a passionate cook who decided to share her generous homemade recipes with you.\n\nEvery dish is prepared in our culinary workshop in Eyguières, using ingredients carefully sourced from local producers. No additives, no shortcuts: just genuine, heartfelt cuisine."}
                                     className="admin-textarea"
                                     placeholder="Story in English..."
                                 />
                             </div>
 
                             {/* Tagline courte FR / EN */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="admin-grid-2col">
                                 <div>
                                     <label className="admin-label" htmlFor="tagline_fr">
                                         Accroche courte (FR)
@@ -421,7 +421,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                         </div>
 
                         <form ref={serviceFormRef} onSubmit={handleAddService} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr', gap: '1rem' }}>
+                            <div className="admin-grid-3col">
                                 <div>
                                     <label className="admin-label" htmlFor="srv_num">Numéro</label>
                                     <input id="srv_num" type="text" name="num" placeholder="01" defaultValue={`0${services.length + 1}`} className="admin-input" />
@@ -436,7 +436,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="admin-grid-2col">
                                 <div>
                                     <label className="admin-label" htmlFor="srv_title_fr">Titre de la prestation (FR) *</label>
                                     <input id="srv_title_fr" type="text" name="title" required placeholder="Ex: Buffets & Cocktails" className="admin-input" />
@@ -447,7 +447,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="admin-grid-2col">
                                 <div>
                                     <label className="admin-label" htmlFor="srv_desc_fr">Description détaillée (FR) *</label>
                                     <textarea id="srv_desc_fr" name="description" rows={3} required placeholder="Pièces salées, verrines fraîches, canapés et douceurs..." className="admin-textarea" />
@@ -498,7 +498,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                             <form onSubmit={handleEditService} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <input type="hidden" name="id" value={editingService.id} />
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr', gap: '1rem' }}>
+                                <div className="admin-grid-3col">
                                     <div>
                                         <label className="admin-label" htmlFor="edit_srv_num">Numéro</label>
                                         <input id="edit_srv_num" type="text" name="num" defaultValue={editingService.num || '01'} className="admin-input" />
@@ -513,7 +513,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="admin-grid-2col">
                                     <div>
                                         <label className="admin-label" htmlFor="edit_srv_title_fr">Titre (FR) *</label>
                                         <input id="edit_srv_title_fr" type="text" name="title" required defaultValue={editingService.title} className="admin-input" />
@@ -524,7 +524,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="admin-grid-2col">
                                     <div>
                                         <label className="admin-label" htmlFor="edit_srv_desc_fr">Description (FR) *</label>
                                         <textarea id="edit_srv_desc_fr" name="description" rows={3} required defaultValue={editingService.description} className="admin-textarea" />

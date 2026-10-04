@@ -209,7 +209,7 @@ export default function MentionsLegalesClient() {
                             ) : (
                                 <>
                                     <p>
-                                        <strong>Directrice de la publication :</strong> Madame Léa LAURENT, en sa qualité de fondatrice et exploitante de l'entreprise Mamé Fricoto.
+                                        <strong>Directrice de la publication :</strong> Madame Léa LAURENT, en sa qualité de fondatrice et exploitante de l&apos;entreprise Mamé Fricoto.
                                     </p>
                                     <p>
                                         <strong>Contact rédaction :</strong><br />

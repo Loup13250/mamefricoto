@@ -41,6 +41,11 @@ export function getDb() {
 
     const rawTursoUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL || process.env.DATABASE_URL || DEFAULT_TURSO_URL;
     const tursoToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN || DEFAULT_TURSO_TOKEN;
+
+    if (process.env.NODE_ENV === 'production' && (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN)) {
+        console.warn('[Turso] Attention : identifiants Turso de repli utilisés en production. Pensez à renseigner TURSO_DATABASE_URL et TURSO_AUTH_TOKEN dans les variables d’environnement Vercel.');
+    }
+
     // Always use https:// instead of libsql:// for rock-solid HTTP transport without WebSocket drops
     const tursoUrl = rawTursoUrl ? rawTursoUrl.replace(/^libsql:\/\//i, 'https://') : null;
 
@@ -56,6 +61,8 @@ export function getDb() {
                 if (tablesEnsured) return;
                 try {
                     await Promise.allSettled([
+                        client.execute(`CREATE TABLE IF NOT EXISTS admin_sessions (token_hash TEXT PRIMARY KEY, username TEXT NOT NULL, expires_at INTEGER NOT NULL)`),
+                        client.execute(`CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, window_start INTEGER NOT NULL)`),
                         client.execute(`CREATE TABLE IF NOT EXISTS media_storage (id TEXT PRIMARY KEY, mime_type TEXT NOT NULL, data BLOB NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
                         client.execute(`CREATE TABLE IF NOT EXISTS pricing_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_en TEXT, description TEXT, description_en TEXT, file_url TEXT NOT NULL, file_url_en TEXT, file_type TEXT DEFAULT 'image', display_order INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
                         client.execute(`CREATE TABLE IF NOT EXISTS pricing_document_images (id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, image_url TEXT NOT NULL, display_order INTEGER DEFAULT 0, lang TEXT DEFAULT 'fr', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
@@ -210,6 +217,16 @@ export function getDb() {
                         display_order INTEGER DEFAULT 0,
                         lang TEXT DEFAULT 'fr',
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS admin_sessions (
+                        token_hash TEXT PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        expires_at INTEGER NOT NULL
+                    );
+                    CREATE TABLE IF NOT EXISTS rate_limits (
+                        key TEXT PRIMARY KEY,
+                        count INTEGER NOT NULL,
+                        window_start INTEGER NOT NULL
                     );
                 `);
             } catch {}

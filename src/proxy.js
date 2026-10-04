@@ -6,7 +6,7 @@ export function proxy(request) {
     // Protéger toutes les routes de l'espace administration (/admin/dashboard)
     if (pathname.startsWith('/admin/dashboard')) {
         const session = request.cookies.get('admin_session')?.value;
-        if (!session || (session !== 'authenticated' && !session.startsWith('ey'))) {
+        if (!session || !/^[A-Za-z0-9_-]{43}$/.test(session)) {
             const loginUrl = new URL('/admin', request.url);
             return NextResponse.redirect(loginUrl);
         }

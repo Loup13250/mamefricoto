@@ -1,48 +1,49 @@
+import { SITE_URL } from '@/lib/site';
+
 export default function sitemap() {
-  const baseUrl = 'https://mamefricoto.fr';
+  const lastMod = new Date();
   return [
     {
-      url: baseUrl,
-      lastModified: new Date(),
+      url: SITE_URL,
+      lastModified: lastMod,
       changeFrequency: 'daily',
-      priority: 1,
+      priority: 1.0,
     },
     {
-      url: `${baseUrl}/tarifs`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/tarifs`,
+      lastModified: lastMod,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/galerie`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/galerie`,
+      lastModified: lastMod,
       changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/a-propos`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/a-propos`,
+      lastModified: lastMod,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/contact`,
+      lastModified: lastMod,
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/mentions-legales`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/mentions-legales`,
+      lastModified: lastMod,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/politique-de-confidentialite`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/politique-de-confidentialite`,
+      lastModified: lastMod,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
   ];
 }
-

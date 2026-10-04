@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import { getSiteInfo } from "@/lib/data";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -42,9 +43,6 @@ const momerkz = localFont({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://mamefricoto.vercel.app');
-
 export const viewport = {
   themeColor: '#FAF7F2',
   width: 'device-width',
@@ -58,7 +56,10 @@ export async function generateMetadata() {
   const isSvg = iconUrl.endsWith('.svg') || iconUrl.includes('.svg') || iconUrl.includes('image%2Fsvg');
 
   return {
-    metadataBase: new URL(baseUrl),
+    metadataBase: new URL(SITE_URL),
+    alternates: {
+      canonical: SITE_URL,
+    },
     title: {
       default: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
       template: "%s | Mamé Fricoto"
@@ -82,30 +83,24 @@ export async function generateMetadata() {
     openGraph: {
       type: "website",
       locale: "fr_FR",
-      url: baseUrl,
+      url: SITE_URL,
       siteName: "Mamé Fricoto",
       title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
       description: "Cuisine familiale généreuse et de saison à Eyguières. Menus hebdomadaires et réceptions sur mesure.",
       images: [
         {
-          url: "/logo.png",
-          width: 500,
-          height: 500,
-          alt: "Mamé Fricoto - Traiteur & Cuisine Maison",
-        },
-        {
           url: "/og-image.png",
           width: 1200,
           height: 630,
-          alt: "Mamé Fricoto - Traiteur & Cuisine Maison",
+          alt: "Mamé Fricoto - Traiteur & Cuisine Maison à Eyguières",
         },
       ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
       description: "Cuisine maison et événements à Eyguières et en Provence.",
-      images: ["/logo.png", "/og-image.png"],
+      images: ["/og-image.png"],
     },
     icons: {
       icon: [
@@ -119,51 +114,37 @@ export async function generateMetadata() {
 }
 
 export default async function RootLayout({ children }) {
-  const siteInfo = await getSiteInfo();
-  const iconUrl = siteInfo?.site_icon || '/icon.svg';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FoodEstablishment',
+    name: 'Mamé Fricoto',
+    image: `${SITE_URL}/og-image.png`,
+    '@id': SITE_URL,
+    url: SITE_URL,
+    telephone: '+33743646411',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Eyguières',
+      addressLocality: 'Eyguières',
+      postalCode: '13820',
+      addressRegion: 'Bouches-du-Rhône',
+      addressCountry: 'FR',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 43.6958,
+      longitude: 5.0319,
+    },
+    servesCuisine: 'Cuisine provençale, Fait maison, Traiteur',
+    priceRange: '€€',
+  };
 
   return (
     <html lang="fr" suppressHydrationWarning data-theme="light" data-scroll-behavior="smooth" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
       <head>
-        <link rel="icon" type="image/svg+xml" href={iconUrl} />
-        <Script
-          id="json-ld-schema"
+        <script
           type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FoodEstablishment',
-              'name': 'Mamé Fricoto',
-              'image': 'https://mamefricoto.fr/logo.png',
-              '@id': 'https://mamefricoto.fr',
-              'url': 'https://mamefricoto.fr',
-              'telephone': '+33743646411',
-              'address': {
-                '@type': 'PostalAddress',
-                'streetAddress': 'Eyguières',
-                'addressLocality': 'Eyguières',
-                'postalCode': '13820',
-                'addressRegion': 'Bouches-du-Rhône',
-                'addressCountry': 'FR',
-              },
-              'geo': {
-                '@type': 'GeoCoordinates',
-                'latitude': 43.6958,
-                'longitude': 5.0319,
-              },
-              'servesCuisine': 'Cuisine provençale, Fait maison, Traiteur',
-              'priceRange': '€€',
-              'openingHoursSpecification': [
-                {
-                  '@type': 'OpeningHoursSpecification',
-                  'dayOfWeek': ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-                  'opens': '08:00',
-                  'closes': '19:00',
-                },
-              ],
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Script
           id="theme-cleanup"

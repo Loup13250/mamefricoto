@@ -127,12 +127,22 @@ CREATE TABLE IF NOT EXISTS fixed_prices (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  token_hash TEXT PRIMARY KEY,
+  username TEXT NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  count INTEGER NOT NULL,
+  window_start INTEGER NOT NULL
+);
+
 -- =====================
 -- Initial Data
 -- =====================
 
-INSERT OR IGNORE INTO admin_users (username, password) VALUES ('admin', 'admin123');
-INSERT OR IGNORE INTO admin_users (username, password) VALUES ('mamefricoto', 'fricoto2026');
 
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('phone', '07 43 64 64 11');
 INSERT OR IGNORE INTO site_info (key, value) VALUES ('address', 'Eyguières, Bouches-du-Rhône');

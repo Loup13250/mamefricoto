@@ -21,10 +21,10 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
     let hoursDay = rawHours;
     let hoursCutoff = '';
 
-    const sepMatch = rawHours.match(/\s*([—–\-])\s*(.+)$/);
+    const sepMatch = rawHours.match(/\s+[\u2013\u2014-]\s+(.+)$/);
     if (sepMatch) {
         hoursDay = rawHours.substring(0, sepMatch.index).trim();
-        hoursCutoff = sepMatch[2].trim();
+        hoursCutoff = sepMatch[1].trim();
     }
 
     return (

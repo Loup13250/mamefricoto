@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { getDb } from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-    const cookieStore = await cookies();
-    const session = cookieStore.get('admin_session');
+function encodeBinary(rows) {
+    return rows.map((row) => {
+        const data = row.data;
+        if (data == null || typeof data === 'string') return row;
+        return { ...row, data: Buffer.from(data).toString('base64'), data_encoding: 'base64' };
+    });
+}
 
-    if (!session || session.value !== 'authenticated') {
+export async function GET() {
+    if (!(await isAdminRequest())) {
         return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -37,7 +42,7 @@ export async function GET() {
         for (const table of tables) {
             try {
                 const rows = await db.prepare(`SELECT * FROM ${table}`).all();
-                backupData.data[table] = rows;
+                backupData.data[table] = table === 'media_storage' ? encodeBinary(rows) : rows;
             } catch (err) {
                 console.warn(`Backup: could not export table ${table}`, err);
                 backupData.data[table] = [];
@@ -51,6 +56,7 @@ export async function GET() {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-store',
                 'Content-Disposition': `attachment; filename="mamefricoto_backup_${dateStr}.json"`,
             },
         });

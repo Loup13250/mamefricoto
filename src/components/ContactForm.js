@@ -1,40 +1,51 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { submitContactForm } from '@/app/actions';
 import { useLanguage } from '@/context/LanguageContext';
 import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, PartyPopper, Building, HelpCircle, ShieldCheck } from 'lucide-react';
 import './ContactForm.css';
 
+function subscribeSearch(callback) {
+    window.addEventListener('popstate', callback);
+    return () => window.removeEventListener('popstate', callback);
+}
+
+function getSearchSnapshot() {
+    return window.location.search;
+}
+
+function getServerSearchSnapshot() {
+    return '';
+}
+
+function parseUrlEventType(search) {
+    if (!search) return 'Événement Privé';
+    const params = new URLSearchParams(search);
+    const typeParam = params.get('type');
+    if (!typeParam) return 'Événement Privé';
+    const lower = typeParam.toLowerCase();
+    if (lower.includes('priv') || lower === 'private') return 'Événement Privé';
+    if (lower.includes('entrep') || lower.includes('pro') || lower.includes('corp') || lower.includes('business')) return 'Entreprise';
+    if (lower.includes('autr') || lower.includes('other')) return 'Autre';
+    return 'Événement Privé';
+}
+
 export default function ContactForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [selectedEventType, setSelectedEventType] = useState('Événement Privé');
+    const [userSelectedType, setUserSelectedType] = useState(null);
     const { t } = useLanguage();
+
+    const search = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getServerSearchSnapshot);
+    const selectedEventType = userSelectedType ?? parseUrlEventType(search);
 
     const eventTypes = [
         { id: 'Événement Privé', labelKey: 'type.private', icon: <PartyPopper size={14} /> },
         { id: 'Entreprise', labelKey: 'type.pro', icon: <Building size={14} /> },
         { id: 'Autre', labelKey: 'type.other', icon: <HelpCircle size={14} /> },
     ];
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            const typeParam = params.get('type');
-            if (typeParam) {
-                const lower = typeParam.toLowerCase();
-                if (lower.includes('priv') || lower === 'private') {
-                    setSelectedEventType('Événement Privé');
-                } else if (lower.includes('entrep') || lower.includes('pro') || lower.includes('corp') || lower.includes('business')) {
-                    setSelectedEventType('Entreprise');
-                } else if (lower.includes('autr') || lower.includes('other')) {
-                    setSelectedEventType('Autre');
-                }
-            }
-        }
-    }, []);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -144,7 +155,7 @@ export default function ContactForm() {
                                 type="button"
                                 role="radio"
                                 aria-checked={selectedEventType === type.id}
-                                onClick={() => setSelectedEventType(type.id)}
+                                onClick={() => setUserSelectedType(type.id)}
                                 className={`form-pill ${selectedEventType === type.id ? 'active' : ''}`}
                             >
                                 {type.icon}

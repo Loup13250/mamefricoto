@@ -4,16 +4,24 @@ import { getDb } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { sendContactNotification } from '@/lib/email';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
-import { createAdminSession, verifyAdminSession } from '@/lib/auth';
+import {
+    isAdminRequest,
+    destroySession,
+    SESSION_COOKIE,
+    hashPassword,
+    verifyPassword,
+    getSessionUser,
+    isRateLimited,
+    registerHit,
+    clientIp,
+} from '@/lib/auth';
 
 // --- AUTHENTICATION HELPER ---
 export async function verifyAdminAuth() {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('admin_session')?.value;
-    return sessionToken === 'authenticated' || verifyAdminSession(sessionToken);
+    return isAdminRequest();
 }
 
 export async function requireAdminAuth() {
@@ -33,43 +41,42 @@ function extractId(idOrFormData) {
 }
 
 // --- AUTH ACTIONS ---
-export async function adminLogin(formData) {
-    try {
-        const username = (formData.get('username') || '').toString().trim();
-        const password = (formData.get('password') || '').toString().trim();
-
-        if (!username || !password) return { error: 'Identifiants requis.' };
-
-        const db = getDb();
-        const user = await db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
-
-        if (user && user.password === password) {
-            const cookieStore = await cookies();
-            cookieStore.set('admin_session', 'authenticated', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 60 * 60 * 24 * 7,
-                path: '/',
-            });
-            return { success: true };
-        } else {
-            return { error: 'Identifiants incorrects' };
-        }
-    } catch (err) {
-        console.error('adminLogin error:', err);
-        return { error: 'Erreur lors de la connexion : ' + (err.message || 'Problème de base de données.') };
-    }
-}
-
 export async function adminLogout() {
     const cookieStore = await cookies();
-    cookieStore.delete('admin_session');
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    if (token) {
+        await destroySession(token).catch(() => {});
+    }
+    cookieStore.delete(SESSION_COOKIE);
     redirect('/admin');
 }
 
+export async function changeAdminPassword(currentPassword, newPassword) {
+    await requireAdminAuth();
+    if (!newPassword || newPassword.length < 8) {
+        return { error: 'Le nouveau mot de passe doit comporter au moins 8 caractères.' };
+    }
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    const username = await getSessionUser(token);
+    if (!username) return { error: 'Session invalide.' };
+
+    const db = getDb();
+    const user = await db.prepare('SELECT password FROM admin_users WHERE username = ?').get(username);
+    if (!user) return { error: 'Utilisateur introuvable.' };
+
+    const check = await verifyPassword(currentPassword, user.password);
+    if (!check.ok) {
+        return { error: 'Mot de passe actuel incorrect.' };
+    }
+
+    const newHashed = await hashPassword(newPassword);
+    await db.prepare('UPDATE admin_users SET password = ? WHERE username = ?').run(newHashed, username);
+    return { success: true, message: 'Mot de passe mis à jour avec succès.' };
+}
+
 // --- SECURE FILE UPLOAD HELPER ---
-const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.svg', '.jfif', '.heic', '.heif', '.avif', '.bmp', '.pdf']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.jfif', '.heic', '.heif', '.avif', '.bmp', '.pdf']);
 
 async function saveUploadedFile(file) {
     if (!file || typeof file === 'string' || !file.name || file.size === 0) return null;
@@ -83,7 +90,7 @@ async function saveUploadedFile(file) {
 
     let ext = path.extname(file.name || '').toLowerCase();
     if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
-        if (file.type && file.type.startsWith('image/')) {
+        if (file.type && file.type.startsWith('image/') && !file.type.includes('svg')) {
             ext = '.webp';
         } else if (file.type && file.type.startsWith('video/')) {
             ext = '.mp4';
@@ -104,7 +111,6 @@ async function saveUploadedFile(file) {
             '.png': 'image/png',
             '.webp': 'image/webp',
             '.gif': 'image/gif',
-            '.svg': 'image/svg+xml',
             '.mp4': 'video/mp4',
             '.webm': 'video/webm',
             '.mov': 'video/quicktime',
@@ -697,6 +703,13 @@ export async function reorderGalleryPost(idOrFormData, direction) {
 
 // --- CONTACT & DEVIS FORM (PUBLIC) ---
 export async function submitContactForm(formData) {
+    const headerStore = await headers();
+    const ip = clientIp(headerStore);
+    const limitKey = `contact:${ip}`;
+    if (await isRateLimited(limitKey, 5, 10 * 60 * 1000)) {
+        return { error: 'Trop de messages envoyés récemment. Merci de patienter quelques minutes avant de renouveler votre demande.' };
+    }
+
     // 1. Anti-spam honeypot check
     const honeypot = (formData.get('_hp_check') || '').toString().trim();
     if (honeypot) {
@@ -783,6 +796,8 @@ export async function submitContactForm(formData) {
         INSERT INTO contact_messages (name, email, phone, event_type, guests, event_date, message)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(name, email, phone, event_type, guests, event_date, message);
+
+    await registerHit(limitKey, 10 * 60 * 1000);
 
     revalidatePath('/admin/dashboard/messages');
 

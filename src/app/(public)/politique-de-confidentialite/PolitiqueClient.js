@@ -200,7 +200,7 @@ export default function PolitiqueClient() {
                             ) : (
                                 <>
                                     <p>
-                                        Dans le cadre de l'utilisation du site, nous veillons au principe de <strong>minimisation des données</strong> : seules les informations strictement nécessaires à la bonne exécution de nos prestations sont demandées.
+                                        Dans le cadre de l&apos;utilisation du site, nous veillons au principe de <strong>minimisation des données</strong> : seules les informations strictement nécessaires à la bonne exécution de nos prestations sont demandées.
                                     </p>
                                     <p>
                                         <strong>Via le formulaire de contact et de demande de devis :</strong>
@@ -208,8 +208,8 @@ export default function PolitiqueClient() {
                                     <ul>
                                         <li><strong>Nom complet</strong> : afin de pouvoir vous identifier et personnaliser nos échanges ;</li>
                                         <li><strong>Adresse email</strong> : pour vous adresser notre proposition tarifaire, devis personnalisé ou réponse ;</li>
-                                        <li><strong>Numéro de téléphone</strong> : indispensable pour vous joindre rapidement afin d'affiner le menu, confirmer les détails logistiques ou coordonner la livraison / le retrait ;</li>
-                                        <li><strong>Détails du projet traiteur</strong> : type d'événement (repas de famille, mariage, séminaire d'entreprise), date envisagée, nombre estimé de convives et message libre (allergies éventuelles, souhaits de recettes).</li>
+                                        <li><strong>Numéro de téléphone</strong> : indispensable pour vous joindre rapidement afin d&apos;affiner le menu, confirmer les détails logistiques ou coordonner la livraison / le retrait ;</li>
+                                        <li><strong>Détails du projet traiteur</strong> : type d&apos;événement (repas de famille, mariage, séminaire d&apos;entreprise), date envisagée, nombre estimé de convives et message libre (allergies éventuelles, souhaits de recettes).</li>
                                     </ul>
                                     <p>
                                         Le caractère obligatoire des informations est indiqué lors de la saisie sur le formulaire.
@@ -268,15 +268,15 @@ export default function PolitiqueClient() {
                                     </li>
                                     <li>
                                         <strong>Exécution de la commande traiteur :</strong> réalisation des plats, préparation des buffets, livraison ou mise à disposition au laboratoire culinaire à Eyguières.
-                                        <br /><em>Base légale : Exécution d'un contrat de prestation de services (art. 6.1.b du RGPD).</em>
+                                        <br /><em>Base légale : Exécution d&apos;un contrat de prestation de services (art. 6.1.b du RGPD).</em>
                                     </li>
                                     <li>
                                         <strong>Facturation et tenue de la comptabilité :</strong> respect des obligations fiscales et légales françaises imposées à toute entreprise.
-                                        <br /><em>Base légale : Respect d'obligations légales (art. 6.1.c du RGPD).</em>
+                                        <br /><em>Base légale : Respect d&apos;obligations légales (art. 6.1.c du RGPD).</em>
                                     </li>
                                     <li>
                                         <strong>Sécurité et bon fonctionnement du site :</strong> prévention des abus, lutte contre le spam et sécurisation des échanges.
-                                        <br /><em>Base légale : Intérêt légitime de l'entreprise à sécuriser son activité numérique (art. 6.1.f du RGPD).</em>
+                                        <br /><em>Base légale : Intérêt légitime de l&apos;entreprise à sécuriser son activité numérique (art. 6.1.f du RGPD).</em>
                                     </li>
                                 </ul>
                             )}
@@ -390,10 +390,10 @@ export default function PolitiqueClient() {
                             ) : (
                                 <ul>
                                     <li>
-                                        <strong>Préférence de langue (stockage local du navigateur) :</strong> clé <code>mamefricoto-lang</code> permettant de conserver votre choix d'affichage (Français ou Anglais) lors de vos visites. Elle ne contient aucune donnée nominative.
+                                        <strong>Préférence de langue (stockage local du navigateur) :</strong> clé <code>mamefricoto-lang</code> permettant de conserver votre choix d&apos;affichage (Français ou Anglais) lors de vos visites. Elle ne contient aucune donnée nominative.
                                     </li>
                                     <li>
-                                        <strong>Cookie d'administration sécurisé :</strong> réservé exclusivement au gestionnaire du site pour l'accès authentifié à l'espace de gestion des menus et cartes (cookie chiffré HTTPOnly).
+                                        <strong>Cookie d&apos;administration sécurisé :</strong> réservé exclusivement au gestionnaire du site pour l&apos;accès authentifié à l&apos;espace de gestion des menus et cartes (cookie chiffré HTTPOnly).
                                     </li>
                                 </ul>
                             )}
@@ -441,17 +441,17 @@ export default function PolitiqueClient() {
                             ) : (
                                 <>
                                     <p>
-                                        <strong>Destinataire exclusif :</strong> Les données collectées sont destinées de façon exclusive et confidentielle à <strong>Léa Laurent</strong> pour l'exploitation de Mamé Fricoto.
+                                        <strong>Destinataire exclusif :</strong> Les données collectées sont destinées de façon exclusive et confidentielle à <strong>Léa Laurent</strong> pour l&apos;exploitation de Mamé Fricoto.
                                     </p>
                                     <p>
-                                        <strong>Sous-traitants techniques :</strong> Pour assurer le fonctionnement fiable et sécurisé du site, nous faisons appel à des prestataires d'infrastructure reconnus qui respectent les exigences du RGPD :
+                                        <strong>Sous-traitants techniques :</strong> Pour assurer le fonctionnement fiable et sécurisé du site, nous faisons appel à des prestataires d&apos;infrastructure reconnus qui respectent les exigences du RGPD :
                                     </p>
                                     <ul>
                                         <li><strong>Hébergement web :</strong> Vercel Inc. (infrastructures cloud hautement sécurisées bénéficiant des certifications ISO 27001 et SOC 2 Type II).</li>
-                                        <li><strong>Acheminement des courriels :</strong> Protocoles d'envoi d'emails transactionnels sécurisés garantissant que vos demandes arrivent directement dans notre boîte email professionnelle.</li>
+                                        <li><strong>Acheminement des courriels :</strong> Protocoles d&apos;envoi d&apos;emails transactionnels sécurisés garantissant que vos demandes arrivent directement dans notre boîte email professionnelle.</li>
                                     </ul>
                                     <p>
-                                        <strong>Mesures de sécurité déployées :</strong> Chiffrement TLS/SSL de bout en bout de l'ensemble du trafic web (HTTPS), protection renforcée de l'administration du site et sauvegardes régulières.
+                                        <strong>Mesures de sécurité déployées :</strong> Chiffrement TLS/SSL de bout en bout de l&apos;ensemble du trafic web (HTTPS), protection renforcée de l&apos;administration du site et sauvegardes régulières.
                                     </p>
                                 </>
                             )}

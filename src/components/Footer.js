@@ -48,31 +48,31 @@ export default function Footer({ siteInfo }) {
                         <h3>{t('footer.navTitle')}</h3>
                         <ul>
                             <li>
-                                <Link href="/" prefetch={true} className="footer-nav-link">
+                                <Link href="/" className="footer-nav-link">
                                     <span className="footer-link-bullet" aria-hidden="true">›</span>
                                     <span>{t('nav.home')}</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/tarifs" prefetch={true} className="footer-nav-link">
+                                <Link href="/tarifs" className="footer-nav-link">
                                     <span className="footer-link-bullet" aria-hidden="true">›</span>
                                     <span>{t('nav.tarifs')}</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/galerie" prefetch={true} className="footer-nav-link">
+                                <Link href="/galerie" className="footer-nav-link">
                                     <span className="footer-link-bullet" aria-hidden="true">›</span>
                                     <span>{t('nav.creations')}</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/a-propos" prefetch={true} className="footer-nav-link">
+                                <Link href="/a-propos" className="footer-nav-link">
                                     <span className="footer-link-bullet" aria-hidden="true">›</span>
                                     <span>{t('nav.about')}</span>
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/contact" prefetch={true} className="footer-nav-link">
+                                <Link href="/contact" className="footer-nav-link">
                                     <span className="footer-link-bullet" aria-hidden="true">›</span>
                                     <span>{t('nav.contact')}</span>
                                 </Link>
@@ -85,7 +85,7 @@ export default function Footer({ siteInfo }) {
                         <ul>
                             {servicesList.map((service, i) => (
                                 <li key={i}>
-                                    <Link href={service.href} prefetch={true} className="footer-nav-link">
+                                    <Link href={service.href} className="footer-nav-link">
                                         <span className="footer-link-bullet" aria-hidden="true">›</span>
                                         <span>{service.label}</span>
                                     </Link>

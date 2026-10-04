@@ -1,7 +1,7 @@
 import './admin.css';
 
 export const metadata = {
-    title: 'Administration | Mamé Fricoto',
+    title: 'Administration',
     robots: {
         index: false,
         follow: false,

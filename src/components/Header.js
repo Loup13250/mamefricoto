@@ -83,19 +83,19 @@ export default function Header({ siteInfo }) {
                 </Link>
 
                 <nav className="site-nav" aria-label="Navigation principale">
-                    <Link href="/" prefetch={true} className={pathname === '/' ? 'nav-link active' : 'nav-link'}>
+                    <Link href="/" className={pathname === '/' ? 'nav-link active' : 'nav-link'}>
                         {t('nav.home')}
                     </Link>
-                    <Link href="/tarifs" prefetch={true} className={pathname === '/tarifs' || pathname === '/prestations' ? 'nav-link active' : 'nav-link'}>
+                    <Link href="/tarifs" className={pathname === '/tarifs' || pathname === '/prestations' ? 'nav-link active' : 'nav-link'}>
                         {t('nav.tarifs')}
                     </Link>
-                    <Link href="/galerie" prefetch={true} className={pathname === '/galerie' || pathname === '/realisations' ? 'nav-link active' : 'nav-link'}>
+                    <Link href="/galerie" className={pathname === '/galerie' || pathname === '/realisations' ? 'nav-link active' : 'nav-link'}>
                         {t('nav.creations')}
                     </Link>
-                    <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>
+                    <Link href="/a-propos" className={pathname === '/a-propos' ? 'nav-link active' : 'nav-link'}>
                         {t('nav.about')}
                     </Link>
-                    <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>
+                    <Link href="/contact" className={pathname === '/contact' ? 'nav-link active' : 'nav-link'}>
                         {t('nav.contact')}
                     </Link>
                 </nav>
@@ -152,19 +152,19 @@ export default function Header({ siteInfo }) {
 
                     {/* Main Nav Links */}
                     <nav className="mobile-nav-body" aria-label="Navigation mobile">
-                        <Link href="/" prefetch={true} className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.home')}
                         </Link>
-                        <Link href="/tarifs" prefetch={true} className={pathname === '/tarifs' || pathname === '/prestations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/tarifs" className={pathname === '/tarifs' || pathname === '/prestations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.tarifs')}
                         </Link>
-                        <Link href="/galerie" prefetch={true} className={pathname === '/galerie' || pathname === '/realisations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/galerie" className={pathname === '/galerie' || pathname === '/realisations' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.creations')}
                         </Link>
-                        <Link href="/a-propos" prefetch={true} className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/a-propos" className={pathname === '/a-propos' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.about')}
                         </Link>
-                        <Link href="/contact" prefetch={true} className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
+                        <Link href="/contact" className={pathname === '/contact' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.contact')}
                         </Link>
                     </nav>

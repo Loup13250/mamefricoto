@@ -11,10 +11,16 @@ export default function Footer({ siteInfo }) {
     const phoneTel = phone.replace(/\s+/g, '');
 
     const servicesList = [
-        { label: t('type.private'), href: '/contact?type=prive' },
-        { label: t('type.pro'), href: '/contact?type=entreprise' },
-        { label: t('type.other'), href: '/contact?type=autre' },
+        { id: 'prive', label: t('type.private'), href: '/contact?type=prive' },
+        { id: 'entreprise', label: t('type.pro'), href: '/contact?type=entreprise' },
+        { id: 'autre', label: t('type.other'), href: '/contact?type=autre' },
     ];
+
+    const handleServiceClick = (serviceId) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('mame:set-prestation', { detail: serviceId }));
+        }
+    };
 
     return (
         <footer className="site-footer">
@@ -85,7 +91,11 @@ export default function Footer({ siteInfo }) {
                         <ul>
                             {servicesList.map((service, i) => (
                                 <li key={i}>
-                                    <Link href={service.href} className="footer-nav-link">
+                                    <Link
+                                        href={service.href}
+                                        className="footer-nav-link"
+                                        onClick={() => handleServiceClick(service.id)}
+                                    >
                                         <span className="footer-link-bullet" aria-hidden="true">›</span>
                                         <span>{service.label}</span>
                                     </Link>

@@ -1,45 +1,70 @@
 'use client';
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { submitContactForm } from '@/app/actions';
 import { useLanguage } from '@/context/LanguageContext';
 import { Send, CheckCircle2, AlertCircle, Phone, Calendar, Users, Mail, User, PartyPopper, Building, HelpCircle, ShieldCheck } from 'lucide-react';
 import './ContactForm.css';
 
-function subscribeSearch(callback) {
-    window.addEventListener('popstate', callback);
-    return () => window.removeEventListener('popstate', callback);
-}
-
-function getSearchSnapshot() {
-    return window.location.search;
-}
-
-function getServerSearchSnapshot() {
-    return '';
-}
-
-function parseUrlEventType(search) {
-    if (!search) return 'Événement Privé';
-    const params = new URLSearchParams(search);
-    const typeParam = params.get('type');
-    if (!typeParam) return 'Événement Privé';
+function parseUrlEventType(typeParam) {
+    if (!typeParam) return null;
     const lower = typeParam.toLowerCase();
     if (lower.includes('priv') || lower === 'private') return 'Événement Privé';
     if (lower.includes('entrep') || lower.includes('pro') || lower.includes('corp') || lower.includes('business')) return 'Entreprise';
     if (lower.includes('autr') || lower.includes('other')) return 'Autre';
-    return 'Événement Privé';
+    return null;
 }
 
-export default function ContactForm() {
+function ContactFormInner() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [userSelectedType, setUserSelectedType] = useState(null);
     const { t } = useLanguage();
 
-    const search = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getServerSearchSnapshot);
-    const selectedEventType = userSelectedType ?? parseUrlEventType(search);
+    const searchParams = useSearchParams();
+    const typeParam = searchParams.get('type');
+    const parsedUrlType = parseUrlEventType(typeParam);
+
+    // Type sélectionné : initialisé depuis l'URL ou 'Événement Privé' par défaut
+    const [prevTypeParam, setPrevTypeParam] = useState(typeParam);
+    const [selectedEventType, setSelectedEventType] = useState(parsedUrlType || 'Événement Privé');
+
+    // Ajustement de l'état pendant le rendu si le paramètre d'URL change (recommandé par React)
+    if (prevTypeParam !== typeParam) {
+        setPrevTypeParam(typeParam);
+        if (parsedUrlType) {
+            setSelectedEventType(parsedUrlType);
+        }
+    }
+
+    // Défilement doux vers le formulaire quand on navigue depuis un lien externe ou le footer
+    useEffect(() => {
+        if (typeParam && typeof window !== 'undefined' && window.scrollY > 300) {
+            const target = document.getElementById('label-prestation') || document.querySelector('.contact-card');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [typeParam]);
+
+    // Écoute directe des clics sur les prestations du footer même si on est déjà sur la page
+    useEffect(() => {
+        const handleCustom = (e) => {
+            const parsed = parseUrlEventType(e.detail);
+            if (parsed) {
+                setSelectedEventType(parsed);
+                if (typeof window !== 'undefined' && window.scrollY > 300) {
+                    const target = document.getElementById('label-prestation') || document.querySelector('.contact-card');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }
+        };
+        window.addEventListener('mame:set-prestation', handleCustom);
+        return () => window.removeEventListener('mame:set-prestation', handleCustom);
+    }, []);
 
     const eventTypes = [
         { id: 'Événement Privé', labelKey: 'type.private', icon: <PartyPopper size={14} /> },
@@ -155,7 +180,7 @@ export default function ContactForm() {
                                 type="button"
                                 role="radio"
                                 aria-checked={selectedEventType === type.id}
-                                onClick={() => setUserSelectedType(type.id)}
+                                onClick={() => setSelectedEventType(type.id)}
                                 className={`form-pill ${selectedEventType === type.id ? 'active' : ''}`}
                             >
                                 {type.icon}
@@ -283,5 +308,13 @@ export default function ContactForm() {
                 </div>
             </form>
         </div>
+    );
+}
+
+export default function ContactForm() {
+    return (
+        <Suspense fallback={<div className="contact-card anim-up" style={{ minHeight: '520px' }} />}>
+            <ContactFormInner />
+        </Suspense>
     );
 }

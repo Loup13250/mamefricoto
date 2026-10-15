@@ -35,3 +35,6 @@ next-env.d.ts
 *.db
 *.db-shm
 *.db-wal
+
+# documents privés (ne jamais publier)
+GUIDE_DECLINAISON_CLIENT.md

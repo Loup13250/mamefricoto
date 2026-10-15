@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { 
     Phone, 
@@ -20,51 +20,102 @@ import './tarifs.css';
 /* =====================================================
    COMPOSANT VISUEL MULTI-IMAGES / PDF
    ===================================================== */
-function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
+function PricingDocVisual({ doc, title, lang, imgIdx = 0, onIndexChange, onOpenLightbox, isActive, onActivate }) {
     const { t } = useLanguage();
     const activeUrl = (lang === 'en' && doc.file_url_en) ? doc.file_url_en : doc.file_url;
     const isPdf = doc.file_type === 'pdf' || (activeUrl && activeUrl.toLowerCase().endsWith('.pdf'));
 
     // Obtenir la liste des images pour la langue active
-    const images = (lang === 'en' && doc.images_en && doc.images_en.length > 0)
-        ? doc.images_en
-        : ((doc.images_fr && doc.images_fr.length > 0)
-            ? doc.images_fr
-            : (doc.images && doc.images.length > 0
-                ? doc.images
-                : (activeUrl ? [{ id: 1, image_url: activeUrl }] : [])));
+    const images = useMemo(() => {
+        if (lang === 'en') {
+            if (doc.images_en && doc.images_en.length > 0) return doc.images_en;
+            if (doc.file_url_en) return [{ id: 'doc-en', image_url: doc.file_url_en }];
+            if (doc.images_fr && doc.images_fr.length > 0) return doc.images_fr;
+            if (doc.images && doc.images.length > 0) return doc.images;
+            if (doc.file_url) return [{ id: 'doc-default', image_url: doc.file_url }];
+            return [];
+        }
+        // French / default
+        if (doc.images_fr && doc.images_fr.length > 0) return doc.images_fr;
+        if (doc.images && doc.images.length > 0) return doc.images;
+        if (doc.file_url) return [{ id: 'doc-fr', image_url: doc.file_url }];
+        if (doc.images_en && doc.images_en.length > 0) return doc.images_en;
+        return [];
+    }, [doc, lang]);
 
-    const [imgIdx, setImgIdx] = useState(0);
-    const [prevLang, setPrevLang] = useState(lang);
-    if (prevLang !== lang) {
-        setPrevLang(lang);
-        setImgIdx(0);
-    }
     const touchStartX = useRef(0);
 
-    const handlePrev = (e) => {
-        e.stopPropagation();
-        setImgIdx(prev => (prev === 0 ? images.length - 1 : prev - 1));
-    };
+    // Préchargement immédiat de toutes les images pour une navigation fluide sans délai
+    useEffect(() => {
+        if (typeof window === 'undefined' || !images || images.length <= 1) return;
+        images.forEach(img => {
+            const src = img?.image_url;
+            if (src) {
+                const preload = new window.Image();
+                preload.src = src;
+            }
+        });
+    }, [images]);
 
-    const handleNext = (e) => {
-        e.stopPropagation();
-        setImgIdx(prev => (prev === images.length - 1 ? 0 : prev + 1));
-    };
+    const handlePrev = useCallback((e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (images.length <= 1) return;
+        const nextIdx = imgIdx === 0 ? images.length - 1 : imgIdx - 1;
+        onIndexChange?.(nextIdx);
+    }, [images.length, imgIdx, onIndexChange]);
+
+    const handleNext = useCallback((e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (images.length <= 1) return;
+        const nextIdx = imgIdx === images.length - 1 ? 0 : imgIdx + 1;
+        onIndexChange?.(nextIdx);
+    }, [images.length, imgIdx, onIndexChange]);
+
+    // Navigation clavier avec les flèches gauche et droite
+    useEffect(() => {
+        if (!isActive || images.length <= 1) return;
+
+        const handleKeyDown = (e) => {
+            const target = e.target;
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+                return;
+            }
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                handlePrev();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                handleNext();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isActive, images.length, handlePrev, handleNext]);
 
     const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
+        if (e.touches?.[0]) touchStartX.current = e.touches[0].clientX;
     };
 
     const handleTouchEnd = (e) => {
-        const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-        if (Math.abs(deltaX) > 40) {
+        const touchEnd = e.changedTouches?.[0]?.clientX;
+        if (!touchEnd || !touchStartX.current) return;
+        const deltaX = touchStartX.current - touchEnd;
+        if (Math.abs(deltaX) > 30) {
             if (deltaX > 0) {
-                setImgIdx(prev => (prev === 0 ? images.length - 1 : prev - 1));
+                handleNext();
             } else {
-                setImgIdx(prev => (prev === images.length - 1 ? 0 : prev + 1));
+                handlePrev();
             }
         }
+        touchStartX.current = 0;
     };
 
     if (isPdf) {
@@ -93,13 +144,20 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
 
     return (
         <div
-            className="pricing-doc-visual"
+            className={`pricing-doc-visual ${isActive ? 'is-active' : ''}`}
             onClick={() => onOpenLightbox(images, imgIdx, title)}
+            onMouseEnter={onActivate}
+            onFocus={onActivate}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && onOpenLightbox(images, imgIdx, title)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onOpenLightbox(images, imgIdx, title);
+                }
+            }}
             style={{ position: 'relative', overflow: 'hidden' }}
         >
             {/* Image courante */}
@@ -111,23 +169,16 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
                 loading="eager"
             />
 
-            {/* Badge pagination si plusieurs images */}
+            {/* Badge pagination & Indicateur flèches clavier */}
             {images.length > 1 && (
-                <div style={{
-                    position: 'absolute',
-                    top: '12px',
-                    left: '12px',
-                    background: 'rgba(14, 13, 12, 0.82)',
-                    border: '1px solid rgba(200, 169, 110, 0.4)',
-                    color: '#C8A96E',
-                    fontSize: '0.72rem',
-                    fontWeight: '700',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    backdropFilter: 'blur(6px)',
-                    zIndex: 2,
-                }}>
-                    {imgIdx + 1} / {images.length}
+                <div className="pricing-doc-badge-group">
+                    <div className="pricing-doc-page-badge">
+                        {imgIdx + 1} / {images.length}
+                    </div>
+                    <div className="pricing-kbd-badge" title={lang === 'en' ? 'Use keyboard arrows ← → to flip photos' : 'Utilisez les flèches du clavier ← → pour faire défiler les photos'}>
+                        <span className="pricing-kbd-key">←</span>
+                        <span className="pricing-kbd-key">→</span>
+                    </div>
                 </div>
             )}
 
@@ -189,6 +240,24 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
                 </>
             )}
 
+            {/* Pagination par points (dots) cliquables */}
+            {images.length > 1 && (
+                <div className="pricing-doc-dots" onClick={(e) => e.stopPropagation()}>
+                    {images.map((_, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            className={`pricing-doc-dot ${i === imgIdx ? 'active' : ''}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onIndexChange?.(i);
+                            }}
+                            aria-label={`Photo ${i + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
+
             {/* Overlay plein écran au survol */}
             <div className="pricing-doc-overlay">
                 <Maximize2 size={24} />
@@ -204,6 +273,21 @@ function PricingDocVisual({ doc, title, lang, onOpenLightbox }) {
 export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
     const { t, trans, lang } = useLanguage();
     const [lightbox, setLightbox] = useState(null); // { images, currentIndex, title }
+    const [activeDocIdx, setActiveDocIdx] = useState(0);
+    const [docImageIndices, setDocImageIndices] = useState({});
+    const [prevLang, setPrevLang] = useState(lang);
+    if (prevLang !== lang) {
+        setPrevLang(lang);
+        setDocImageIndices({});
+    }
+    const lightboxTouchStartX = useRef(0);
+
+    const handleDocIndexChange = useCallback((docKey, newIdx) => {
+        setDocImageIndices(prev => {
+            if (prev[docKey] === newIdx) return prev;
+            return { ...prev, [docKey]: newIdx };
+        });
+    }, []);
 
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
@@ -240,17 +324,39 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
         });
     }, []);
 
-    // Clavier lightbox
+    // Clavier lightbox (Échap pour fermer, flèches gauche / droite pour naviguer)
     useEffect(() => {
         if (!lightbox) return;
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') closeLightbox();
-            else if (e.key === 'ArrowLeft') prevLightboxImg();
-            else if (e.key === 'ArrowRight') nextLightboxImg();
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeLightbox();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevLightboxImg();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextLightboxImg();
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [lightbox, closeLightbox, prevLightboxImg, nextLightboxImg]);
+
+    // Touch swipe lightbox sur mobile/tablette
+    const handleLightboxTouchStart = (e) => {
+        if (e.touches?.[0]) lightboxTouchStartX.current = e.touches[0].clientX;
+    };
+    const handleLightboxTouchEnd = (e) => {
+        const touchEnd = e.changedTouches?.[0]?.clientX;
+        if (!touchEnd || !lightboxTouchStartX.current) return;
+        const deltaX = lightboxTouchStartX.current - touchEnd;
+        if (Math.abs(deltaX) > 35) {
+            if (deltaX > 0) nextLightboxImg();
+            else prevLightboxImg();
+        }
+        lightboxTouchStartX.current = 0;
+    };
 
     return (
         <main id="main-content" tabIndex="-1" className="tarifs-page subpage-main">
@@ -281,19 +387,32 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                                 const activeUrl = (lang === 'en' && doc.file_url_en) ? doc.file_url_en : doc.file_url;
                                 const isPdf = doc.file_type === 'pdf' || (activeUrl && activeUrl.toLowerCase().endsWith('.pdf'));
 
-                                const docImages = (lang === 'en' && doc.images_en && doc.images_en.length > 0)
-                                    ? doc.images_en
+                                const docImages = (lang === 'en')
+                                    ? ((doc.images_en && doc.images_en.length > 0)
+                                        ? doc.images_en
+                                        : (doc.file_url_en ? [{ id: 'doc-en', image_url: doc.file_url_en }] : (doc.images_fr || [])))
                                     : ((doc.images_fr && doc.images_fr.length > 0)
                                         ? doc.images_fr
-                                        : [{ id: 1, image_url: activeUrl }]);
+                                        : (doc.file_url ? [{ id: 'doc-fr', image_url: doc.file_url }] : (doc.images_en || [])));
+
+                                const currentDocIndex = docImageIndices[doc.id || idx] || 0;
+                                const isKeyboardActive = !lightbox && (activeDocIdx === idx);
 
                                 return (
-                                    <div key={doc.id || idx} className="pricing-doc-card anim-up">
+                                    <div
+                                        key={doc.id || idx}
+                                        className={`pricing-doc-card anim-up ${isKeyboardActive ? 'is-keyboard-active' : ''}`}
+                                        onMouseEnter={() => setActiveDocIdx(idx)}
+                                    >
                                         {/* Visualisation multi-images ou PDF */}
                                         <PricingDocVisual
                                             doc={doc}
                                             title={title}
                                             lang={lang}
+                                            imgIdx={currentDocIndex}
+                                            isActive={isKeyboardActive}
+                                            onActivate={() => setActiveDocIdx(idx)}
+                                            onIndexChange={(newIdx) => handleDocIndexChange(doc.id || idx, newIdx)}
                                             onOpenLightbox={openLightbox}
                                         />
 
@@ -329,14 +448,14 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                                                     <>
                                                         <button
                                                             type="button"
-                                                            onClick={() => openLightbox(docImages, 0, title)}
+                                                            onClick={() => openLightbox(docImages, currentDocIndex, title)}
                                                             className="pricing-doc-btn pricing-doc-btn--primary"
                                                         >
                                                             <Maximize2 size={14} />
                                                             {docImages.length > 1 ? `Voir les ${docImages.length} photos` : t('tarifs.viewFullscreen')}
                                                         </button>
                                                         <a
-                                                            href={docImages[0]?.image_url || activeUrl}
+                                                            href={docImages[currentDocIndex]?.image_url || activeUrl}
                                                             download
                                                             className="pricing-doc-btn pricing-doc-btn--outline"
                                                         >
@@ -394,6 +513,8 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                 <div
                     className="pricing-lightbox"
                     onClick={closeLightbox}
+                    onTouchStart={handleLightboxTouchStart}
+                    onTouchEnd={handleLightboxTouchEnd}
                     role="dialog"
                     aria-modal="true"
                     aria-label={lightbox.title || 'Image plein écran'}
@@ -471,6 +592,22 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                             alt={`${lightbox.title || 'Tarif'} - ${lightbox.currentIndex + 1}`}
                             className="pricing-lightbox-img"
                         />
+
+                        {/* Points de pagination cliquables dans la lightbox */}
+                        {lightbox.images.length > 1 && (
+                            <div className="pricing-lightbox-dots">
+                                {lightbox.images.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        className={`pricing-lightbox-dot ${i === lightbox.currentIndex ? 'active' : ''}`}
+                                        onClick={() => setLightbox(prev => ({ ...prev, currentIndex: i }))}
+                                        aria-label={`Photo ${i + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
                         <div className="pricing-lightbox-caption">
                             <div>
                                 <strong>{lightbox.title}</strong>

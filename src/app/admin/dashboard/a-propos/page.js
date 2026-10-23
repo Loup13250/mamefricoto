@@ -1,4 +1,5 @@
 import { getSiteInfo, getServices } from '@/lib/data';
+import { parseCustomTexts, CUSTOM_TEXTS_KEY } from '@/lib/siteTexts';
 import AProposAdminClient from './AProposAdminClient';
 
 export const dynamic = 'force-dynamic';
@@ -13,5 +14,7 @@ export default async function AProposAdminPage() {
         getServices(),
     ]);
 
-    return <AProposAdminClient info={info} services={services} />;
+    const customTexts = parseCustomTexts(info?.[CUSTOM_TEXTS_KEY]);
+
+    return <AProposAdminClient info={info} services={services} customTexts={customTexts} />;
 }

@@ -19,7 +19,8 @@ import {
     Heart,
     Receipt,
     Sparkles,
-    ChevronRight
+    ChevronRight,
+    Languages
 } from 'lucide-react';
 
 export default function AdminSidebarClient({ children, unreadCount = 0 }) {
@@ -40,6 +41,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
     const isAProposActive = pathname === '/admin/dashboard/a-propos';
     const isMessagesActive = pathname === '/admin/dashboard/messages';
     const isSettingsActive = pathname === '/admin/dashboard/settings';
+    const isTextesActive = pathname === '/admin/dashboard/textes';
 
     return (
         <div className="admin-dashboard-layout">
@@ -197,6 +199,18 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                         </div>
                         <span className="admin-nav-item-text">Informations Site</span>
                         {isSettingsActive && <span className="admin-nav-active-pill" />}
+                    </Link>
+
+                    {/* 7. TEXTES DU SITE (FR / EN) */}
+                    <Link
+                        href="/admin/dashboard/textes"
+                        className={`admin-nav-item ${isTextesActive ? 'active' : ''}`}
+                    >
+                        <div className="admin-nav-item-icon">
+                            <Languages size={18} />
+                        </div>
+                        <span className="admin-nav-item-text">Textes du site</span>
+                        {isTextesActive && <span className="admin-nav-active-pill" />}
                     </Link>
                 </nav>
 

@@ -8,8 +8,10 @@ import {
     reorderPricingDocument,
     deletePricingDocumentImage,
     deletePricingDocumentImages,
-    reorderPricingDocumentImage
+    reorderPricingDocumentImage,
+    replacePricingDocumentImage
 } from '@/app/actions';
+import ImageCropperModal, { TARIFS_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
 import { 
     Plus, 
     Trash2, 
@@ -29,7 +31,8 @@ import {
     ChevronRight,
     Languages,
     AlertTriangle,
-    Check
+    Check,
+    Crop
 } from 'lucide-react';
 
 /* Utilitaire de compression client-side haute performance */
@@ -111,6 +114,9 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
     // Pop-up confirmation pour quitter avec modifications non enregistrées
     const [unsavedConfirmModal, setUnsavedConfirmModal] = useState(null); // 'add' | 'edit' | null
+
+    // Modal de recadrage intégré
+    const [cropper, setCropper] = useState(null);
 
     const docFormRef = useRef(null);
     const docEditFormRef = useRef(null);
@@ -228,24 +234,27 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
         else setSelectedImagesEn([]);
     };
 
-    // Gestion de l'ajout d'images pour le formulaire de création
-    const handleAddImagesSelect = async (files, lang = 'fr') => {
-        const fileArr = Array.from(files).filter(f => f.type.startsWith('image/'));
+    // Gestion de l'ajout d'images pour le formulaire de création via le recadreur
+    const handleAddImagesSelect = (files, lang = 'fr') => {
+        const fileArr = Array.from(files || []).filter(f => f.type.startsWith('image/'));
         if (fileArr.length === 0) return;
+        setCropper({
+            mode: lang === 'fr' ? 'add_fr' : 'add_en',
+            lang,
+            items: fileArr.map(f => ({ id: uid(), file: f, name: f.name })),
+        });
+    };
 
-        const newItems = await Promise.all(fileArr.map(async (file) => {
-            const compressed = await compressImageFile(file);
-            return {
-                file: compressed,
-                preview: URL.createObjectURL(compressed)
-            };
-        }));
-
-        if (lang === 'fr') {
-            setAddImagesFr(prev => [...prev, ...newItems]);
-        } else {
-            setAddImagesEn(prev => [...prev, ...newItems]);
-        }
+    const handleRecropAddImage = (index, lang = 'fr') => {
+        const list = lang === 'fr' ? addImagesFr : addImagesEn;
+        const target = list[index];
+        if (!target) return;
+        setCropper({
+            mode: lang === 'fr' ? 'recrop_add_fr' : 'recrop_add_en',
+            lang,
+            targetIndex: index,
+            items: [{ id: uid(), file: target.file, name: target.file?.name || `tarif-${lang}-${index + 1}.webp` }],
+        });
     };
 
     const removeAddImage = (index, lang = 'fr') => {
@@ -256,24 +265,27 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
         }
     };
 
-    // Gestion de l'ajout d'images pour le formulaire d'édition
-    const handleEditImagesSelect = async (files, lang = 'fr') => {
-        const fileArr = Array.from(files).filter(f => f.type.startsWith('image/'));
+    // Gestion de l'ajout d'images pour le formulaire d'édition via le recadreur
+    const handleEditImagesSelect = (files, lang = 'fr') => {
+        const fileArr = Array.from(files || []).filter(f => f.type.startsWith('image/'));
         if (fileArr.length === 0) return;
+        setCropper({
+            mode: lang === 'fr' ? 'edit_new_fr' : 'edit_new_en',
+            lang,
+            items: fileArr.map(f => ({ id: uid(), file: f, name: f.name })),
+        });
+    };
 
-        const newItems = await Promise.all(fileArr.map(async (file) => {
-            const compressed = await compressImageFile(file);
-            return {
-                file: compressed,
-                preview: URL.createObjectURL(compressed)
-            };
-        }));
-
-        if (lang === 'fr') {
-            setEditImagesFr(prev => [...prev, ...newItems]);
-        } else {
-            setEditImagesEn(prev => [...prev, ...newItems]);
-        }
+    const handleRecropEditNewImage = (index, lang = 'fr') => {
+        const list = lang === 'fr' ? editImagesFr : editImagesEn;
+        const target = list[index];
+        if (!target) return;
+        setCropper({
+            mode: lang === 'fr' ? 'recrop_edit_new_fr' : 'recrop_edit_new_en',
+            lang,
+            targetIndex: index,
+            items: [{ id: uid(), file: target.file, name: target.file?.name || `tarif-${lang}-${index + 1}.webp` }],
+        });
     };
 
     const removeEditNewImage = (index, lang = 'fr') => {
@@ -282,6 +294,121 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
         } else {
             setEditImagesEn(prev => prev.filter((_, i) => i !== index));
         }
+    };
+
+    // Recadrer une image déjà enregistrée en base de données
+    const handleRecropExistingImage = (img, lang = 'fr') => {
+        setCropper({
+            mode: 'recrop_existing',
+            imageId: img.id,
+            lang,
+            items: [{ id: img.id, url: img.image_url, name: `Tarif ${lang.toUpperCase()}` }],
+        });
+    };
+
+    // Callback de validation du recadrage
+    const handleCropped = async (results) => {
+        if (!results || results.length === 0) {
+            setCropper(null);
+            return;
+        }
+        const mode = cropper?.mode;
+        const lang = cropper?.lang;
+
+        if (mode === 'add_fr' || mode === 'add_en') {
+            const newItems = results.map(r => {
+                const file = r.outputs.image || r.original;
+                return { file, preview: URL.createObjectURL(file) };
+            });
+            if (lang === 'fr') {
+                setAddImagesFr(prev => [...prev, ...newItems]);
+            } else {
+                setAddImagesEn(prev => [...prev, ...newItems]);
+            }
+        } else if (mode === 'edit_new_fr' || mode === 'edit_new_en') {
+            const newItems = results.map(r => {
+                const file = r.outputs.image || r.original;
+                return { file, preview: URL.createObjectURL(file) };
+            });
+            if (lang === 'fr') {
+                setEditImagesFr(prev => [...prev, ...newItems]);
+            } else {
+                setEditImagesEn(prev => [...prev, ...newItems]);
+            }
+        } else if (mode === 'recrop_add_fr' || mode === 'recrop_add_en') {
+            const file = results[0]?.outputs.image || results[0]?.original;
+            if (file && cropper?.targetIndex != null) {
+                const updated = { file, preview: URL.createObjectURL(file) };
+                if (lang === 'fr') {
+                    setAddImagesFr(prev => {
+                        const next = [...prev];
+                        next[cropper.targetIndex] = updated;
+                        return next;
+                    });
+                } else {
+                    setAddImagesEn(prev => {
+                        const next = [...prev];
+                        next[cropper.targetIndex] = updated;
+                        return next;
+                    });
+                }
+            }
+        } else if (mode === 'recrop_edit_new_fr' || mode === 'recrop_edit_new_en') {
+            const file = results[0]?.outputs.image || results[0]?.original;
+            if (file && cropper?.targetIndex != null) {
+                const updated = { file, preview: URL.createObjectURL(file) };
+                if (lang === 'fr') {
+                    setEditImagesFr(prev => {
+                        const next = [...prev];
+                        next[cropper.targetIndex] = updated;
+                        return next;
+                    });
+                } else {
+                    setEditImagesEn(prev => {
+                        const next = [...prev];
+                        next[cropper.targetIndex] = updated;
+                        return next;
+                    });
+                }
+            }
+        } else if (mode === 'recrop_existing') {
+            const cropped = results[0]?.outputs.image || results[0]?.original;
+            const imgId = cropper?.imageId;
+            if (cropped && imgId) {
+                const tempUrl = URL.createObjectURL(cropped);
+                // Mise à jour optimiste dans la modale d'édition et dans la liste des docs
+                setEditingDoc(prev => {
+                    if (!prev) return prev;
+                    const key = lang === 'fr' ? 'images_fr' : 'images_en';
+                    return {
+                        ...prev,
+                        [key]: (prev[key] || []).map(img => img.id === imgId ? { ...img, image_url: tempUrl } : img),
+                    };
+                });
+                setDocList(prev => prev.map(doc => {
+                    if (doc.id === editingDoc?.id) {
+                        const key = lang === 'fr' ? 'images_fr' : 'images_en';
+                        return {
+                            ...doc,
+                            [key]: (doc[key] || []).map(img => img.id === imgId ? { ...img, image_url: tempUrl } : img),
+                        };
+                    }
+                    return doc;
+                }));
+
+                startTransition(async () => {
+                    const fd = new FormData();
+                    fd.append('image_file', cropped);
+                    const res = await replacePricingDocumentImage(imgId, fd);
+                    if (res?.error) {
+                        showNotification(res.error, true);
+                    } else {
+                        showNotification('Image recadrée avec succès !');
+                    }
+                });
+            }
+        }
+        setCropper(null);
     };
 
     // Suppression d'une sous-image existante dans la DB (édition)
@@ -719,6 +846,15 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                     </span>
                                                     <button
                                                         type="button"
+                                                        onClick={() => handleRecropAddImage(idx, 'fr')}
+                                                        title="Recadrer cette image"
+                                                        aria-label="Recadrer l'image"
+                                                        style={{ position: 'absolute', top: '2px', left: '2px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                    >
+                                                        <Crop size={11} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
                                                         onClick={() => removeAddImage(idx, 'fr')}
                                                         aria-label="Supprimer l'image"
                                                         style={{ position: 'absolute', top: '2px', right: '2px', background: '#C4593A', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -765,6 +901,15 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                     <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px' }}>
                                                         #{idx + 1}
                                                     </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRecropAddImage(idx, 'en')}
+                                                        title="Recadrer cette image anglaise"
+                                                        aria-label="Recadrer l'image"
+                                                        style={{ position: 'absolute', top: '2px', left: '2px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                    >
+                                                        <Crop size={11} />
+                                                    </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => removeAddImage(idx, 'en')}
@@ -1045,6 +1190,18 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                             )}
                                                         </div>
 
+                                                        {/* Bouton recadrer image existante */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRecropExistingImage(img, 'fr')}
+                                                            disabled={isPending}
+                                                            title="Recadrer cette image"
+                                                            aria-label={`Recadrer l'image FR #${idx + 1}`}
+                                                            style={{ position: 'absolute', top: '2px', right: '25px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
+                                                        >
+                                                            <Crop size={11} />
+                                                        </button>
+
                                                         {/* Bouton suppression unique avec confirmation pop-up */}
                                                         <button
                                                             type="button"
@@ -1111,6 +1268,14 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                         <div key={idx} style={{ position: 'relative', width: '60px', height: '80px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--admin-gold)' }}>
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img src={item.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRecropEditNewImage(idx, 'fr')}
+                                                                title="Recadrer cette image"
+                                                                style={{ position: 'absolute', top: '1px', left: '1px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            >
+                                                                <Crop size={9} />
+                                                            </button>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeEditNewImage(idx, 'fr')}
@@ -1217,6 +1382,18 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                             )}
                                                         </div>
 
+                                                        {/* Bouton recadrer image existante */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRecropExistingImage(img, 'en')}
+                                                            disabled={isPending}
+                                                            title="Recadrer cette image anglaise"
+                                                            aria-label={`Recadrer l'image EN #${idx + 1}`}
+                                                            style={{ position: 'absolute', top: '2px', right: '25px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
+                                                        >
+                                                            <Crop size={11} />
+                                                        </button>
+
                                                         {/* Bouton suppression unique avec confirmation pop-up */}
                                                         <button
                                                             type="button"
@@ -1283,6 +1460,14 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                                         <div key={idx} style={{ position: 'relative', width: '60px', height: '80px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--admin-gold)' }}>
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img src={item.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRecropEditNewImage(idx, 'en')}
+                                                                title="Recadrer cette image anglaise"
+                                                                style={{ position: 'absolute', top: '1px', left: '1px', background: 'rgba(184, 139, 70, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            >
+                                                                <Crop size={9} />
+                                                            </button>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeEditNewImage(idx, 'en')}
@@ -1682,6 +1867,16 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* MODAL DE RECADRAGE ERGONOMIQUE */}
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={TARIFS_CROP_TARGETS}
+                    onCancel={() => setCropper(null)}
+                    onComplete={handleCropped}
+                />
             )}
         </div>
     );

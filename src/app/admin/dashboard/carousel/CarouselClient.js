@@ -1,372 +1,434 @@
 'use client';
-import { useState, useRef, useTransition } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useTransition, useEffect, useCallback } from 'react';
 import { addCarouselImage, deleteCarouselImage, editCarouselImage, reorderCarouselImage } from '@/app/actions';
-import { Image as ImageIcon, Plus, Trash2, Pencil, X, UploadCloud, Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import ImageCropperModal, { HERO_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
+import {
+    Image as ImageIcon,
+    Plus,
+    Trash2,
+    Pencil,
+    X,
+    UploadCloud,
+    Loader2,
+    CheckCircle2,
+    AlertCircle,
+    ChevronLeft,
+    ChevronRight,
+    Crop,
+    Monitor,
+    Smartphone,
+    Images,
+} from 'lucide-react';
+import './CarouselClient.css';
 
-async function compressImageFile(file, maxDim = 1920, quality = 0.82) {
-    if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) return file;
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new window.Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
+/* Anciens fichiers : un navigateur ne reconnaît pas toujours le type MIME (ex. HEIC sous Windows) */
+const IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif|avif|bmp|jfif|heic|heif)$/i;
+const isImageFile = (file) => !!file && (file.type?.startsWith('image/') || IMAGE_EXT_RE.test(file.name || ''));
 
-                if (width > maxDim || height > maxDim) {
-                    if (width > height) {
-                        height = Math.round((height * maxDim) / width);
-                        width = maxDim;
-                    } else {
-                        width = Math.round((width * maxDim) / height);
-                        height = maxDim;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // Use WebP for supreme visual quality with ~30-40% smaller file size
-                canvas.toBlob(
-                    (blob) => {
-                        if (!blob) {
-                            canvas.toBlob(
-                                (jpegBlob) => {
-                                    if (!jpegBlob) {
-                                        resolve(file);
-                                        return;
-                                    }
-                                    resolve(new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                                        type: 'image/jpeg',
-                                        lastModified: Date.now()
-                                    }));
-                                },
-                                'image/jpeg',
-                                quality
-                            );
-                            return;
-                        }
-                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
-                            type: 'image/webp',
-                            lastModified: Date.now()
-                        });
-                        resolve(compressedFile);
-                    },
-                    'image/webp',
-                    quality
-                );
-            };
-            img.onerror = () => resolve(file);
-            img.src = e.target.result;
-        };
-        reader.onerror = () => resolve(file);
-        reader.readAsDataURL(file);
-    });
+/** Garde la trace des URL temporaires (aperçus) et les libère à la fermeture du composant. */
+function useObjectUrls() {
+    const ref = useRef(new Set());
+    useEffect(() => {
+        const urls = ref.current;
+        return () => urls.forEach((u) => URL.revokeObjectURL(u));
+    }, []);
+    const make = useCallback((file) => {
+        const url = URL.createObjectURL(file);
+        ref.current.add(url);
+        return url;
+    }, []);
+    const release = useCallback((url) => {
+        if (url && ref.current.has(url)) {
+            URL.revokeObjectURL(url);
+            ref.current.delete(url);
+        }
+    }, []);
+    return { make, release };
 }
 
-function CarouselForm({ onCancel }) {
-    const [desktopFile, setDesktopFile] = useState(null);
-    const [mobileFile, setMobileFile] = useState(null);
-    const [desktopDragging, setDesktopDragging] = useState(false);
-    const [mobileDragging, setMobileDragging] = useState(false);
+/** Zone de dépôt multi-fichiers (glisser-déposer ou clic). */
+function PhotoDropzone({ onFiles, onError, compact = false, label, sublabel }) {
+    const inputRef = useRef(null);
+    const [dragging, setDragging] = useState(false);
 
-    const [isPending, startTransition] = useTransition();
-    const [isCompressing, setIsCompressing] = useState(false);
+    const handle = (fileList) => {
+        const all = Array.from(fileList || []);
+        const images = all.filter(isImageFile);
+        if (all.length > images.length) {
+            onError?.(`${all.length - images.length} fichier(s) ignoré(s) : seules les images sont acceptées.`);
+        } else {
+            onError?.('');
+        }
+        if (images.length) onFiles(images);
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className={`cr-dropzone ${dragging ? 'is-dragging' : ''} ${compact ? 'is-compact' : ''}`}
+                onClick={() => inputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); handle(e.dataTransfer.files); }}
+            >
+                <UploadCloud size={compact ? 22 : 34} />
+                <strong>{label || 'Glissez vos photos ici ou cliquez pour les choisir'}</strong>
+                <span>{sublabel || 'Vous pouvez en sélectionner plusieurs à la fois — vous les cadrerez ensuite une par une.'}</span>
+            </button>
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*,.heic,.heif"
+                multiple
+                style={{ display: 'none' }}
+                onChange={(e) => { handle(e.target.files); e.target.value = ''; }}
+            />
+        </>
+    );
+}
+
+/* ==========================================================================
+   AJOUT : plusieurs photos à la fois, cadrées puis publiées en une fois
+   ========================================================================== */
+function AddSlidesFlow({ onCancel }) {
+    const [slides, setSlides] = useState([]);
+    const [cropper, setCropper] = useState(null); // { mode: 'new' | 'recrop', items }
+    const [publishing, setPublishing] = useState(null);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
+    const [successCount, setSuccessCount] = useState(0);
+    const { make, release } = useObjectUrls();
+    const addMoreRef = useRef(null);
 
-    const desktopInputRef = useRef(null);
-    const mobileInputRef = useRef(null);
-    const formRef = useRef(null);
-
-    const handleDesktopSelect = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            setError('Format non supporté pour la photo principale.');
-            return;
-        }
-        setError('');
-        setDesktopFile(file);
+    const openCropperForFiles = (files) => {
+        setCropper({ mode: 'new', items: files.map((f) => ({ id: uid(), file: f, name: f.name })) });
     };
 
-    const handleMobileSelect = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            setError('Format non supporté pour la photo mobile.');
-            return;
-        }
-        setError('');
-        setMobileFile(file);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!desktopFile && !e.target.image_url?.value) {
-            setError('Veuillez sélectionner au moins la photo principale pour grand écran.');
-            return;
-        }
-
-        const formData = new FormData(e.target);
-        formData.delete('image_file');
-        formData.delete('mobile_image_file');
-
-        setIsCompressing(true);
-        try {
-            if (desktopFile) {
-                const compressedDesktop = await compressImageFile(desktopFile, 1920, 0.82);
-                formData.append('image_file', compressedDesktop);
-            }
-            if (mobileFile) {
-                const compressedMobile = await compressImageFile(mobileFile, 1080, 0.80);
-                formData.append('mobile_image_file', compressedMobile);
-            }
-        } catch (err) {
-            console.warn('Compression error:', err);
-            if (desktopFile) formData.append('image_file', desktopFile);
-            if (mobileFile) formData.append('mobile_image_file', mobileFile);
-        } finally {
-            setIsCompressing(false);
-        }
-
-        startTransition(async () => {
-            const result = await addCarouselImage(formData);
-            if (result?.error) {
-                setError(result.error);
-            } else {
-                setSuccess(true);
-                setTimeout(() => onCancel(), 1200);
-            }
+    const recrop = (slide, enableMobile = false) => {
+        const crops = { ...(slide.crops || {}) };
+        if (enableMobile) crops.mobile = { ...(crops.mobile || {}), enabled: true };
+        setCropper({
+            mode: 'recrop',
+            items: [{ id: slide.id, file: slide.original || slide.desktop, name: slide.name, crops }],
         });
     };
 
-    if (success) {
+    const handleCropped = (results) => {
+        if (cropper.mode === 'new') {
+            const added = results.map((r) => ({
+                id: r.id,
+                name: r.name,
+                original: r.original,
+                crops: r.crops,
+                unreadable: r.unreadable,
+                desktop: r.outputs.desktop || null,
+                mobile: r.outputs.mobile || null,
+                desktopUrl: r.outputs.desktop ? make(r.outputs.desktop) : null,
+                mobileUrl: r.outputs.mobile ? make(r.outputs.mobile) : null,
+                title: '', title_en: '', subtitle: '', subtitle_en: '',
+            }));
+            setSlides((prev) => [...prev, ...added]);
+        } else {
+            setSlides((prev) => prev.map((s) => {
+                const r = results.find((x) => x.id === s.id);
+                if (!r) return s;
+                release(s.desktopUrl);
+                release(s.mobileUrl);
+                const desktop = r.outputs.desktop || s.desktop;
+                const mobile = r.outputs.mobile || null;
+                return {
+                    ...s,
+                    crops: r.crops,
+                    desktop,
+                    mobile,
+                    desktopUrl: desktop ? make(desktop) : null,
+                    mobileUrl: mobile ? make(mobile) : null,
+                };
+            }));
+        }
+        setCropper(null);
+    };
+
+    const updateSlide = (id, patch) => setSlides((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+
+    const removeSlide = (slide) => {
+        release(slide.desktopUrl);
+        release(slide.mobileUrl);
+        setSlides((prev) => prev.filter((s) => s.id !== slide.id));
+    };
+
+    const publish = async () => {
+        if (!slides.length || publishing) return;
+        setError('');
+        const total = slides.length;
+        let done = 0;
+        setPublishing({ done, total });
+        try {
+            for (const slide of [...slides]) {
+                const fd = new FormData();
+                fd.set('title', slide.title.trim());
+                fd.set('title_en', slide.title_en.trim());
+                fd.set('subtitle', slide.subtitle.trim());
+                fd.set('subtitle_en', slide.subtitle_en.trim());
+                if (slide.desktop) fd.append('image_file', slide.desktop);
+                if (slide.mobile) fd.append('mobile_image_file', slide.mobile);
+
+                const res = await addCarouselImage(fd);
+                if (res?.error) {
+                    setError(`« ${slide.title || slide.name || 'Photo'} » : ${res.error}`);
+                    setPublishing(null);
+                    return;
+                }
+                done += 1;
+                release(slide.desktopUrl);
+                release(slide.mobileUrl);
+                setSlides((prev) => prev.filter((s) => s.id !== slide.id));
+                setPublishing({ done, total });
+            }
+            setPublishing(null);
+            setSuccessCount(done);
+            setTimeout(() => onCancel(), 1600);
+        } catch (err) {
+            console.error('Publish error:', err);
+            setError('La publication a échoué (connexion ou fichiers trop lourds). Les photos déjà publiées restent en ligne ; vous pouvez réessayer pour les autres.');
+            setPublishing(null);
+        }
+    };
+
+    if (successCount > 0) {
         return (
-            <div style={{
-                padding: '2.5rem', textAlign: 'center',
-                background: 'rgba(34,197,94,0.08)',
-                border: '1px solid rgba(34,197,94,0.2)',
-                borderRadius: '8px',
-            }}>
-                <CheckCircle2 size={40} style={{ color: '#16a34a', marginBottom: '0.75rem' }} />
-                <p style={{ color: '#16a34a', fontWeight: '600' }}>Photo ajoutée au carrousel avec succès !</p>
+            <div className="cr-success">
+                <CheckCircle2 size={42} />
+                <p>{successCount > 1 ? `${successCount} photos ajoutées au carrousel avec succès !` : 'Photo ajoutée au carrousel avec succès !'}</p>
             </div>
         );
     }
 
     return (
-        <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-                <div>
-                    <label className="admin-label">FR - Titre principal (Français) *</label>
-                    <input type="text" name="title" className="admin-input" placeholder="Ex: Cuisine Maison avec Amour" required />
-                </div>
-                <div>
-                    <label className="admin-label">EN - Main Title (English)</label>
-                    <input type="text" name="title_en" className="admin-input" placeholder="Ex: Homemade Cuisine with Love" />
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-                <div>
-                    <label className="admin-label">FR - Sous-titre (Français)</label>
-                    <input type="text" name="subtitle" className="admin-input" placeholder="Ex: Des plats faits maison livrés chez vous" />
-                </div>
-                <div>
-                    <label className="admin-label">EN - Subtitle (English)</label>
-                    <input type="text" name="subtitle_en" className="admin-input" placeholder="Ex: Homemade dishes delivered to your doorstep" />
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                {/* 1. Desktop Photo Upload */}
-                <div>
-                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span>🖥️ Photo Grand Écran (Ordinateur) *</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)' }}>Paysage (16:9)</span>
-                    </label>
-
-                    {desktopFile ? (
-                        <div style={{
-                            position: 'relative',
-                            background: 'var(--admin-surface)',
-                            border: '1px solid var(--admin-border)',
-                            borderRadius: '6px',
-                            overflow: 'hidden',
-                            aspectRatio: '16 / 9',
-                            maxHeight: '200px',
-                        }}>
-                            <Image
-                                src={URL.createObjectURL(desktopFile)}
-                                alt="Aperçu grand écran"
-                                width={800}
-                                height={450}
-                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                                unoptimized
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setDesktopFile(null)}
-                                title="Retirer"
-                                style={{
-                                    position: 'absolute', top: '8px', right: '8px',
-                                    width: '28px', height: '28px',
-                                    background: 'rgba(239,68,68,0.9)',
-                                    border: 'none', borderRadius: '4px', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    ) : (
-                        <div
-                            onDragOver={(e) => { e.preventDefault(); setDesktopDragging(true); }}
-                            onDragLeave={() => setDesktopDragging(false)}
-                            onDrop={(e) => { e.preventDefault(); setDesktopDragging(false); handleDesktopSelect(e.dataTransfer.files?.[0]); }}
-                            onClick={() => desktopInputRef.current?.click()}
-                            style={{
-                                border: `2px dashed ${desktopDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
-                                background: desktopDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
-                                borderRadius: '6px', padding: '1.75rem 1rem', textAlign: 'center', cursor: 'pointer'
+        <div className="cr-flow">
+            {slides.length === 0 ? (
+                <PhotoDropzone onFiles={openCropperForFiles} onError={setError} />
+            ) : (
+                <>
+                    <div className="cr-flow-head">
+                        <p>
+                            <strong>{slides.length} photo{slides.length > 1 ? 's' : ''} prête{slides.length > 1 ? 's' : ''}</strong>
+                            {' '}— ajoutez un titre (facultatif), puis publiez. Si le titre est vide, le titre par défaut du site s&apos;affiche.
+                        </p>
+                        <button type="button" className="admin-btn admin-btn-secondary" onClick={() => addMoreRef.current?.click()} disabled={!!publishing}>
+                            <Plus size={15} /> Ajouter d&apos;autres photos
+                        </button>
+                        <input
+                            ref={addMoreRef}
+                            type="file"
+                            accept="image/*,.heic,.heif"
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files || []).filter(isImageFile);
+                                e.target.value = '';
+                                if (files.length) openCropperForFiles(files);
                             }}
-                        >
-                            <UploadCloud size={28} style={{ color: 'var(--admin-gold)', marginBottom: '0.4rem' }} />
-                            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour la photo grand écran</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Affichée sur ordinateur et tablette</span>
-                        </div>
-                    )}
-                    <input ref={desktopInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleDesktopSelect(e.target.files?.[0]); e.target.value = ''; }} />
-                </div>
+                        />
+                    </div>
 
-                {/* 2. Mobile Photo Upload */}
-                <div>
-                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span>📱 Photo Format Mobile (Optionnelle)</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Portrait (9:16)</span>
-                    </label>
+                    <div className="cr-slides">
+                        {slides.map((slide, idx) => (
+                            <article key={slide.id} className="cr-slide">
+                                <div className="cr-slide-media">
+                                    <div className="cr-media-block">
+                                        <span className="cr-media-label"><Monitor size={12} /> Ordinateur</span>
+                                        <div className="cr-media-desktop">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            {slide.desktopUrl && <img src={slide.desktopUrl} alt="" />}
+                                        </div>
+                                    </div>
+                                    <div className="cr-media-block">
+                                        <span className="cr-media-label"><Smartphone size={12} /> Mobile</span>
+                                        {slide.mobileUrl ? (
+                                            <div className="cr-media-mobile">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={slide.mobileUrl} alt="" />
+                                            </div>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="cr-media-mobile is-empty"
+                                                onClick={() => recrop(slide, true)}
+                                                disabled={!!publishing || slide.unreadable}
+                                                title="Créer le format mobile"
+                                            >
+                                                <Plus size={16} />
+                                                <span>Ajouter</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
 
-                    {mobileFile ? (
-                        <div style={{
-                            position: 'relative',
-                            background: 'var(--admin-surface)',
-                            border: '1px solid var(--admin-border)',
-                            borderRadius: '6px',
-                            overflow: 'hidden',
-                            aspectRatio: '16 / 9',
-                            maxHeight: '200px',
-                        }}>
-                            <Image
-                                src={URL.createObjectURL(mobileFile)}
-                                alt="Aperçu mobile"
-                                width={800}
-                                height={450}
-                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                                unoptimized
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setMobileFile(null)}
-                                title="Retirer"
-                                style={{
-                                    position: 'absolute', top: '8px', right: '8px',
-                                    width: '28px', height: '28px',
-                                    background: 'rgba(239,68,68,0.9)',
-                                    border: 'none', borderRadius: '4px', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    ) : (
-                        <div
-                            onDragOver={(e) => { e.preventDefault(); setMobileDragging(true); }}
-                            onDragLeave={() => setMobileDragging(false)}
-                            onDrop={(e) => { e.preventDefault(); setMobileDragging(false); handleMobileSelect(e.dataTransfer.files?.[0]); }}
-                            onClick={() => mobileInputRef.current?.click()}
-                            style={{
-                                border: `2px dashed ${mobileDragging ? 'var(--admin-gold)' : 'var(--admin-border)'}`,
-                                background: mobileDragging ? 'rgba(200,169,110,0.08)' : 'var(--admin-surface)',
-                                borderRadius: '6px', padding: '1.75rem 1rem', textAlign: 'center', cursor: 'pointer'
-                            }}
-                        >
-                            <UploadCloud size={28} style={{ color: 'var(--admin-text-subtle)', marginBottom: '0.4rem' }} />
-                            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '600' }}>Cliquer pour la photo mobile</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Si vide, la photo grand écran est utilisée</span>
-                        </div>
-                    )}
-                    <input ref={mobileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleMobileSelect(e.target.files?.[0]); e.target.value = ''; }} />
-                </div>
-            </div>
+                                <div className="cr-slide-fields">
+                                    <div className="cr-slide-title-row">
+                                        <span className="cr-slide-num">#{idx + 1}</span>
+                                        <span className="cr-slide-name" title={slide.name}>{slide.name}</span>
+                                        <div className="cr-slide-actions">
+                                            <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => recrop(slide)} disabled={!!publishing || slide.unreadable} title={slide.unreadable ? 'Format non lisible : recadrage impossible' : 'Modifier le cadrage'}>
+                                                <Crop size={14} /> Recadrer
+                                            </button>
+                                            <button type="button" className="admin-btn admin-btn-danger cr-small" onClick={() => removeSlide(slide)} disabled={!!publishing} aria-label="Retirer cette photo">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="cr-fields-grid">
+                                        <div>
+                                            <label className="admin-label">Titre (FR)</label>
+                                            <input type="text" className="admin-input" value={slide.title} onChange={(e) => updateSlide(slide.id, { title: e.target.value })} placeholder="Ex : Cuisine maison avec amour" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Title (EN)</label>
+                                            <input type="text" className="admin-input" value={slide.title_en} onChange={(e) => updateSlide(slide.id, { title_en: e.target.value })} placeholder="Ex: Homemade cuisine with love" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Sous-titre (FR)</label>
+                                            <input type="text" className="admin-input" value={slide.subtitle} onChange={(e) => updateSlide(slide.id, { subtitle: e.target.value })} placeholder="Ex : Des plats faits maison livrés chez vous" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Subtitle (EN)</label>
+                                            <input type="text" className="admin-input" value={slide.subtitle_en} onChange={(e) => updateSlide(slide.id, { subtitle_en: e.target.value })} placeholder="Ex: Homemade dishes delivered to your door" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </>
+            )}
 
             {error && (
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.85rem 1rem', borderRadius: '4px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#dc2626', fontSize: '0.85rem' }}>
+                <div className="cr-alert">
                     <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                    {error}
+                    <span>{error}</span>
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
-                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending || isCompressing}>
+            <div className="cr-flow-footer">
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={!!publishing}>
                     Annuler
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending || isCompressing} style={{ minWidth: '150px' }}>
-                    {isPending || isCompressing ? (
-                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Traitement...</>
-                    ) : 'Publier la photo'}
-                </button>
+                {slides.length > 0 && (
+                    <button type="button" onClick={publish} className="admin-btn admin-btn-primary" disabled={!!publishing} style={{ minWidth: '190px' }}>
+                        {publishing ? (
+                            <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Publication {publishing.done}/{publishing.total}…</>
+                        ) : (
+                            <><Images size={16} /> Publier {slides.length > 1 ? `les ${slides.length} photos` : 'la photo'}</>
+                        )}
+                    </button>
+                )}
             </div>
-        </form>
+
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={HERO_CROP_TARGETS}
+                    title={cropper.mode === 'new' ? (cropper.items.length > 1 ? 'Cadrer vos photos' : 'Cadrer votre photo') : 'Modifier le cadrage'}
+                    onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
+                />
+            )}
+        </div>
     );
 }
 
+/* ==========================================================================
+   MODIFICATION d'une bannière existante
+   ========================================================================== */
 function EditCarouselForm({ item, onCancel }) {
     const [desktopFile, setDesktopFile] = useState(null);
     const [desktopPreview, setDesktopPreview] = useState(null);
-
     const [mobileFile, setMobileFile] = useState(null);
     const [mobilePreview, setMobilePreview] = useState(null);
     const [removeMobile, setRemoveMobile] = useState(false);
+    const [cropper, setCropper] = useState(null);
 
     const [isPending, startTransition] = useTransition();
-    const [isCompressing, setIsCompressing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
+    const { make, release } = useObjectUrls();
     const desktopInputRef = useRef(null);
     const mobileInputRef = useRef(null);
 
-    const handleDesktopSelect = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            setError('Format non supporté pour la photo principale.');
+    const currentDesktopImg = desktopPreview || item.image_url;
+    const currentMobileImg = !removeMobile ? (mobilePreview || item.mobile_image_url) : null;
+    const hasMobile = !!currentMobileImg;
+
+    const targetOnly = (key, extra = {}) => {
+        const base = HERO_CROP_TARGETS.find((t) => t.key === key);
+        return [{ ...base, optional: false, ...extra }];
+    };
+
+    // Source "courante" d'un format : fichier tout juste recadré, sinon image enregistrée
+    const currentSource = (kind) => {
+        if (kind === 'desktop') return desktopFile ? { file: desktopFile } : { url: item.image_url };
+        return mobileFile ? { file: mobileFile } : { url: item.mobile_image_url };
+    };
+
+    const pickFiles = (kind, fileList) => {
+        const file = Array.from(fileList || []).find(isImageFile);
+        if (!file) {
+            setError('Format non supporté. Choisissez une image (JPG, PNG, WebP…).');
             return;
         }
         setError('');
-        setDesktopFile(file);
-        setDesktopPreview(URL.createObjectURL(file));
+        if (kind === 'desktop') {
+            // Nouvelle photo principale : on propose aussi le format mobile, activé seulement s'il n'y en a pas déjà un
+            const mobileTarget = { ...HERO_CROP_TARGETS[1], defaultEnabled: !hasMobile };
+            setCropper({ items: [{ id: uid(), file, name: file.name }], targets: [HERO_CROP_TARGETS[0], mobileTarget], title: 'Cadrer la nouvelle photo' });
+        } else {
+            setCropper({ items: [{ id: uid(), file, name: file.name }], targets: targetOnly('mobile'), title: 'Cadrer la photo mobile' });
+        }
     };
 
-    const handleMobileSelect = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            setError('Format non supporté pour la photo mobile.');
+    const recropExisting = (kind) => {
+        setError('');
+        setCropper({
+            items: [{ id: uid(), name: kind === 'desktop' ? 'photo-ordinateur' : 'photo-mobile', ...currentSource(kind) }],
+            targets: targetOnly(kind),
+            title: kind === 'desktop' ? 'Recadrer la photo ordinateur' : 'Recadrer la photo mobile',
+        });
+    };
+
+    // Crée le format mobile à partir de la photo ordinateur déjà publiée
+    const createMobileFromDesktop = () => {
+        setError('');
+        setCropper({
+            items: [{ id: uid(), name: 'photo-mobile', ...currentSource('desktop') }],
+            targets: targetOnly('mobile'),
+            title: 'Créer le format mobile',
+        });
+    };
+
+    const handleCropped = (results) => {
+        const out = results[0]?.outputs || {};
+        if (!out.desktop && !out.mobile) {
+            setError("Cette image ne peut pas être recadrée ici. Importez-la de nouveau depuis votre appareil.");
+            setCropper(null);
             return;
         }
-        setError('');
-        setMobileFile(file);
-        setMobilePreview(URL.createObjectURL(file));
-        setRemoveMobile(false);
+        if (out.desktop) {
+            release(desktopPreview);
+            setDesktopFile(out.desktop);
+            setDesktopPreview(make(out.desktop));
+        }
+        if (out.mobile) {
+            release(mobilePreview);
+            setMobileFile(out.mobile);
+            setMobilePreview(make(out.mobile));
+            setRemoveMobile(false);
+        }
+        setCropper(null);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         setError('');
 
@@ -375,193 +437,154 @@ function EditCarouselForm({ item, onCancel }) {
         formData.delete('mobile_image_file');
         formData.set('id', item.id);
         if (removeMobile) formData.set('remove_mobile_image', '1');
-
-        setIsCompressing(true);
-        try {
-            if (desktopFile) {
-                const compressedDesktop = await compressImageFile(desktopFile, 1920, 0.82);
-                formData.append('image_file', compressedDesktop);
-            }
-            if (mobileFile) {
-                const compressedMobile = await compressImageFile(mobileFile, 1080, 0.80);
-                formData.append('mobile_image_file', compressedMobile);
-            }
-        } catch (err) {
-            console.warn('Compression fallback', err);
-            if (desktopFile) formData.append('image_file', desktopFile);
-            if (mobileFile) formData.append('mobile_image_file', mobileFile);
-        } finally {
-            setIsCompressing(false);
-        }
+        if (desktopFile) formData.append('image_file', desktopFile);
+        if (mobileFile && !removeMobile) formData.append('mobile_image_file', mobileFile);
 
         startTransition(async () => {
-            const result = await editCarouselImage(formData);
-            if (result?.error) {
-                setError(result.error);
-            } else {
-                setSuccess(true);
-                setTimeout(() => onCancel(), 1000);
+            try {
+                const result = await editCarouselImage(formData);
+                if (result?.error) {
+                    setError(result.error);
+                } else {
+                    setSuccess(true);
+                    setTimeout(() => onCancel(), 1000);
+                }
+            } catch (err) {
+                console.error(err);
+                setError("L'enregistrement a échoué (connexion ou fichier trop lourd).");
             }
         });
     };
 
     if (success) {
         return (
-            <div style={{ padding: '1.5rem', textAlign: 'center', background: 'rgba(34,197,94,0.08)', borderRadius: '6px' }}>
-                <CheckCircle2 size={32} style={{ color: '#16a34a', marginBottom: '0.5rem' }} />
-                <p style={{ color: '#16a34a', fontWeight: '600', fontSize: '0.9rem' }}>Modifications enregistrées avec succès !</p>
+            <div className="cr-success is-small">
+                <CheckCircle2 size={32} />
+                <p>Modifications enregistrées avec succès !</p>
             </div>
         );
     }
 
-    const currentDesktopImg = desktopPreview || item.image_url;
-    const currentMobileImg = !removeMobile ? (mobilePreview || item.mobile_image_url) : null;
-
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} className="cr-edit-form">
+            <div className="cr-fields-grid">
                 <div>
-                    <label className="admin-label">FR - Titre principal (Français) *</label>
-                    <input type="text" name="title" defaultValue={item.title} className="admin-input" required />
+                    <label className="admin-label">Titre (FR)</label>
+                    <input type="text" name="title" defaultValue={item.title} className="admin-input" />
                 </div>
                 <div>
-                    <label className="admin-label">EN - Main Title (English)</label>
+                    <label className="admin-label">Title (EN)</label>
                     <input type="text" name="title_en" defaultValue={item.title_en || ''} placeholder="Title in English..." className="admin-input" />
                 </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                 <div>
-                    <label className="admin-label">FR - Sous-titre (Français)</label>
+                    <label className="admin-label">Sous-titre (FR)</label>
                     <input type="text" name="subtitle" defaultValue={item.subtitle || ''} className="admin-input" />
                 </div>
                 <div>
-                    <label className="admin-label">EN - Subtitle (English)</label>
+                    <label className="admin-label">Subtitle (EN)</label>
                     <input type="text" name="subtitle_en" defaultValue={item.subtitle_en || ''} placeholder="Subtitle in English..." className="admin-input" />
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                {/* 1. Desktop Photo */}
-                <div>
-                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>🖥️ Photo Grand Écran (Ordinateur)</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-gold)' }}>Paysage</span>
-                    </label>
-
-                    {currentDesktopImg ? (
-                        <div style={{
-                            position: 'relative',
-                            background: 'var(--admin-surface)',
-                            border: '1px solid var(--admin-border)',
-                            borderRadius: '6px',
-                            overflow: 'hidden',
-                            aspectRatio: '16 / 9',
-                            maxHeight: '180px',
-                        }}>
-                            <Image
-                                src={currentDesktopImg}
-                                alt="Grand écran"
-                                width={600}
-                                height={337}
-                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                                unoptimized
-                            />
-                            <button
-                                type="button"
-                                onClick={() => desktopInputRef.current?.click()}
-                                className="admin-btn admin-btn-secondary"
-                                style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: '0.75rem', padding: '5px 10px', backdropFilter: 'blur(4px)' }}
-                            >
-                                Remplacer
+            <div className="cr-slots">
+                {/* Ordinateur */}
+                <div className="cr-slot cr-slot-desktop">
+                    <div className="cr-slot-head">
+                        <span><Monitor size={15} /> Photo ordinateur</span>
+                        <em>16:9</em>
+                    </div>
+                    <div className="cr-slot-preview is-desktop">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {currentDesktopImg ? <img src={currentDesktopImg} alt="Photo ordinateur" /> : <ImageIcon size={32} />}
+                    </div>
+                    <div className="cr-slot-actions">
+                        {currentDesktopImg && (
+                            <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => recropExisting('desktop')}>
+                                <Crop size={14} /> Recadrer
                             </button>
-                        </div>
-                    ) : null}
-                    <input ref={desktopInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleDesktopSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                        )}
+                        <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => desktopInputRef.current?.click()}>
+                            <UploadCloud size={14} /> Remplacer la photo
+                        </button>
+                    </div>
+                    <input ref={desktopInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: 'none' }} onChange={(e) => { pickFiles('desktop', e.target.files); e.target.value = ''; }} />
                 </div>
 
-                {/* 2. Mobile Photo */}
-                <div>
-                    <label className="admin-label" style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>📱 Photo Format Mobile (Smartphone)</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle)' }}>Portrait (Optionnel)</span>
-                    </label>
-
-                    {currentMobileImg ? (
-                        <div style={{
-                            position: 'relative',
-                            background: 'var(--admin-surface)',
-                            border: '1px solid var(--admin-border)',
-                            borderRadius: '6px',
-                            overflow: 'hidden',
-                            aspectRatio: '16 / 9',
-                            maxHeight: '180px',
-                        }}>
-                            <Image
-                                src={currentMobileImg}
-                                alt="Mobile spécifique"
-                                width={600}
-                                height={337}
-                                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                                unoptimized
-                            />
-                            <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', gap: '6px' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => mobileInputRef.current?.click()}
-                                    className="admin-btn admin-btn-secondary"
-                                    style={{ fontSize: '0.75rem', padding: '5px 10px', backdropFilter: 'blur(4px)' }}
-                                >
-                                    Remplacer
+                {/* Mobile */}
+                <div className="cr-slot cr-slot-mobile">
+                    <div className="cr-slot-head">
+                        <span><Smartphone size={15} /> Photo mobile</span>
+                        <em>9:16</em>
+                    </div>
+                    {hasMobile ? (
+                        <>
+                            <div className="cr-slot-preview is-mobile">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={currentMobileImg} alt="Photo mobile" />
+                            </div>
+                            <div className="cr-slot-actions">
+                                <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => recropExisting('mobile')}>
+                                    <Crop size={14} /> Recadrer
+                                </button>
+                                <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => mobileInputRef.current?.click()}>
+                                    <UploadCloud size={14} /> Remplacer
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => { setMobileFile(null); setMobilePreview(null); setRemoveMobile(true); }}
-                                    style={{ padding: '5px 8px', background: 'rgba(239,68,68,0.9)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer' }}
+                                    className="admin-btn admin-btn-danger cr-small"
+                                    onClick={() => { release(mobilePreview); setMobileFile(null); setMobilePreview(null); setRemoveMobile(true); }}
                                     title="Supprimer la photo mobile spécifique"
+                                    aria-label="Supprimer la photo mobile"
                                 >
-                                    <X size={13} />
+                                    <X size={14} />
                                 </button>
                             </div>
-                        </div>
+                        </>
                     ) : (
-                        <div
-                            onClick={() => mobileInputRef.current?.click()}
-                            style={{
-                                border: '2px dashed var(--admin-border)',
-                                background: 'var(--admin-surface)',
-                                borderRadius: '6px', padding: '1.5rem 1rem', textAlign: 'center', cursor: 'pointer'
-                            }}
-                        >
-                            <UploadCloud size={24} style={{ color: 'var(--admin-text-subtle)', marginBottom: '0.3rem' }} />
-                            <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--admin-text)', fontWeight: '600' }}>Ajouter une photo dédiée mobile</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-subtle)' }}>Par exemple votre photo portrait verticale</span>
+                        <div className="cr-slot-empty">
+                            <Smartphone size={26} />
+                            <p>Aucun format mobile : sur téléphone, la photo ordinateur est utilisée et coupée sur les côtés.</p>
+                            <button type="button" className="admin-btn admin-btn-primary cr-small" onClick={createMobileFromDesktop} disabled={!currentDesktopImg}>
+                                <Crop size={14} /> Créer depuis la photo ordinateur
+                            </button>
+                            <button type="button" className="admin-btn admin-btn-secondary cr-small" onClick={() => mobileInputRef.current?.click()}>
+                                <UploadCloud size={14} /> Importer une photo mobile
+                            </button>
                         </div>
                     )}
-                    <input ref={mobileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleMobileSelect(e.target.files?.[0]); e.target.value = ''; }} />
+                    <input ref={mobileInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: 'none' }} onChange={(e) => { pickFiles('mobile', e.target.files); e.target.value = ''; }} />
                 </div>
             </div>
 
-            {error && (
-                <div style={{ color: '#dc2626', fontSize: '0.85rem', background: 'rgba(239,68,68,0.1)', padding: '8px 12px', borderRadius: '4px' }}>
-                    {error}
-                </div>
-            )}
+            {error && <div className="cr-alert"><AlertCircle size={16} style={{ flexShrink: 0 }} /><span>{error}</span></div>}
 
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending || isCompressing}>
+            <div className="cr-flow-footer">
+                <button type="button" onClick={onCancel} className="admin-btn admin-btn-secondary" disabled={isPending}>
                     Annuler
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending || isCompressing}>
-                    {isPending || isCompressing ? (
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isPending}>
+                    {isPending ? (
                         <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Enregistrement...</>
                     ) : 'Enregistrer'}
                 </button>
             </div>
+
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={cropper.targets}
+                    title={cropper.title}
+                    onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
+                />
+            )}
         </form>
     );
 }
 
+/* ==========================================================================
+   PAGE : liste des bannières
+   ========================================================================== */
 export default function CarouselClient({ images }) {
     const [prevImages, setPrevImages] = useState(images);
     const [carouselImages, setCarouselImages] = useState(images);
@@ -601,12 +624,12 @@ export default function CarouselClient({ images }) {
     };
 
     return (
-        <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            <div style={{ width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div className="animate-fade cr-page">
+            <div className="cr-page-head">
                 <div>
                     <h1 style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--admin-text)' }}>Gestion du Carrousel</h1>
                     <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-                        Gérez les bannières d&apos;accueil, leurs titres, descriptions et visuels.
+                        Gérez les bannières d&apos;accueil : photos (cadrées pour ordinateur et mobile), titres et descriptions.
                     </p>
                 </div>
                 {!isAdding && !editingItem && (
@@ -614,38 +637,38 @@ export default function CarouselClient({ images }) {
                         onClick={() => setIsAdding(true)}
                         className="admin-btn admin-btn-primary"
                     >
-                        <Plus size={16} /> Nouvelle Photo
+                        <Plus size={16} /> Nouvelles photos
                     </button>
                 )}
             </div>
 
             {isAdding && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
-                        <h2 style={{ fontSize: '1.15rem', fontWeight: '600', color: 'var(--admin-text)' }}>Ajouter une bannière</h2>
-                        <button type="button" onClick={() => setIsAdding(false)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '4px', background: 'none', border: 'none' }}>
+                <div className="admin-card cr-panel">
+                    <div className="cr-panel-head">
+                        <h2 style={{ fontSize: '1.15rem', fontWeight: '600', color: 'var(--admin-text)' }}>Ajouter des bannières</h2>
+                        <button type="button" onClick={() => setIsAdding(false)} className="cr-close" aria-label="Fermer">
                             <X size={18} />
                         </button>
                     </div>
-                    <CarouselForm onCancel={() => setIsAdding(false)} />
+                    <AddSlidesFlow onCancel={() => setIsAdding(false)} />
                 </div>
             )}
 
             {editingItem && (
-                <div className="admin-card" style={{ width: '100%', maxWidth: '800px', marginBottom: '2.5rem', border: '1px solid var(--admin-border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
+                <div className="admin-card cr-panel">
+                    <div className="cr-panel-head">
                         <h2 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Pencil size={16} /> Modifier la bannière
                         </h2>
-                        <button type="button" onClick={() => setEditingItem(null)} style={{ color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '4px', background: 'none', border: 'none' }}>
+                        <button type="button" onClick={() => setEditingItem(null)} className="cr-close" aria-label="Fermer">
                             <X size={18} />
                         </button>
                     </div>
-                    <EditCarouselForm item={editingItem} onCancel={() => setEditingItem(null)} />
+                    <EditCarouselForm key={editingItem.id} item={editingItem} onCancel={() => setEditingItem(null)} />
                 </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: '800px' }}>
+            <div style={{ width: '100%', maxWidth: '1000px' }}>
                 <h2 style={{ fontSize: '0.85rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-text-subtle)', marginBottom: '1rem' }}>
                     Bannières actuelles ({carouselImages.length})
                 </h2>
@@ -655,84 +678,50 @@ export default function CarouselClient({ images }) {
                         Aucune photo dans le carrousel.
                     </div>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+                    <div className="cr-grid">
                         {carouselImages.map((img, idx) => (
-                            <div key={img.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                <div style={{ height: '150px', width: '100%', overflow: 'hidden', position: 'relative', background: 'var(--admin-surface)' }}>
+                            <div key={img.id} className="admin-card cr-card">
+                                <div className="cr-card-media">
                                     {img.image_url ? (
-                                        <Image
-                                            src={img.image_url}
-                                            alt={img.title || ''}
-                                            width={600}
-                                            height={337}
-                                            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                                            unoptimized
-                                        />
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={img.image_url} alt={img.title || ''} loading="lazy" />
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--admin-text-subtle)' }}>
-                                            <ImageIcon size={32} />
-                                        </div>
+                                        <div className="cr-card-noimg"><ImageIcon size={32} /></div>
                                     )}
 
-                                    {/* Position Badge & Reorder Buttons */}
-                                    <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2 }}>
-                                        <span style={{
-                                            background: 'rgba(14,13,12,0.85)',
-                                            border: '1px solid rgba(200,169,110,0.4)',
-                                            color: '#C8A96E',
-                                            fontSize: '0.68rem',
-                                            fontWeight: '700',
-                                            padding: '2px 6px',
-                                            borderRadius: '3px',
-                                        }}>
-                                            #{idx + 1}
-                                        </span>
-                                        <div style={{ display: 'flex', gap: '2px' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleReorder(img.id, 'up')}
-                                                disabled={idx === 0 || isReordering}
-                                                title="Monter / Déplacer vers la gauche"
-                                                aria-label="Monter d'une position"
-                                                style={{
-                                                    width: '24px', height: '24px',
-                                                    background: idx === 0 ? 'rgba(0,0,0,0.4)' : 'rgba(14,13,12,0.85)',
-                                                    border: '1px solid rgba(200,169,110,0.3)',
-                                                    color: idx === 0 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
-                                                    borderRadius: '3px',
-                                                    cursor: idx === 0 ? 'not-allowed' : 'pointer',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                }}
-                                            >
-                                                <ChevronLeft size={13} />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleReorder(img.id, 'down')}
-                                                disabled={idx === carouselImages.length - 1 || isReordering}
-                                                title="Descendre / Déplacer vers la droite"
-                                                aria-label="Descendre d'une position"
-                                                style={{
-                                                    width: '24px', height: '24px',
-                                                    background: idx === carouselImages.length - 1 ? 'rgba(0,0,0,0.4)' : 'rgba(14,13,12,0.85)',
-                                                    border: '1px solid rgba(200,169,110,0.3)',
-                                                    color: idx === carouselImages.length - 1 ? 'rgba(255,255,255,0.2)' : '#C8A96E',
-                                                    borderRadius: '3px',
-                                                    cursor: idx === carouselImages.length - 1 ? 'not-allowed' : 'pointer',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                }}
-                                            >
-                                                <ChevronRight size={13} />
-                                            </button>
-                                        </div>
+                                    {/* Position & réorganisation */}
+                                    <div className="cr-card-order">
+                                        <span className="cr-badge">#{idx + 1}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleReorder(img.id, 'up')}
+                                            disabled={idx === 0 || isReordering}
+                                            title="Monter / Déplacer vers la gauche"
+                                            aria-label="Monter d'une position"
+                                            className="cr-mini-btn"
+                                        >
+                                            <ChevronLeft size={14} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleReorder(img.id, 'down')}
+                                            disabled={idx === carouselImages.length - 1 || isReordering}
+                                            title="Descendre / Déplacer vers la droite"
+                                            aria-label="Descendre d'une position"
+                                            className="cr-mini-btn"
+                                        >
+                                            <ChevronRight size={14} />
+                                        </button>
                                     </div>
 
-                                    {/* Action Buttons: Edit + Delete */}
-                                    <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px', zIndex: 2 }}>
+                                    {/* Modifier / Supprimer */}
+                                    <div className="cr-card-actions">
                                         <button
+                                            type="button"
                                             onClick={() => { setEditingItem(img); setIsAdding(false); }}
-                                            style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
-                                            title="Modifier les textes et l'image"
+                                            className="cr-action-btn is-edit"
+                                            title="Modifier les textes et recadrer les photos"
+                                            aria-label="Modifier cette bannière"
                                         >
                                             <Pencil size={14} />
                                         </button>
@@ -740,45 +729,52 @@ export default function CarouselClient({ images }) {
                                         {deleteId === img.id ? (
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleDelete(img.id)}
                                                     disabled={isDeleting}
-                                                    style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                    style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.95)', border: 'none', color: 'white', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
                                                 >
                                                     {isDeleting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     onClick={() => setDeleteId(null)}
-                                                    style={{ width: '26px', height: '26px', background: 'rgba(0,0,0,0.6)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    style={{ width: '28px', height: '28px', background: 'rgba(0,0,0,0.65)', border: 'none', color: 'white', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    aria-label="Annuler la suppression"
                                                 >
                                                     <X size={12} />
                                                 </button>
                                             </div>
                                         ) : (
                                             <button
+                                                type="button"
                                                 onClick={() => setDeleteId(img.id)}
-                                                style={{ width: '30px', height: '30px', borderRadius: '4px', background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+                                                className="cr-action-btn is-delete"
                                                 title="Supprimer"
+                                                aria-label="Supprimer cette bannière"
                                             >
                                                 <Trash2 size={14} />
                                             </button>
                                         )}
                                     </div>
 
-                                    {img.mobile_image_url && (
-                                        <div style={{
-                                            position: 'absolute', bottom: '8px', left: '8px',
-                                            background: 'rgba(14,13,12,0.85)',
-                                            border: '1px solid rgba(200,169,110,0.4)',
-                                            color: '#C8A96E', fontSize: '0.68rem', fontWeight: '700',
-                                            padding: '2px 7px', borderRadius: '3px',
-                                        }}>
-                                            📱 Photo Mobile incluse
+                                    {/* Miniature du format mobile */}
+                                    {img.mobile_image_url ? (
+                                        <div className="cr-card-phone" title="Photo affichée sur téléphone">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={img.mobile_image_url} alt="" loading="lazy" />
+                                        </div>
+                                    ) : (
+                                        <div className="cr-card-nomobile" title="Aucune photo mobile : la photo ordinateur est utilisée">
+                                            <Smartphone size={11} /> Pas de photo mobile
                                         </div>
                                     )}
                                 </div>
                                 <div style={{ padding: '0.85rem 1rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                        <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--admin-text)', margin: 0 }}>{img.title}</h3>
+                                        <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: img.title ? 'var(--admin-text)' : 'var(--admin-text-subtle)', margin: 0, fontStyle: img.title ? 'normal' : 'italic' }}>
+                                            {img.title || 'Titre par défaut du site'}
+                                        </h3>
                                         {img.title_en && (
                                             <span style={{ fontSize: '0.8rem', color: 'var(--admin-gold)', fontStyle: 'italic' }}>
                                                 EN - {img.title_en}

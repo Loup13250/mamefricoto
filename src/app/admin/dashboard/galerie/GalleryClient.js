@@ -2,15 +2,16 @@
 import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
 import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost, moveGalleryPostPosition } from '@/app/actions';
+import ImageCropperModal, { GALLERY_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
 import {
     Plus, Trash2, Pencil, X, Film, UploadCloud, Loader2,
-    CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight
+    CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight, Crop
 } from 'lucide-react';
 
 /* =====================================================
    PRÉVISUALISATION MEDIA (image ou vidéo)
    ===================================================== */
-function MediaPreview({ file, onRemove }) {
+function MediaPreview({ file, onRemove, onRecrop }) {
     const isVideo = file.type.startsWith('video/');
     const src = URL.createObjectURL(file);
 
@@ -56,21 +57,40 @@ function MediaPreview({ file, onRemove }) {
                 />
             )}
 
-            <button
-                type="button"
-                onClick={onRemove}
-                title="Retirer"
-                style={{
-                    position: 'absolute', top: '8px', right: '8px',
-                    width: '28px', height: '28px',
-                    background: 'rgba(239,68,68,0.9)',
-                    border: 'none', borderRadius: '3px', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer',
-                }}
-            >
-                <X size={14} />
-            </button>
+            <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '4px' }}>
+                {!isVideo && onRecrop && (
+                    <button
+                        type="button"
+                        onClick={onRecrop}
+                        title="Recadrer cette photo"
+                        aria-label="Recadrer cette photo"
+                        style={{
+                            width: '28px', height: '28px',
+                            background: 'rgba(184, 139, 70, 0.9)',
+                            border: 'none', borderRadius: '3px', color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <Crop size={14} />
+                    </button>
+                )}
+                <button
+                    type="button"
+                    onClick={onRemove}
+                    title="Retirer"
+                    aria-label="Retirer"
+                    style={{
+                        width: '28px', height: '28px',
+                        background: 'rgba(239,68,68,0.9)',
+                        border: 'none', borderRadius: '3px', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <X size={14} />
+                </button>
+            </div>
 
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -153,6 +173,9 @@ export default function GalleryClient({ posts }) {
     const [isAdding, setIsAdding] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [batchFiles, setBatchFiles] = useState([]); // [{ id, file, name, title, title_en, caption, caption_en }]
+    const [batchPublishing, setBatchPublishing] = useState(null); // { done, total }
+    const [cropper, setCropper] = useState(null); // { mode: 'new' | 'recrop', post?, items }
     const [isDragging, setIsDragging] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
@@ -164,29 +187,125 @@ export default function GalleryClient({ posts }) {
     const inputRef = useRef(null);
     const formRef = useRef(null);
 
-    const handleFileSelect = (file) => {
-        if (!file) return;
-        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-            setError('Format non supporté. Utilisez JPG, PNG, WEBP, MP4, MOV ou WEBM.');
+    const handleFilesSelect = (fileList) => {
+        const all = Array.from(fileList || []);
+        if (all.length === 0) return;
+
+        const maxMB = 20;
+        const tooLarge = all.filter(f => f.size > maxMB * 1024 * 1024);
+        if (tooLarge.length > 0) {
+            setError(`${tooLarge.length} fichier(s) dépasse(nt) la limite de 20 Mo.`);
             return;
         }
 
-        const maxMB = 15;
-        if (file.size > maxMB * 1024 * 1024) {
-            setError(`Ce fichier fait ${(file.size / (1024 * 1024)).toFixed(1)} Mo. Veuillez choisir un fichier de moins de 15 Mo.`);
-            setSelectedFile(null);
+        const valid = all.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+        if (valid.length < all.length) {
+            setError(`${all.length - valid.length} fichier(s) ignoré(s) : seuls les formats JPG, PNG, WEBP, MP4, MOV ou WEBM sont acceptés.`);
+        } else {
+            setError('');
+        }
+
+        const videos = valid.filter(f => f.type.startsWith('video/'));
+        const images = valid.filter(f => f.type.startsWith('image/'));
+
+        if (videos.length > 0 && images.length === 0) {
+            setSelectedFile(videos[0]);
+            setBatchFiles([]);
             return;
         }
 
-        setError('');
-        setSelectedFile(file);
+        if (images.length > 0) {
+            setCropper({
+                mode: 'new',
+                items: images.map(f => ({ id: uid(), file: f, name: f.name })),
+            });
+        }
     };
 
     const handleDrop = (e) => {
         e.preventDefault();
         setIsDragging(false);
-        const file = e.dataTransfer.files?.[0];
-        if (file) handleFileSelect(file);
+        if (e.dataTransfer.files?.length > 0) {
+            handleFilesSelect(e.dataTransfer.files);
+        }
+    };
+
+    const handleCropped = (results) => {
+        if (!results || results.length === 0) {
+            setCropper(null);
+            return;
+        }
+
+        if (cropper?.mode === 'new') {
+            if (results.length === 1) {
+                setSelectedFile(results[0].outputs.image || results[0].original);
+                setBatchFiles([]);
+            } else {
+                setSelectedFile(null);
+                setBatchFiles(results.map(r => ({
+                    id: r.id,
+                    file: r.outputs.image || r.original,
+                    name: r.name,
+                    title: '',
+                    title_en: '',
+                    caption: '',
+                    caption_en: '',
+                })));
+            }
+        } else if (cropper?.mode === 'recrop') {
+            const post = cropper.post;
+            const croppedFile = results[0].outputs.image || results[0].original;
+            if (post && croppedFile) {
+                startTransition(async () => {
+                    const fd = new FormData();
+                    fd.append('id', post.id);
+                    fd.append('image_file', croppedFile);
+                    const res = await editGalleryPost(fd);
+                    if (res?.error) {
+                        setError(res.error);
+                    } else {
+                        const tempUrl = URL.createObjectURL(croppedFile);
+                        setItems(prev => prev.map(p => p.id === post.id ? { ...p, image_url: tempUrl } : p));
+                        if (editingPost?.id === post.id) {
+                            setEditingPost(prev => prev ? { ...prev, image_url: tempUrl } : null);
+                        }
+                    }
+                });
+            }
+        }
+        setCropper(null);
+    };
+
+    const handleBatchPublish = async () => {
+        if (!batchFiles || batchFiles.length === 0) return;
+        setError('');
+        setBatchPublishing({ done: 0, total: batchFiles.length });
+
+        try {
+            for (let i = 0; i < batchFiles.length; i++) {
+                const item = batchFiles[i];
+                const fd = new FormData();
+                fd.append('image_file', item.file);
+                fd.append('title', item.title || '');
+                fd.append('title_en', item.title_en || '');
+                fd.append('caption', item.caption || '');
+                fd.append('caption_en', item.caption_en || '');
+                fd.append('media_type', 'image');
+                const res = await addGalleryPost(fd);
+                if (res?.error) throw new Error(res.error);
+                setBatchPublishing({ done: i + 1, total: batchFiles.length });
+            }
+            setSuccess(true);
+            setBatchFiles([]);
+            setTimeout(() => {
+                setSuccess(false);
+                setIsAdding(false);
+                setBatchPublishing(null);
+            }, 1200);
+        } catch (err) {
+            setError(err.message || 'Erreur pendant la publication.');
+            setBatchPublishing(null);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -292,6 +411,8 @@ export default function GalleryClient({ posts }) {
     const resetForm = () => {
         setIsAdding(false);
         setSelectedFile(null);
+        setBatchFiles([]);
+        setBatchPublishing(null);
         setError('');
         setSuccess(false);
         formRef.current?.reset();
@@ -430,13 +551,39 @@ export default function GalleryClient({ posts }) {
                                             <Image src={editingPost.image_url} alt="Photo" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
                                         )}
                                     </div>
-                                    <div>
+                                    <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)' }}>
                                             {editingPost.title || 'Publication sans titre'}
                                         </div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-subtle, #999)', marginTop: '2px' }}>
                                             {editingPost.media_type === 'video' ? 'Vidéo' : 'Photo'} - Modification des textes en français et en anglais
                                         </div>
+                                        {editingPost.media_type !== 'video' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCropper({
+                                                    mode: 'recrop',
+                                                    post: editingPost,
+                                                    items: [{ id: editingPost.id, url: editingPost.image_url, name: editingPost.title || 'Photo' }],
+                                                })}
+                                                style={{
+                                                    marginTop: '6px',
+                                                    padding: '3px 9px',
+                                                    background: 'rgba(200,169,110,0.15)',
+                                                    border: '1px solid var(--admin-gold)',
+                                                    color: 'var(--admin-gold)',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px',
+                                                    fontSize: '0.72rem',
+                                                    fontWeight: '600',
+                                                }}
+                                            >
+                                                <Crop size={12} /> Recadrer la photo
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -533,13 +680,122 @@ export default function GalleryClient({ posts }) {
                         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                             {/* Dropzone / Preview */}
-                            {selectedFile ? (
+                            {batchFiles.length > 0 ? (
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        <p style={{ fontSize: '0.85rem', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-gold)', margin: 0 }}>
+                                            {batchFiles.length} photos recadrées prêtes à publier
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => setBatchFiles([])}
+                                            className="admin-btn admin-btn-secondary"
+                                            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                                        >
+                                            <X size={13} /> Tout retirer
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                                        {batchFiles.map((item, bIdx) => {
+                                            const previewSrc = URL.createObjectURL(item.file);
+                                            return (
+                                                <div
+                                                    key={item.id}
+                                                    style={{
+                                                        background: 'rgba(0,0,0,0.3)',
+                                                        border: '1px solid var(--admin-border)',
+                                                        borderRadius: '8px',
+                                                        overflow: 'hidden',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                    }}
+                                                >
+                                                    <div style={{ position: 'relative', aspectRatio: '1/1', background: '#000' }}>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={previewSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <span style={{ position: 'absolute', top: '6px', left: '6px', background: 'rgba(0,0,0,0.75)', color: 'var(--admin-gold)', fontSize: '0.7rem', fontWeight: '700', padding: '2px 7px', borderRadius: '3px' }}>
+                                                            #{bIdx + 1}
+                                                        </span>
+                                                        <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '3px' }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCropper({ mode: 'new', items: [{ id: item.id, file: item.file, name: item.name }] })}
+                                                                style={{ width: '24px', height: '24px', background: 'rgba(184, 139, 70, 0.9)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                title="Recadrer cette photo"
+                                                            >
+                                                                <Crop size={12} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setBatchFiles(prev => prev.filter((_, i) => i !== bIdx))}
+                                                                style={{ width: '24px', height: '24px', background: 'rgba(239, 68, 68, 0.9)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                title="Retirer"
+                                                            >
+                                                                <X size={12} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Titre FR (optionnel)"
+                                                            value={item.title}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setBatchFiles(prev => prev.map((x, i) => i === bIdx ? { ...x, title: val } : x));
+                                                            }}
+                                                            className="admin-input"
+                                                            style={{ fontSize: '0.78rem', padding: '5px 8px' }}
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Titre EN (optional)"
+                                                            value={item.title_en}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setBatchFiles(prev => prev.map((x, i) => i === bIdx ? { ...x, title_en: val } : x));
+                                                            }}
+                                                            className="admin-input"
+                                                            style={{ fontSize: '0.78rem', padding: '5px 8px' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--admin-border-soft)' }}>
+                                        <button type="button" onClick={resetForm} className="admin-btn admin-btn-secondary" disabled={!!batchPublishing}>
+                                            Annuler
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleBatchPublish}
+                                            className="admin-btn admin-btn-primary"
+                                            disabled={!!batchPublishing}
+                                            style={{ minWidth: '180px' }}
+                                        >
+                                            {batchPublishing ? (
+                                                <><Loader2 size={16} className="ic-spin" /> Publication {batchPublishing.done}/{batchPublishing.total}…</>
+                                            ) : (
+                                                `Tout publier (${batchFiles.length} photos)`
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : selectedFile ? (
                                 <div>
                                     <p style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-gold)', marginBottom: '0.75rem' }}>
                                         Aperçu - Prêt à publier
                                     </p>
                                     <div style={{ maxWidth: '280px' }}>
-                                        <MediaPreview file={selectedFile} onRemove={() => setSelectedFile(null)} />
+                                        <MediaPreview
+                                            file={selectedFile}
+                                            onRemove={() => setSelectedFile(null)}
+                                            onRecrop={selectedFile.type.startsWith('image/') ? () => setCropper({
+                                                mode: 'new',
+                                                items: [{ id: uid(), file: selectedFile, name: selectedFile.name }],
+                                            }) : undefined}
+                                        />
                                     </div>
                                 </div>
                             ) : (
@@ -565,20 +821,20 @@ export default function GalleryClient({ posts }) {
                                     >
                                         <UploadCloud size={36} style={{ color: isDragging ? 'var(--admin-gold)' : 'var(--admin-text-subtle)' }} />
                                         <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '0.95rem' }}>
-                                            Glisser le fichier ici, ou cliquer pour choisir
+                                            Glisser les fichiers ici, ou cliquer pour choisir
                                         </span>
                                         <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-subtle)' }}>
-                                            Images (JPG, PNG, WEBP) ou Vidéos (MP4, MOV, WEBM)
+                                            Images (cadrage intégré, plusieurs à la fois possibles) ou Vidéos
                                         </span>
                                         <input
                                             ref={inputRef}
                                             type="file"
                                             name="image_file"
                                             accept="image/*,video/*"
+                                            multiple
                                             style={{ display: 'none' }}
                                             onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) handleFileSelect(file);
+                                                handleFilesSelect(e.target.files);
                                                 e.target.value = '';
                                             }}
                                         />
@@ -760,138 +1016,196 @@ export default function GalleryClient({ posts }) {
                                 {/* Card Actions bar */}
                                 <div style={{
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '0.6rem 0.8rem',
-                                    background: 'rgba(0,0,0,0.2)',
+                                    flexDirection: 'column',
+                                    gap: '8px',
+                                    padding: '0.65rem 0.8rem',
+                                    background: 'rgba(0,0,0,0.22)',
                                     borderTop: '1px solid var(--admin-border-soft, #332d27)',
                                 }}>
-                                    {/* Reorder Left/Right & Direct Position Select */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <button
-                                            onClick={() => handleReorder(post.id, 'up')}
-                                            disabled={idx === 0 || isDeleting}
-                                            title="Déplacer vers la gauche"
-                                            aria-label={`Déplacer ${post.title || 'cette photo'} vers la gauche`}
-                                            style={{
-                                                width: '28px', height: '28px',
-                                                background: idx === 0 ? 'transparent' : 'rgba(200,169,110,0.15)',
-                                                border: '1px solid rgba(200,169,110,0.25)',
-                                                color: idx === 0 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
-                                                borderRadius: '3px', cursor: idx === 0 ? 'default' : 'pointer',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            }}
-                                        >
-                                            <ArrowLeft size={13} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleReorder(post.id, 'down')}
-                                            disabled={idx === items.length - 1 || isDeleting}
-                                            title="Déplacer vers la droite"
-                                            aria-label={`Déplacer ${post.title || 'cette photo'} vers la droite`}
-                                            style={{
-                                                width: '28px', height: '28px',
-                                                background: idx === items.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
-                                                border: '1px solid rgba(200,169,110,0.25)',
-                                                color: idx === items.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
-                                                borderRadius: '3px', cursor: idx === items.length - 1 ? 'default' : 'pointer',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            }}
-                                        >
-                                            <ArrowRight size={13} />
-                                        </button>
+                                    {/* Row 1: Reorder Left/Right & Direct Position Select + Delete */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReorder(post.id, 'up')}
+                                                disabled={idx === 0 || isDeleting}
+                                                title="Déplacer vers la gauche"
+                                                aria-label={`Déplacer ${post.title || 'cette photo'} vers la gauche`}
+                                                style={{
+                                                    width: '28px', height: '28px',
+                                                    background: idx === 0 ? 'transparent' : 'rgba(200,169,110,0.15)',
+                                                    border: '1px solid rgba(200,169,110,0.25)',
+                                                    color: idx === 0 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
+                                                    borderRadius: '4px', cursor: idx === 0 ? 'default' : 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                }}
+                                            >
+                                                <ArrowLeft size={13} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReorder(post.id, 'down')}
+                                                disabled={idx === items.length - 1 || isDeleting}
+                                                title="Déplacer vers la droite"
+                                                aria-label={`Déplacer ${post.title || 'cette photo'} vers la droite`}
+                                                style={{
+                                                    width: '28px', height: '28px',
+                                                    background: idx === items.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
+                                                    border: '1px solid rgba(200,169,110,0.25)',
+                                                    color: idx === items.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
+                                                    borderRadius: '4px', cursor: idx === items.length - 1 ? 'default' : 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                }}
+                                            >
+                                                <ArrowRight size={13} />
+                                            </button>
 
-                                        {/* Sélecteur de position directe (ex : #1 vers #4) */}
-                                        <select
-                                            value={idx + 1}
-                                            disabled={isDeleting}
-                                            onChange={(e) => {
-                                                const targetPos = parseInt(e.target.value, 10);
-                                                if (targetPos && targetPos !== idx + 1) {
-                                                    handleMovePosition(post.id, targetPos);
-                                                }
-                                            }}
-                                            title="Changer directement l'emplacement (ex : placer en #4)"
-                                            aria-label={`Changer la position de ${post.title || 'cette réalisation'}`}
-                                            style={{
-                                                height: '28px',
-                                                padding: '0 6px',
-                                                background: 'rgba(200,169,110,0.15)',
-                                                border: '1px solid rgba(200,169,110,0.3)',
-                                                color: 'var(--admin-gold, #C8A96E)',
-                                                borderRadius: '3px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '700',
-                                                cursor: 'pointer',
-                                                outline: 'none',
-                                            }}
-                                        >
-                                            {items.map((_, pIdx) => (
-                                                <option key={pIdx + 1} value={pIdx + 1} style={{ background: '#1e1b18', color: '#FDFBF7' }}>
-                                                    #{pIdx + 1}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            {/* Sélecteur de position directe (ex : #1 vers #4) */}
+                                            <select
+                                                value={idx + 1}
+                                                disabled={isDeleting}
+                                                onChange={(e) => {
+                                                    const targetPos = parseInt(e.target.value, 10);
+                                                    if (targetPos && targetPos !== idx + 1) {
+                                                        handleMovePosition(post.id, targetPos);
+                                                    }
+                                                }}
+                                                title="Changer directement l'emplacement (ex : placer en #4)"
+                                                aria-label={`Changer la position de ${post.title || 'cette réalisation'}`}
+                                                style={{
+                                                    height: '28px',
+                                                    padding: '0 8px',
+                                                    background: 'rgba(200,169,110,0.15)',
+                                                    border: '1px solid rgba(200,169,110,0.3)',
+                                                    color: 'var(--admin-gold, #C8A96E)',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '700',
+                                                    cursor: 'pointer',
+                                                    outline: 'none',
+                                                }}
+                                            >
+                                                {items.map((_, pIdx) => (
+                                                     <option key={pIdx + 1} value={pIdx + 1} style={{ background: '#1e1b18', color: '#FDFBF7' }}>
+                                                         #{pIdx + 1}
+                                                     </option>
+                                                 ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Delete button or confirmation */}
+                                        <div>
+                                            {deleteId === post.id ? (
+                                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDelete(post.id)}
+                                                        disabled={isDeleting}
+                                                        aria-label="Confirmer la suppression"
+                                                        style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.95)', border: 'none', color: 'white', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                    >
+                                                        {isDeleting ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setDeleteId(null)}
+                                                        aria-label="Annuler la suppression"
+                                                        style={{ width: '26px', height: '26px', background: 'rgba(255,255,255,0.12)', border: 'none', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    >
+                                                        <X size={13} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDeleteId(post.id)}
+                                                    style={{ width: '28px', height: '28px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    title="Supprimer cette publication"
+                                                    aria-label={`Supprimer la publication ${post.title || ''}`}
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Edit & Delete */}
-                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                    {/* Row 2: Action buttons (Recadrer & Modifier) with guaranteed full text */}
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', width: '100%' }}>
+                                        {post.media_type !== 'video' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCropper({
+                                                    mode: 'recrop',
+                                                    post,
+                                                    items: [{ id: post.id, url: post.image_url, name: post.title || 'Photo' }],
+                                                })}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '6px 10px',
+                                                    background: 'rgba(200,169,110,0.12)',
+                                                    border: '1px solid rgba(200,169,110,0.4)',
+                                                    color: 'var(--admin-gold)',
+                                                    borderRadius: '5px',
+                                                    cursor: 'pointer',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '5px',
+                                                    fontSize: '0.78rem',
+                                                    fontWeight: '600',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                                title="Recadrer cette photo"
+                                                aria-label={`Recadrer ${post.title || 'cette photo'}`}
+                                            >
+                                                <Crop size={13} /> Recadrer
+                                            </button>
+                                        )}
+
                                         <button
+                                            type="button"
                                             onClick={() => setEditingPost(post)}
                                             style={{
-                                                padding: '4px 10px',
-                                                background: 'rgba(200,169,110,0.2)',
+                                                flex: post.media_type === 'video' ? 'none' : 1,
+                                                width: post.media_type === 'video' ? '100%' : 'auto',
+                                                padding: '6px 10px',
+                                                background: 'rgba(200,169,110,0.22)',
                                                 border: '1px solid var(--admin-gold)',
                                                 color: 'var(--admin-gold)',
-                                                borderRadius: '4px',
+                                                borderRadius: '5px',
                                                 cursor: 'pointer',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
+                                                justifyContent: 'center',
                                                 gap: '5px',
-                                                fontSize: '0.75rem',
+                                                fontSize: '0.78rem',
                                                 fontWeight: '600',
+                                                whiteSpace: 'nowrap',
                                             }}
                                             title="Modifier les textes FR &amp; EN"
                                             aria-label={`Modifier les textes FR et EN de ${post.title || 'cette publication'}`}
-                                        >
-                                            <Pencil size={12} /> Modifier
-                                        </button>
-
-                                        {deleteId === post.id ? (
-                                            <div style={{ display: 'flex', gap: '3px' }}>
-                                                <button
-                                                    onClick={() => handleDelete(post.id)}
-                                                    disabled={isDeleting}
-                                                    aria-label="Confirmer la suppression"
-                                                    style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.9)', border: 'none', color: 'white', borderRadius: '3px', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
-                                                >
-                                                    {isDeleting ? <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} /> : 'Oui'}
-                                                </button>
-                                                <button
-                                                    onClick={() => setDeleteId(null)}
-                                                    aria-label="Annuler la suppression"
-                                                    style={{ width: '24px', height: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                                >
-                                                    <X size={12} />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={() => setDeleteId(post.id)}
-                                                style={{ width: '28px', height: '28px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                                title="Supprimer"
-                                                aria-label={`Supprimer la publication ${post.title || ''}`}
-                                            >
-                                                <Trash2 size={13} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                                         >
+                                             <Pencil size={13} /> Modifier
+                                         </button>
+                                     </div>
+                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={GALLERY_CROP_TARGETS}
+                    heroPreview={false}
+                    title={cropper.mode === 'recrop' ? `Recadrer : ${cropper.post?.title || 'Photo galerie'}` : 'Cadrer les photos de la galerie'}
+                    confirmLabel={cropper.mode === 'recrop' ? 'Enregistrer le cadrage' : undefined}
+                    onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
+                />
+            )}
 
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }

@@ -4,6 +4,7 @@ import Script from "next/script";
 import { getSiteInfo } from "@/lib/data";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { SITE_URL } from "@/lib/site";
+import { parseCustomTexts, CUSTOM_TEXTS_KEY } from "@/lib/siteTexts";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -114,6 +115,9 @@ export async function generateMetadata() {
 }
 
 export default async function RootLayout({ children }) {
+  const rootSiteInfo = await getSiteInfo().catch(() => ({}));
+  const customTexts = parseCustomTexts(rootSiteInfo?.[CUSTOM_TEXTS_KEY]);
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FoodEstablishment',
@@ -205,7 +209,7 @@ export default async function RootLayout({ children }) {
         <a href="#main-content" className="sr-only focus:not-sr-only">
           Aller au contenu principal
         </a>
-        <LanguageProvider>
+        <LanguageProvider overrides={customTexts}>
           {children}
         </LanguageProvider>
       </body>

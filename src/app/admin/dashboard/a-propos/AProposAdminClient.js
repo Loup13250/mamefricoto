@@ -8,6 +8,10 @@ import {
     deleteService, 
     reorderService 
 } from '@/app/actions';
+import SiteTextsEditor from '@/components/admin/SiteTextsEditor';
+import ImageCropperModal, { ABOUT_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
+import { ABOUT_PAGE_TEXT_SECTIONS } from '@/lib/siteTexts';
+import Link from 'next/link';
 import { 
     Heart, 
     Sparkles, 
@@ -24,7 +28,8 @@ import {
     ExternalLink, 
     Languages, 
     Layers,
-    Save
+    Save,
+    Crop
 } from 'lucide-react';
 
 /* Utilitaire de compression client-side */
@@ -70,7 +75,7 @@ async function compressImageFile(file, maxWidth = 1400, quality = 0.82) {
     });
 }
 
-export default function AProposAdminClient({ info = {}, services = [] }) {
+export default function AProposAdminClient({ info = {}, services = [], customTexts = { fr: {}, en: {} } }) {
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -83,6 +88,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
     // About Photo state
     const [aboutPhotoPreview, setAboutPhotoPreview] = useState(info?.about_image || null);
     const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
+    const [cropper, setCropper] = useState(null); // { items: [...] }
 
     const serviceFormRef = useRef(null);
     const storyFormRef = useRef(null);
@@ -97,13 +103,46 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
         }
     };
 
-    // Gestion du choix de la photo À Propos
-    const handlePhotoChange = async (e) => {
+    // Gestion du choix de la photo À Propos (ouvre l'outil de recadrage ergonomique)
+    const handlePhotoChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const compressed = await compressImageFile(file);
-        setSelectedPhotoFile(compressed);
-        setAboutPhotoPreview(URL.createObjectURL(compressed));
+        setCropper({
+            items: [{ id: uid(), file, name: file.name }],
+        });
+        e.target.value = '';
+    };
+
+    // Recadrer la photo actuellement affichée
+    const handleRecrop = () => {
+        if (!aboutPhotoPreview) return;
+        if (selectedPhotoFile) {
+            setCropper({
+                items: [{ id: uid(), file: selectedPhotoFile, name: selectedPhotoFile.name }],
+            });
+        } else {
+            setCropper({
+                items: [{ id: uid(), url: aboutPhotoPreview, name: 'Photo À Propos' }],
+            });
+        }
+    };
+
+    // Résultat du recadrage
+    const handleCropped = async (results) => {
+        if (!results || results.length === 0) {
+            setCropper(null);
+            return;
+        }
+        const croppedBlob = results[0]?.outputs.image || results[0]?.original;
+        if (croppedBlob) {
+            const file = croppedBlob instanceof File 
+                ? croppedBlob 
+                : new File([croppedBlob], 'a-propos.webp', { type: 'image/webp' });
+            const compressed = await compressImageFile(file, 1600, 0.88);
+            setSelectedPhotoFile(compressed);
+            setAboutPhotoPreview(URL.createObjectURL(compressed));
+        }
+        setCropper(null);
     };
 
     // Soumission du formulaire Histoire & Photo
@@ -317,25 +356,74 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
 
                             <div style={{
                                 width: '100%',
-                                maxHeight: '340px',
-                                height: '280px',
-                                borderRadius: '8px',
+                                maxWidth: '320px',
+                                margin: '0 auto 1.25rem',
+                                aspectRatio: '4 / 5',
+                                borderRadius: '10px',
                                 overflow: 'hidden',
                                 border: '1px solid var(--admin-border)',
+                                boxShadow: '0 4px 18px rgba(0,0,0,0.3)',
                                 position: 'relative',
-                                background: 'rgba(0,0,0,0.1)',
-                                marginBottom: '1rem',
+                                background: 'var(--admin-surface)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
                                 {aboutPhotoPreview ? (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                        src={aboutPhotoPreview}
-                                        alt="Aperçu photo À Propos"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={aboutPhotoPreview}
+                                            alt="Aperçu photo À Propos"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '10px',
+                                            right: '10px',
+                                            display: 'flex',
+                                            gap: '6px',
+                                        }}>
+                                            <button
+                                                type="button"
+                                                onClick={handleRecrop}
+                                                className="admin-btn"
+                                                style={{
+                                                    background: 'rgba(26, 24, 21, 0.88)',
+                                                    backdropFilter: 'blur(6px)',
+                                                    color: 'var(--admin-gold)',
+                                                    border: '1px solid var(--admin-gold)',
+                                                    padding: '6px 12px',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: '600',
+                                                    borderRadius: '6px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    cursor: 'pointer',
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                                }}
+                                                title="Ajuster le cadrage ou le zoom de la photo"
+                                            >
+                                                <Crop size={14} /> Recadrer la photo
+                                            </button>
+                                        </div>
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            left: '10px',
+                                            background: 'rgba(26, 24, 21, 0.85)',
+                                            backdropFilter: 'blur(4px)',
+                                            color: 'var(--admin-text-subtle)',
+                                            fontSize: '0.72rem',
+                                            fontWeight: '600',
+                                            padding: '3px 8px',
+                                            borderRadius: '4px',
+                                            border: '1px solid var(--admin-border)',
+                                        }}>
+                                            Format 4:5 (Portrait)
+                                        </div>
+                                    </>
                                 ) : (
                                     <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>Aucune photo sélectionnée</span>
                                 )}
@@ -346,7 +434,7 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                                 <span style={{ fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '500', display: 'block' }}>
                                     {selectedPhotoFile ? selectedPhotoFile.name : 'Changer la photo À Propos'}
                                 </span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG ou WebP (compression auto)</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG ou WebP (recadrage &amp; compression auto)</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -369,6 +457,25 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            {/* SECTION 1 bis: TITRES & INTITULÉS DE LA PAGE (FR / EN) */}
+            <div className="admin-card" style={{ marginBottom: '2.5rem' }}>
+                <div className="admin-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div>
+                        <h2 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Languages size={20} style={{ color: 'var(--admin-gold)' }} />
+                            Titres &amp; intitulés de la page
+                        </h2>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
+                            Ex : « Une Cuisine Authentique, Préparée avec le Cœur », les 4 chiffres clés… en français et en anglais.
+                        </span>
+                    </div>
+                    <Link href="/admin/dashboard/textes" className="admin-btn admin-btn-secondary" style={{ fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Languages size={14} /> Tous les textes du site
+                    </Link>
+                </div>
+                <SiteTextsEditor sections={ABOUT_PAGE_TEXT_SECTIONS} overrides={customTexts} />
             </div>
 
             {/* SECTION 2: NOS PRESTATIONS TRAITEUR */}
@@ -708,6 +815,15 @@ export default function AProposAdminClient({ info = {}, services = [] }) {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Modal de recadrage ergonomique */}
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={ABOUT_CROP_TARGETS}
+                    onCancel={() => setCropper(null)}
+                    onComplete={handleCropped}
+                />
             )}
         </div>
     );

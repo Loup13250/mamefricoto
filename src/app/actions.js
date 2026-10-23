@@ -18,6 +18,12 @@ import {
     registerHit,
     clientIp,
 } from '@/lib/auth';
+import {
+    CUSTOM_TEXTS_KEY,
+    CUSTOM_TEXT_MAX_LENGTH,
+    parseCustomTexts,
+    isEditableTextKey,
+} from '@/lib/siteTexts';
 
 // --- AUTHENTICATION HELPER ---
 export async function verifyAdminAuth() {
@@ -196,6 +202,64 @@ export async function updateSiteInfo(formData) {
     revalidatePath('/realisations');
     revalidatePath('/admin/dashboard/settings');
     return { success: true };
+}
+
+// --- TEXTES DU SITE (FR / EN) ---
+// updates = { fr: { 'about.authTitle': 'Mon texte' | null }, en: { ... } }
+// Une valeur vide ou null supprime la surcharge (retour au texte d'origine).
+export async function saveSiteTexts(updates) {
+    try {
+        await requireAdminAuth();
+        if (!updates || typeof updates !== 'object') return { error: 'Données invalides.' };
+
+        const db = getDb();
+        const row = await db.prepare('SELECT value FROM site_info WHERE key = ?').get(CUSTOM_TEXTS_KEY);
+        const current = parseCustomTexts(row?.value);
+
+        for (const lang of ['fr', 'en']) {
+            const langUpdates = updates[lang];
+            if (!langUpdates || typeof langUpdates !== 'object') continue;
+            for (const [key, rawVal] of Object.entries(langUpdates)) {
+                if (!isEditableTextKey(key)) continue;
+                const val = typeof rawVal === 'string' ? rawVal.trim() : '';
+                if (!val) {
+                    delete current[lang][key];
+                } else {
+                    current[lang][key] = val.slice(0, CUSTOM_TEXT_MAX_LENGTH);
+                }
+            }
+        }
+
+        await db.prepare(`
+            INSERT INTO site_info (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `).run(CUSTOM_TEXTS_KEY, JSON.stringify(current));
+
+        // Synchronisation bidirectionnelle du slogan / accroche courte
+        const stmtInfo = db.prepare(`
+            INSERT INTO site_info (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `);
+        if (updates.fr && ('about.pageTagline' in updates.fr || 'footer.tagline' in updates.fr)) {
+            const newTagline = updates.fr['about.pageTagline'] ?? updates.fr['footer.tagline'];
+            if (newTagline) await stmtInfo.run('tagline', newTagline);
+        }
+        if (updates.en && ('about.pageTagline' in updates.en || 'footer.tagline' in updates.en)) {
+            const newTaglineEn = updates.en['about.pageTagline'] ?? updates.en['footer.tagline'];
+            if (newTaglineEn) await stmtInfo.run('tagline_en', newTaglineEn);
+        }
+
+        revalidatePath('/', 'layout');
+        revalidatePath('/');
+        revalidatePath('/a-propos');
+        revalidatePath('/admin/dashboard/textes');
+        revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/settings');
+        return { success: true };
+    } catch (err) {
+        console.error('[saveSiteTexts Error]:', err);
+        return { error: err.message || "Impossible d'enregistrer les textes." };
+    }
 }
 
 // --- WEEKLY MENU ---
@@ -417,7 +481,7 @@ export async function addCarouselImage(formData) {
         const title_en = (formData.get('title_en') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
         const subtitle_en = (formData.get('subtitle_en') || '').toString().trim();
-        const display_order = parseInt(formData.get('display_order') || '0', 10);
+        let display_order = parseInt(formData.get('display_order') || '0', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
         const mobileFile = formData.get('mobile_image_file');
@@ -439,6 +503,11 @@ export async function addCarouselImage(formData) {
         }
 
         const db = getDb();
+        if (!display_order) {
+            // Nouvelle photo : placée à la fin du carrousel (plusieurs imports successifs gardent leur ordre)
+            const last = await db.prepare('SELECT MAX(display_order) as max_order FROM carousel_images').get();
+            display_order = (Number(last?.max_order) || 0) + 1;
+        }
         await db.prepare('INSERT INTO carousel_images (image_url, mobile_image_url, title, title_en, subtitle, subtitle_en, fit_mode, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(image_url, mobile_image_url || null, title, title_en, subtitle, subtitle_en, fit_mode, display_order);
 
         revalidatePath('/');
@@ -483,7 +552,7 @@ export async function editCarouselImage(formData) {
         const title_en = (formData.get('title_en') || '').toString().trim();
         const subtitle = (formData.get('subtitle') || '').toString().trim();
         const subtitle_en = (formData.get('subtitle_en') || '').toString().trim();
-        const display_order = parseInt(formData.get('display_order') || '1', 10);
+        let display_order = parseInt(formData.get('display_order') || '0', 10);
         const fit_mode = (formData.get('fit_mode') || 'cover').toString().trim();
         const file = formData.get('image_file');
         const mobileFile = formData.get('mobile_image_file');
@@ -493,8 +562,9 @@ export async function editCarouselImage(formData) {
         let mobile_image_url = (formData.get('mobile_image_url') || '').toString().trim();
 
         const db = getDb();
-        const existing = await db.prepare('SELECT image_url, mobile_image_url, fit_mode FROM carousel_images WHERE id = ?').get(id);
+        const existing = await db.prepare('SELECT image_url, mobile_image_url, fit_mode, display_order FROM carousel_images WHERE id = ?').get(id);
         if (!existing) return { error: 'Photo du carrousel introuvable' };
+        if (!display_order) display_order = existing.display_order || 1;
 
         if (file && file.size > 0) {
             const uploaded = await saveUploadedFile(file);
@@ -624,15 +694,29 @@ export async function editGalleryPost(formData) {
         const caption_en = (formData.get('caption_en') || '').toString().trim();
 
         const db = getDb();
-        await db.prepare('UPDATE gallery_posts SET title = ?, title_en = ?, caption = ?, caption_en = ? WHERE id = ?').run(
-            title, title_en, caption, caption_en, id
-        );
+        const file = formData.get('image_file');
+        let newImageUrl = null;
+        if (file && file.size > 0) {
+            const uploaded = await saveUploadedFile(file);
+            if (uploaded) {
+                newImageUrl = uploaded;
+                const oldPost = await db.prepare('SELECT image_url FROM gallery_posts WHERE id = ?').get(id);
+                if (oldPost) deleteLocalFileIfPresent(oldPost.image_url);
+                await db.prepare('UPDATE gallery_posts SET image_url = ? WHERE id = ?').run(uploaded, id);
+            }
+        }
+
+        if (formData.has('title') || formData.has('caption')) {
+            await db.prepare('UPDATE gallery_posts SET title = ?, title_en = ?, caption = ?, caption_en = ? WHERE id = ?').run(
+                title, title_en, caption, caption_en, id
+            );
+        }
 
         revalidatePath('/');
         revalidatePath('/realisations');
         revalidatePath('/galerie');
         revalidatePath('/admin/dashboard/galerie');
-        return { success: true };
+        return { success: true, image_url: newImageUrl };
     } catch (err) {
         console.error('[Gallery Edit] Erreur :', err);
         return { error: err.message || 'Erreur lors de la mise à jour.' };
@@ -987,6 +1071,43 @@ export async function reorderWeeklyMenuImage(imageId, direction) {
     }
 }
 
+export async function replaceWeeklyMenuImage(imageId, formData) {
+    try {
+        await requireAdminAuth();
+        const file = formData.get('image_file');
+        if (!file || file.size === 0) return { error: 'Aucun fichier reçu' };
+        const db = getDb();
+        const img = await db.prepare('SELECT * FROM weekly_menu_images WHERE id = ?').get(imageId);
+        if (!img) return { error: 'Image non trouvée' };
+
+        const newUrl = await saveUploadedFile(file);
+        if (!newUrl) return { error: 'Échec de l’enregistrement du fichier' };
+
+        deleteLocalFileIfPresent(img.image_url);
+        await db.prepare('UPDATE weekly_menu_images SET image_url = ? WHERE id = ?').run(newUrl, imageId);
+
+        const isEn = img.lang === 'en';
+        const first = isEn
+            ? await db.prepare("SELECT id FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(img.menu_id)
+            : await db.prepare("SELECT id FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(img.menu_id);
+
+        if (first?.id === imageId) {
+            if (isEn) {
+                await db.prepare('UPDATE weekly_menus SET image_url_en = ? WHERE id = ?').run(newUrl, img.menu_id);
+            } else {
+                await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(newUrl, img.menu_id);
+            }
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/menu-semaine');
+        return { success: true, image_url: newUrl };
+    } catch (err) {
+        console.error('[replaceWeeklyMenuImage Error]:', err);
+        return { error: err.message || 'Erreur lors du recadrage de l’image.' };
+    }
+}
+
 // --- SERVICES / PRESTATIONS ---
 export async function addService(formData) {
     try {
@@ -1132,9 +1253,33 @@ export async function updateAboutInfo(formData) {
 
         if (formData.has('about_text')) await stmt.run('about_text', (formData.get('about_text') || '').toString().trim());
         if (formData.has('about_text_en')) await stmt.run('about_text_en', (formData.get('about_text_en') || '').toString().trim());
-        if (formData.has('tagline')) await stmt.run('tagline', (formData.get('tagline') || '').toString().trim());
-        if (formData.has('tagline_en')) await stmt.run('tagline_en', (formData.get('tagline_en') || '').toString().trim());
+        if (formData.has('tagline')) await stmt.run('tagline', tagline);
+        if (formData.has('tagline_en')) await stmt.run('tagline_en', tagline_en);
 
+        // Synchronisation bidirectionnelle vers custom_texts (pour que /admin/dashboard/textes affiche immédiatement les mêmes valeurs)
+        if (formData.has('tagline') || formData.has('tagline_en')) {
+            const textsRow = await db.prepare('SELECT value FROM site_info WHERE key = ?').get(CUSTOM_TEXTS_KEY);
+            const custom = parseCustomTexts(textsRow?.value);
+            if (formData.has('tagline')) {
+                if (tagline) {
+                    custom.fr['about.pageTagline'] = tagline;
+                    custom.fr['footer.tagline'] = tagline;
+                } else {
+                    delete custom.fr['about.pageTagline'];
+                    delete custom.fr['footer.tagline'];
+                }
+            }
+            if (formData.has('tagline_en')) {
+                if (tagline_en) {
+                    custom.en['about.pageTagline'] = tagline_en;
+                    custom.en['footer.tagline'] = tagline_en;
+                } else {
+                    delete custom.en['about.pageTagline'];
+                    delete custom.en['footer.tagline'];
+                }
+            }
+            await stmt.run(CUSTOM_TEXTS_KEY, JSON.stringify(custom));
+        }
 
         const aboutFile = formData.get('about_file');
         if (aboutFile && aboutFile.size > 0) {
@@ -1142,9 +1287,11 @@ export async function updateAboutInfo(formData) {
             if (aboutUrl) await stmt.run('about_image', aboutUrl);
         }
 
+        revalidatePath('/', 'layout');
         revalidatePath('/');
         revalidatePath('/a-propos');
         revalidatePath('/admin/dashboard/a-propos');
+        revalidatePath('/admin/dashboard/textes');
         revalidatePath('/admin/dashboard/settings');
         return { success: true };
     } catch (err) {
@@ -1567,6 +1714,68 @@ export async function reorderPricingDocumentImage(imageId, direction) {
     } catch (err) {
         console.error('[reorderPricingDocumentImage Error]:', err);
         return { error: err.message || 'Une erreur est survenue lors de la réorganisation.' };
+    }
+}
+
+export async function replacePricingDocumentImage(imageId, formData) {
+    try {
+        await requireAdminAuth();
+        const file = formData.get('image_file');
+        if (!file || file.size === 0) return { error: 'Aucun fichier reçu' };
+        const db = getDb();
+
+        // Handle legacy ID format 'legacy-${docId}-${lang}'
+        if (typeof imageId === 'string' && imageId.startsWith('legacy-')) {
+            const parts = imageId.split('-');
+            const docId = parseInt(parts[1], 10);
+            const lang = parts[2];
+            if (docId) {
+                const newUrl = await saveUploadedFile(file);
+                if (!newUrl) return { error: 'Échec de l’enregistrement' };
+                const doc = await db.prepare('SELECT file_url, file_url_en FROM pricing_documents WHERE id = ?').get(docId);
+                if (lang === 'en') {
+                    if (doc?.file_url_en) deleteLocalFileIfPresent(doc.file_url_en);
+                    await db.prepare('UPDATE pricing_documents SET file_url_en = ? WHERE id = ?').run(newUrl, docId);
+                } else {
+                    if (doc?.file_url) deleteLocalFileIfPresent(doc.file_url);
+                    await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(newUrl, docId);
+                }
+                revalidatePath('/tarifs');
+                revalidatePath('/admin/dashboard/tarifs');
+                revalidatePath('/admin/dashboard/prestations');
+                return { success: true, image_url: newUrl };
+            }
+        }
+
+        const img = await db.prepare('SELECT * FROM pricing_document_images WHERE id = ?').get(imageId);
+        if (!img) return { error: 'Image non trouvée' };
+
+        const newUrl = await saveUploadedFile(file);
+        if (!newUrl) return { error: 'Échec de l’enregistrement du fichier' };
+
+        deleteLocalFileIfPresent(img.image_url);
+        await db.prepare('UPDATE pricing_document_images SET image_url = ? WHERE id = ?').run(newUrl, imageId);
+
+        const isEn = img.lang === 'en';
+        const first = isEn
+            ? await db.prepare("SELECT id FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(img.doc_id)
+            : await db.prepare("SELECT id FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(img.doc_id);
+
+        if (first?.id === imageId) {
+            if (isEn) {
+                await db.prepare('UPDATE pricing_documents SET file_url_en = ? WHERE id = ?').run(newUrl, img.doc_id);
+            } else {
+                await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(newUrl, img.doc_id);
+            }
+        }
+
+        revalidatePath('/tarifs');
+        revalidatePath('/admin/dashboard/tarifs');
+        revalidatePath('/admin/dashboard/prestations');
+        return { success: true, image_url: newUrl };
+    } catch (err) {
+        console.error('[replacePricingDocumentImage Error]:', err);
+        return { error: err.message || 'Erreur lors du recadrage de l’image.' };
     }
 }
 

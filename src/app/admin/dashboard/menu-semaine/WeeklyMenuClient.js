@@ -1,17 +1,18 @@
 'use client';
 import { useState, useRef, useTransition, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage, deleteWeeklyMenuImages } from '@/app/actions';
+import { addWeeklyMenu, editWeeklyMenu, deleteWeeklyMenu, reorderWeeklyMenuImage, deleteWeeklyMenuImage, deleteWeeklyMenuImages, replaceWeeklyMenuImage } from '@/app/actions';
+import ImageCropperModal, { MENU_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
 import {
     Pencil, Trash2, Plus, X, Image as ImageIcon, CalendarDays,
     CheckCircle2, Images, ArrowUp, ArrowDown,
-    Loader2, UploadCloud, AlertCircle, AlertTriangle, Check
+    Loader2, UploadCloud, AlertCircle, AlertTriangle, Check, Crop
 } from 'lucide-react';
 
 /* =====================================================
    PREVIEW ITEM (Images sélectionnées prêtes à uploader)
    ===================================================== */
-function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
+function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown, onRecrop }) {
     const src = typeof file === 'string' ? file : URL.createObjectURL(file);
     return (
         <div style={{
@@ -85,22 +86,39 @@ function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown }) {
                 </button>
             </div>
 
-            {/* Bouton supprimer */}
-            <button
-                type="button"
-                onClick={() => onRemove(index)}
-                title="Retirer cette image"
-                style={{
-                    position: 'absolute', bottom: '8px', right: '8px',
-                    width: '28px', height: '28px',
-                    background: 'rgba(239,68,68,0.9)',
-                    border: 'none', borderRadius: '3px', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer',
-                }}
-            >
-                <X size={14} />
-            </button>
+            {/* Boutons actions en bas à droite */}
+            <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', gap: '4px' }}>
+                {onRecrop && (
+                    <button
+                        type="button"
+                        onClick={() => onRecrop(index)}
+                        title="Recadrer cette image"
+                        style={{
+                            width: '28px', height: '28px',
+                            background: 'rgba(184, 139, 70, 0.95)',
+                            border: 'none', borderRadius: '3px', color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <Crop size={14} />
+                    </button>
+                )}
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    title="Retirer cette image"
+                    style={{
+                        width: '28px', height: '28px',
+                        background: 'rgba(239,68,68,0.9)',
+                        border: 'none', borderRadius: '3px', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <X size={14} />
+                </button>
+            </div>
         </div>
     );
 }
@@ -223,6 +241,9 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
     const [filesFr, setFilesFr] = useState([]);
     const [filesEn, setFilesEn] = useState([]);
 
+    // Modal de recadrage intégré
+    const [cropper, setCropper] = useState(null);
+
     const [isDraggingFr, setIsDraggingFr] = useState(false);
     const [isDraggingEn, setIsDraggingEn] = useState(false);
 
@@ -231,7 +252,14 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
     const [success, setSuccess] = useState(false);
 
     // Helpers FR
-    const handleNewFilesFr = useCallback((newFiles) => setFilesFr(prev => [...prev, ...newFiles]), []);
+    const handleNewFilesFr = useCallback((newFiles) => {
+        const imgs = Array.from(newFiles || []).filter(f => f.type?.startsWith('image/'));
+        if (imgs.length === 0) return;
+        setCropper({
+            mode: 'new_fr',
+            items: imgs.map(f => ({ id: uid(), file: f, name: f.name })),
+        });
+    }, []);
     const handleRemoveFr = useCallback((idx) => setFilesFr(prev => prev.filter((_, i) => i !== idx)), []);
     const handleMoveUpFr = useCallback((idx) => {
         if (idx === 0) return;
@@ -249,9 +277,25 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
             return next;
         });
     }, []);
+    const handleRecropFileFr = useCallback((idx) => {
+        const targetFile = filesFr[idx];
+        if (!targetFile) return;
+        setCropper({
+            mode: 'recrop_new_fr',
+            targetIndex: idx,
+            items: [{ id: uid(), file: targetFile, name: targetFile.name || `photo-fr-${idx + 1}.webp` }],
+        });
+    }, [filesFr]);
 
     // Helpers EN
-    const handleNewFilesEn = useCallback((newFiles) => setFilesEn(prev => [...prev, ...newFiles]), []);
+    const handleNewFilesEn = useCallback((newFiles) => {
+        const imgs = Array.from(newFiles || []).filter(f => f.type?.startsWith('image/'));
+        if (imgs.length === 0) return;
+        setCropper({
+            mode: 'new_en',
+            items: imgs.map(f => ({ id: uid(), file: f, name: f.name })),
+        });
+    }, []);
     const handleRemoveEn = useCallback((idx) => setFilesEn(prev => prev.filter((_, i) => i !== idx)), []);
     const handleMoveUpEn = useCallback((idx) => {
         if (idx === 0) return;
@@ -269,6 +313,81 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
             return next;
         });
     }, []);
+    const handleRecropFileEn = useCallback((idx) => {
+        const targetFile = filesEn[idx];
+        if (!targetFile) return;
+        setCropper({
+            mode: 'recrop_new_en',
+            targetIndex: idx,
+            items: [{ id: uid(), file: targetFile, name: targetFile.name || `photo-en-${idx + 1}.webp` }],
+        });
+    }, [filesEn]);
+
+    // Recadrer une photo déjà en ligne
+    const handleRecropExisting = useCallback((img, lang) => {
+        setCropper({
+            mode: 'recrop_existing',
+            imageId: img.id,
+            lang,
+            items: [{ id: img.id, url: img.image_url, name: `Menu ${lang.toUpperCase()}` }],
+        });
+    }, []);
+
+    // Réception des résultats du recadreur
+    const handleCropped = async (results) => {
+        if (!results || results.length === 0) {
+            setCropper(null);
+            return;
+        }
+        const mode = cropper?.mode;
+        if (mode === 'new_fr') {
+            const croppedFiles = results.map(r => r.outputs.image || r.original);
+            setFilesFr(prev => [...prev, ...croppedFiles]);
+        } else if (mode === 'new_en') {
+            const croppedFiles = results.map(r => r.outputs.image || r.original);
+            setFilesEn(prev => [...prev, ...croppedFiles]);
+        } else if (mode === 'recrop_new_fr') {
+            const cropped = results[0]?.outputs.image || results[0]?.original;
+            if (cropped && cropper?.targetIndex != null) {
+                setFilesFr(prev => {
+                    const next = [...prev];
+                    next[cropper.targetIndex] = cropped;
+                    return next;
+                });
+            }
+        } else if (mode === 'recrop_new_en') {
+            const cropped = results[0]?.outputs.image || results[0]?.original;
+            if (cropped && cropper?.targetIndex != null) {
+                setFilesEn(prev => {
+                    const next = [...prev];
+                    next[cropper.targetIndex] = cropped;
+                    return next;
+                });
+            }
+        } else if (mode === 'recrop_existing') {
+            const cropped = results[0]?.outputs.image || results[0]?.original;
+            const imgId = cropper?.imageId;
+            const lang = cropper?.lang;
+            if (cropped && imgId) {
+                const tempUrl = URL.createObjectURL(cropped);
+                if (lang === 'fr') {
+                    setExistingFrImages(prev => prev.map(item => item.id === imgId ? { ...item, image_url: tempUrl } : item));
+                } else {
+                    setExistingEnImages(prev => prev.map(item => item.id === imgId ? { ...item, image_url: tempUrl } : item));
+                }
+
+                startTransition(async () => {
+                    const fd = new FormData();
+                    fd.append('image_file', cropped);
+                    const res = await replaceWeeklyMenuImage(imgId, fd);
+                    if (res?.error) {
+                        setError(res.error);
+                    }
+                });
+            }
+        }
+        setCropper(null);
+    };
 
     // Photos existantes en ligne (mode édition) avec mise à jour optimiste
     const [prevMenu, setPrevMenu] = useState(activeMenu);
@@ -668,6 +787,26 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                                 <Check size={13} strokeWidth={3} />
                                             </button>
 
+                                            {/* Bouton recadrer photo existante */}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRecropExisting(img, 'fr')}
+                                                disabled={isPending}
+                                                title="Recadrer cette photo"
+                                                aria-label={`Recadrer la photo FR numéro ${idx + 1}`}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', right: '34px',
+                                                    width: '24px', height: '24px',
+                                                    background: 'rgba(184, 139, 70, 0.95)',
+                                                    border: 'none', borderRadius: '3px', color: 'white',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2,
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                                }}
+                                            >
+                                                <Crop size={12} />
+                                            </button>
+
                                             {/* Bouton supprimer individuel avec confirmation */}
                                             <button
                                                 type="button"
@@ -719,6 +858,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                         onRemove={handleRemoveFr}
                                         onMoveUp={handleMoveUpFr}
                                         onMoveDown={handleMoveDownFr}
+                                        onRecrop={handleRecropFileFr}
                                     />
                                 ))}
                             </div>
@@ -849,6 +989,26 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                                 <Check size={13} strokeWidth={3} />
                                             </button>
 
+                                            {/* Bouton recadrer photo existante */}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRecropExisting(img, 'en')}
+                                                disabled={isPending}
+                                                title="Recadrer cette photo anglaise"
+                                                aria-label={`Recadrer la photo EN numéro ${idx + 1}`}
+                                                style={{
+                                                    position: 'absolute', bottom: '5px', right: '34px',
+                                                    width: '24px', height: '24px',
+                                                    background: 'rgba(184, 139, 70, 0.95)',
+                                                    border: 'none', borderRadius: '3px', color: 'white',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', zIndex: 2,
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                                }}
+                                            >
+                                                <Crop size={12} />
+                                            </button>
+
                                             {/* Bouton supprimer individuel avec confirmation */}
                                             <button
                                                 type="button"
@@ -900,6 +1060,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                                         onRemove={handleRemoveEn}
                                         onMoveUp={handleMoveUpEn}
                                         onMoveDown={handleMoveDownEn}
+                                        onRecrop={handleRecropFileEn}
                                     />
                                 ))}
                             </div>
@@ -1104,6 +1265,16 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* MODAL DE RECADRAGE ERGONOMIQUE */}
+            {cropper && (
+                <ImageCropperModal
+                    items={cropper.items}
+                    targets={MENU_CROP_TARGETS}
+                    onCancel={() => setCropper(null)}
+                    onComplete={handleCropped}
+                />
             )}
         </div>
     );

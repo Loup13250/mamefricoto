@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { RotateCw, Home, AlertCircle } from 'lucide-react';
 
 export default function ErrorBoundary({ error, reset }) {
   useEffect(() => {
@@ -15,74 +16,81 @@ export default function ErrorBoundary({ error, reset }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem 1.5rem',
-        background: 'var(--cream, #FAF7F2)',
-        color: 'var(--text-1, #2A1E17)',
+        padding: '3rem 1.5rem',
+        background: 'radial-gradient(circle at 50% 20%, rgba(194, 87, 45, 0.1) 0%, transparent 60%), var(--bg)',
+        color: 'var(--text-1)',
         textAlign: 'center',
       }}
     >
       <div
         style={{
           maxWidth: '560px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(194, 87, 45, 0.2)',
-          borderRadius: '16px',
+          width: '100%',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: '24px',
           padding: '3rem 2rem',
-          boxShadow: '0 20px 40px -15px rgba(42, 30, 23, 0.08)',
+          boxShadow: '0 20px 40px -15px rgba(42, 30, 23, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
         }}
       >
-        <h1
+        <div
           style={{
-            fontSize: '1.75rem',
-            fontWeight: '700',
-            marginBottom: '0.75rem',
-            color: 'var(--text-1, #2A1E17)',
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: 'rgba(194, 87, 45, 0.1)',
+            color: 'var(--gold)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '0.5rem',
           }}
         >
-          Une erreur inattendue est survenue
+          <AlertCircle size={32} />
+        </div>
+
+        <h1
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '2rem',
+            fontWeight: '400',
+            lineHeight: 1.2,
+            color: 'var(--text-1)',
+            margin: 0,
+          }}
+        >
+          Un petit contretemps en cuisine...
         </h1>
+
         <p
           style={{
             fontSize: '1rem',
-            color: 'var(--text-2, #5C4738)',
-            marginBottom: '2rem',
+            color: 'var(--text-2)',
             lineHeight: 1.6,
+            margin: '0.25rem 0 1.5rem',
           }}
         >
-          Veuillez nous excuser pour ce désagrément technique. Vous pouvez rafraîchir la page ou revenir à l&apos;accueil.
+          Une erreur inattendue est survenue lors de l&apos;affichage de cette page. Vous pouvez retenter votre chance ou regagner la table principale.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
           <button
             type="button"
             onClick={() => reset()}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: 'var(--terracotta, #C2572D)',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn-gold"
+            style={{ cursor: 'pointer', border: 'none' }}
           >
-            Réessayer
+            <RotateCw size={18} />
+            <span>Réessayer</span>
           </button>
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '12px 24px',
-              backgroundColor: 'transparent',
-              color: 'var(--text-1, #2A1E17)',
-              border: '1px solid rgba(42, 30, 23, 0.2)',
-              borderRadius: '8px',
-              fontWeight: '600',
-              textDecoration: 'none',
-            }}
-          >
-            Retour à l&apos;accueil
+          
+          <Link href="/" className="btn-outline">
+            <Home size={18} />
+            <span>Retour à l&apos;accueil</span>
           </Link>
         </div>
       </div>

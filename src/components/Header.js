@@ -75,7 +75,7 @@ export default function Header({ siteInfo }) {
                             width={48}
                             height={48}
                             className="logo-img"
-                            style={{ width: '100%', height: '100%' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             priority
                             unoptimized
                         />

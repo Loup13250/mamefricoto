@@ -992,6 +992,7 @@ export default function GalleryClient({ posts }) {
                                             width={400}
                                             height={300}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            priority={idx < 4}
                                             unoptimized
                                         />
                                     )}

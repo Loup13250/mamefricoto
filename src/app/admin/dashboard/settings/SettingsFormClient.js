@@ -183,7 +183,7 @@ export default function SettingsFormClient({ info }) {
                                         alt="Logo et icône du site"
                                         width={56}
                                         height={56}
-                                        style={{ width: '56px', height: '56px', objectFit: 'contain' }}
+                                        style={{ width: 'auto', height: 'auto', maxWidth: '56px', maxHeight: '56px', objectFit: 'contain' }}
                                         unoptimized
                                     />
                                 </div>

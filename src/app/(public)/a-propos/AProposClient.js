@@ -100,7 +100,7 @@ export default function AProposClient({ info, services }) {
                                     border: '1px solid var(--border)',
                                 }}
                                 sizes="(max-width: 900px) 100vw, 50vw"
-                                loading="lazy"
+                                priority
                                 unoptimized
                             />
                         </div>

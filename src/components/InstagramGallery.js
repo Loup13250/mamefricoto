@@ -80,9 +80,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                     className="gallery-img"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                    priority={idx < 4}
-                                    fetchPriority={idx < 2 ? 'high' : 'auto'}
-                                    loading={idx < 6 ? 'eager' : 'lazy'}
+                                    priority={idx < 6}
                                     decoding="async"
                                     unoptimized
                                 />
@@ -191,7 +189,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                             </div>
                             <div className="modal-info">
                                 <div className="modal-meta">
-                                    <Image src={siteInfo?.site_icon || siteInfo?.logo || "/logo.png"} alt="Mamé Fricoto" width={36} height={36} style={{ borderRadius: '2px', objectFit: 'cover' }} unoptimized />
+                                    <Image src={siteInfo?.site_icon || siteInfo?.logo || "/logo.png"} alt="Mamé Fricoto" width={36} height={36} style={{ width: '36px', height: '36px', borderRadius: '2px', objectFit: 'cover' }} unoptimized />
                                     <div className="modal-meta-text">
                                         <strong>Mamé Fricoto</strong>
                                         <span>{lang === 'en' ? 'Eyguières · Behind the Scenes' : 'Eyguières · Les Coulisses'}</span>

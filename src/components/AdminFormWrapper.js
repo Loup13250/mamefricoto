@@ -37,7 +37,7 @@ export default function AdminFormWrapper({ children, action, className, style })
     };
 
     const handleFormSubmit = () => {
-        setIsDirty(false); // Reset warning on intentional submit
+        setIsDirty(false); // Réinitialise l'avertissement lors d'un envoi volontaire
     };
 
     return (

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LEGAL PAGES STYLES - MENTIONS LÉGALES & POLITIQUE DE CONFIDENTIALITÉ
+   STYLES DES PAGES LÉGALES - MENTIONS LÉGALES ET POLITIQUE DE CONFIDENTIALITÉ
    ========================================================================== */
 
 .legal-main {
@@ -13,7 +13,7 @@
     padding: 2.5rem 1.5rem 5rem;
 }
 
-/* Quick Navigation Pills */
+/* Boutons de navigation rapide */
 .legal-quick-nav {
     display: flex;
     flex-wrap: wrap;
@@ -60,7 +60,7 @@
     transform: translateY(-1px);
 }
 
-/* Legal Cards */
+/* Cartes de contenu légal */
 .legal-card {
     background: var(--bg-card);
     border: 1px solid var(--border-soft);
@@ -112,7 +112,7 @@
     margin-top: 0.2rem;
 }
 
-/* Definition Grid */
+/* Grille de définitions */
 .legal-def-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -163,7 +163,7 @@
     color: var(--gold-dark);
 }
 
-/* Prose Text */
+/* Texte courant */
 .legal-prose {
     font-size: 0.95rem;
     line-height: 1.75;
@@ -216,7 +216,7 @@
     color: var(--gold-dark);
 }
 
-/* Callout Box */
+/* Encadré d'information */
 .legal-callout {
     background: rgba(194, 87, 45, 0.06);
     border-left: 4px solid var(--gold);
@@ -237,7 +237,7 @@
     border-left-color: #2E7D32;
 }
 
-/* Legal Switcher Banner */
+/* Bandeau de bascule entre les pages légales */
 .legal-switcher {
     display: flex;
     align-items: center;

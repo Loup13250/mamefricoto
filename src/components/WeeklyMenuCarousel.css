@@ -1,5 +1,5 @@
 /* ===========================================
-   WEEKLY MENU CARD - DARK PREMIUM
+   CARTE DU MENU DE LA SEMAINE
    =========================================== */
 
 .menu-card {
@@ -12,7 +12,7 @@
     align-items: start;
 }
 
-/* Media (left) */
+/* Média (à gauche) */
 .menu-media {
     position: relative;
     background: #FAF7F2;
@@ -64,7 +64,7 @@
     padding: 0;
 }
 
-/* Counter */
+/* Compteur */
 .menu-counter {
     position: absolute;
     top: 1rem;
@@ -81,7 +81,7 @@
     z-index: 10;
 }
 
-/* Arrow Buttons */
+/* Boutons fléchés */
 .menu-arrow,
 [data-theme="light"] .menu-arrow {
     position: absolute;
@@ -130,7 +130,7 @@
 .menu-arrow-left  { left: 1rem; }
 .menu-arrow-right { right: 1rem; }
 
-/* Dots */
+/* Points de pagination */
 .menu-dots {
     position: absolute;
     bottom: 1rem;
@@ -169,7 +169,7 @@
     width: 36px;
 }
 
-/* Click Hotspots */
+/* Zones de clic */
 .click-zone {
     position: absolute;
     top: 0;
@@ -182,7 +182,7 @@
 .zone-left  { left: 0; }
 .zone-right { right: 0; }
 
-/* Sidebar (right) */
+/* Colonne latérale (à droite) */
 .menu-sidebar {
     display: flex;
     flex-direction: column;
@@ -283,7 +283,7 @@
     }
 }
 
-/* Placeholder */
+/* Espace réservé */
 .menu-placeholder {
     display: flex;
     flex-direction: column;
@@ -318,7 +318,7 @@
         display: none;
     }
 
-    /* Discreet, auto-fading arrows on mobile so menu text is never blocked */
+    /* Flèches discrètes qui s’estompent sur mobile pour ne pas masquer le texte du menu */
     .menu-arrow {
         top: auto;
         bottom: 12px;

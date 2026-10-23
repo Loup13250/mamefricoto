@@ -73,14 +73,14 @@ function MessageCard({ msg }) {
                 gap: '1.25rem',
             }}
         >
-            {/* Top Bar: Name, Date, Status Pills, Actions */}
+            {/* Barre du haut : nom, date, statut, actions */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border-soft)' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                         <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--admin-text)', fontFamily: 'var(--font-body), system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                             {msg.name}
                         </h2>
-                        {/* Status Badge */}
+                        {/* Badge de statut */}
                         <span style={{
                             background: cfg.bg,
                             color: cfg.color,
@@ -101,7 +101,7 @@ function MessageCard({ msg }) {
                     </span>
                 </div>
 
-                {/* Status Switcher & Delete */}
+                {/* Changement de statut et suppression */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {status === 'nouveau' && (
                         <button
@@ -166,7 +166,7 @@ function MessageCard({ msg }) {
                 </div>
             </div>
 
-            {/* Details Grid */}
+            {/* Grille de détails */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -222,7 +222,7 @@ function MessageCard({ msg }) {
                 )}
             </div>
 
-            {/* User Message Text */}
+            {/* Texte du message du client */}
             <div>
                 <span style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-gold)', display: 'block', marginBottom: '0.5rem' }}>
                     Message du client :
@@ -241,7 +241,7 @@ function MessageCard({ msg }) {
                 </div>
             </div>
 
-            {/* Internal Admin Note Section */}
+            {/* Note interne de l'administratrice */}
             <form onSubmit={handleSaveNotes} style={{ background: 'rgba(200, 169, 110, 0.04)', border: '1px solid var(--admin-border)', borderRadius: '8px', padding: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                     <label style={{ fontSize: '0.78rem', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-gold)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -287,7 +287,7 @@ export default function MessagesClient({ messages }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            {/* Header */}
+            {/* En-tête */}
             <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Messages &amp; Demandes de Devis</h1>
                 <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.92rem', marginTop: '0.35rem' }}>
@@ -295,7 +295,7 @@ export default function MessagesClient({ messages }) {
                 </p>
             </div>
 
-            {/* Filter Tabs */}
+            {/* Onglets de filtre */}
             <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {[
                     { id: 'tous', label: `Tous (${messages.length})` },
@@ -315,7 +315,7 @@ export default function MessagesClient({ messages }) {
                 ))}
             </div>
 
-            {/* Message List */}
+            {/* Liste des messages */}
             <div style={{ width: '100%', maxWidth: '900px' }}>
                 {filteredMessages.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', borderRadius: '8px', color: 'var(--admin-text-muted)' }}>

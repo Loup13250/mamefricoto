@@ -35,7 +35,7 @@ function PricingDocVisual({ doc, title, lang, imgIdx = 0, onIndexChange, onOpenL
             if (doc.file_url) return [{ id: 'doc-default', image_url: doc.file_url }];
             return [];
         }
-        // French / default
+        // Français / par défaut
         if (doc.images_fr && doc.images_fr.length > 0) return doc.images_fr;
         if (doc.images && doc.images.length > 0) return doc.images;
         if (doc.file_url) return [{ id: 'doc-fr', image_url: doc.file_url }];
@@ -360,7 +360,7 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
 
     return (
         <main id="main-content" tabIndex="-1" className="tarifs-page subpage-main">
-            {/* ===== PAGE HERO ===== */}
+            {/* ===== EN-TÊTE DE PAGE ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">
@@ -479,7 +479,7 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                 </div>
             </section>
 
-            {/* ===== CTA SECTION ===== */}
+            {/* ===== SECTION APPEL À L'ACTION ===== */}
             <section style={{ background: 'var(--bg-2)', padding: '6rem 0', borderTop: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
                     <span className="label">{t('cta.badge')}</span>
@@ -508,7 +508,7 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
                 </div>
             </section>
 
-            {/* ===== FULLSCREEN LIGHTBOX MODAL MULTI-IMAGES ===== */}
+            {/* ===== FENÊTRE PLEIN ÉCRAN (LIGHTBOX) MULTI-IMAGES ===== */}
             {lightbox && (
                 <div
                     className="pricing-lightbox"

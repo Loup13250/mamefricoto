@@ -12,7 +12,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
 
     return (
         <main id="main-content" tabIndex="-1" className="subpage-main">
-            {/* ===== PAGE HERO ===== */}
+            {/* ===== EN-TÊTE DE PAGE ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">
@@ -28,7 +28,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
                 </div>
             </section>
 
-            {/* ===== GALLERY GRID ===== */}
+            {/* ===== GRILLE DE LA GALERIE ===== */}
             <section className="subpage-content-section">
                 {galleryPosts && galleryPosts.length > 0 ? (
                     <InstagramGallery posts={galleryPosts} siteInfo={siteInfo} showHeader={false} />
@@ -52,7 +52,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
                 )}
             </section>
 
-            {/* ===== CTA SECTION ===== */}
+            {/* ===== SECTION APPEL À L'ACTION ===== */}
             <section style={{ background: 'var(--bg-2)', padding: '6rem 0', borderTop: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
                     <span className="label">{t('gallery.ctaBadge')}</span>

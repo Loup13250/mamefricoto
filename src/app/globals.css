@@ -13,7 +13,7 @@
 :root,
 [data-theme="light"],
 [data-theme="dark"] {
-  /* Mamé Fricoto - Esprit Traiteur Maison Provençal : Chaleureux, Gourmand & Lumineux */
+  /* Mamé Fricoto - couleurs du site */
   --bg:          #FAF6F0;
   --bg-2:        #F3ECE1;
   --bg-card:     #FFFFFF;
@@ -45,14 +45,14 @@
   --ease:        cubic-bezier(0.22, 1, 0.36, 1);
   --transition:  all 0.4s var(--ease);
 
-  /* === TYPOGRAPHIE PROFESSIONNELLE & HARMONIEUSE === */
-  /* Police Momerkz : réservée aux GRANDS TITRES pour une identité forte */
+  /* === TYPOGRAPHIE === */
+  /* Police Momerkz : réservée aux grands titres */
   --font-heading: var(--font-momerkz), 'Momerkz', sans-serif;
 
-  /* Police DM Sans : ultra-nette, lisible et professionnelle pour corps de texte, menus, boutons, numéros */
+  /* Police DM Sans : corps de texte, menus, boutons, numéros */
   --font-body:    var(--font-dm-sans), 'DM Sans', system-ui, -apple-system, sans-serif;
 
-  /* Police Cormorant Garamond : touches d'élégance gastronomique (italiques chic, numéros éditoriaux) */
+  /* Police Cormorant Garamond : italiques et numéros décoratifs */
   --font-serif:   var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
 
   --header-h:     80px;
@@ -90,7 +90,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* GRANDS TITRES : Police Momerkz avec espacement aéré */
+/* Grands titres : police Momerkz */
 h1, h2, .font-momerkz {
   font-family: var(--font-heading);
   font-weight: 400;
@@ -99,7 +99,7 @@ h1, h2, .font-momerkz {
   color: var(--text-1);
 }
 
-/* PETITS TITRES & SOUS-TITRES (cartes, avis Google, footer, modales) : DM Sans propre & lisible */
+/* Petits titres et sous-titres (cartes, avis Google, pied de page, fenêtres) : DM Sans */
 h3, h4, h5, h6 {
   font-family: var(--font-body);
   font-weight: 600;
@@ -108,7 +108,7 @@ h3, h4, h5, h6 {
   color: var(--text-1);
 }
 
-/* Accents élégants en italique gastronomique */
+/* Accents en italique */
 h1 em, h2 em, .hero-title em, .title-xl em, .title-lg em, .font-serif {
   font-family: var(--font-serif);
   font-style: italic;
@@ -139,7 +139,7 @@ img {
   height: auto;
 }
 
-/* ===== LAYOUT ===== */
+/* ===== MISE EN PAGE ===== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -150,7 +150,7 @@ img {
   padding: 7rem 0;
 }
 
-/* ===== TYPOGRAPHY TOKENS ===== */
+/* ===== VARIABLES DE TYPOGRAPHIE ===== */
 .label {
   font-family: var(--font-body);
   font-size: 0.8rem;
@@ -199,7 +199,7 @@ img {
 .text-center { text-align: center; }
 .text-gold { color: var(--gold); }
 
-/* ===== BUTTONS ===== */
+/* ===== BOUTONS ===== */
 .btn-gold {
   display: inline-flex;
   align-items: center;
@@ -298,7 +298,7 @@ img {
   box-shadow: 0 12px 30px rgba(217, 103, 72, 0.4);
 }
 
-/* ===== DIVIDERS ===== */
+/* ===== SÉPARATEURS ===== */
 .gold-line {
   width: 40px;
   height: 1px;
@@ -337,7 +337,7 @@ img {
 .delay-3 { animation-delay: 360ms; }
 .delay-4 { animation-delay: 500ms; }
 
-/* ===== CARD BASE ===== */
+/* ===== BASE DES CARTES ===== */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -351,7 +351,7 @@ img {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
-/* ===== LIGHT MODE FULL CONTRAST AUDIT OVERRIDES ===== */
+/* ===== AJUSTEMENTS DU MODE CLAIR (CONTRASTE) ===== */
 [data-theme="light"] body {
   background-color: var(--bg);
   color: var(--text-1);
@@ -365,7 +365,7 @@ img {
   box-shadow: 0 16px 45px rgba(36, 30, 25, 0.1);
 }
 
-/* Header & Mobile Drawer */
+/* En-tête et menu mobile */
 [data-theme="light"] .header--solid {
   background: rgba(250, 247, 242, 0.94);
   border-bottom-color: rgba(184, 139, 70, 0.18);
@@ -447,7 +447,7 @@ img {
   color: #FFFFFF !important;
 }
 
-/* Weekly Menu Card */
+/* Carte du menu de la semaine */
 [data-theme="light"] .menu-card {
   box-shadow: 0 16px 40px -10px rgba(36, 30, 25, 0.07);
 }
@@ -471,12 +471,12 @@ img {
   color: #52473D !important;
 }
 
-/* Services / Prestations */
+/* Prestations */
 [data-theme="light"] .service-num {
   color: rgba(184, 139, 70, 0.35) !important;
 }
 
-/* Lightbox Modal */
+/* Fenêtre plein écran (lightbox) */
 [data-theme="light"] .modal-backdrop {
   background: rgba(250, 247, 242, 0.92);
 }
@@ -491,7 +491,7 @@ img {
   border-color: var(--border);
 }
 
-/* Footer & Socials */
+/* Pied de page et réseaux sociaux */
 [data-theme="light"] .social-links a {
   background: rgba(255, 255, 255, 0.8) !important;
   border-color: rgba(184, 139, 70, 0.3) !important;
@@ -503,7 +503,7 @@ img {
   color: #FFFFFF !important;
 }
 
-/* Forms & Inputs */
+/* Formulaires et champs */
 [data-theme="light"] input,
 [data-theme="light"] textarea,
 [data-theme="light"] select {
@@ -523,7 +523,7 @@ img {
   box-shadow: 0 0 0 3px rgba(184, 139, 70, 0.15) !important;
 }
 
-/* ===== SECTION HEADER ===== */
+/* ===== EN-TÊTE DE SECTION ===== */
 .section-header {
   display: flex;
   flex-direction: column;
@@ -540,7 +540,7 @@ img {
   }
 }
 
-/* ===== ACCESSIBILITY & FOCUS ===== */
+/* ===== ACCESSIBILITÉ ET FOCUS ===== */
 .sr-only {
   position: absolute;
   width: 1px;

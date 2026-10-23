@@ -108,7 +108,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                 </a>
             </div>
 
-            {/* Lightbox */}
+            {/* Plein écran (lightbox) */}
             {selectedPost && (
                 <div
                     className="modal-backdrop"
@@ -119,7 +119,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                 >
                     <div className="modal-wrapper" onClick={(e) => e.stopPropagation()}>
                         
-                        {/* Navigation Buttons OUTSIDE modal-card */}
+                        {/* Boutons de navigation en dehors de la carte */}
                         {posts.length > 1 && (
                             <>
                                 <button
@@ -162,7 +162,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                 style={{ cursor: posts.length > 1 ? 'pointer' : 'default', position: 'relative' }}
                                 title={posts.length > 1 ? (lang === 'en' ? 'Click for next image' : 'Cliquer pour passer à la photo suivante') : ''}
                             >
-                                {/* Counter badge */}
+                                {/* Badge compteur */}
                                 {posts.length > 1 && (
                                     <div className="lightbox-counter">
                                         {selectedIndex + 1} / {posts.length}

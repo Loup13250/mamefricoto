@@ -32,7 +32,7 @@ import {
     Crop
 } from 'lucide-react';
 
-/* Utilitaire de compression client-side */
+/* Utilitaire de compression côté navigateur */
 async function compressImageFile(file, maxWidth = 1400, quality = 0.82) {
     if (!file || !file.type.startsWith('image/')) return file;
     return new Promise((resolve) => {
@@ -80,12 +80,12 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Prestations state
+    // État des prestations
     const [isAddingService, setIsAddingService] = useState(false);
     const [editingService, setEditingService] = useState(null);
     const [deleteModal, setDeleteModal] = useState(null); // { id, title }
 
-    // About Photo state
+    // État de la photo À propos
     const [aboutPhotoPreview, setAboutPhotoPreview] = useState(info?.about_image || null);
     const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
     const [cropper, setCropper] = useState(null); // { items: [...] }
@@ -196,7 +196,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
         });
     };
 
-    // Prestations Handlers
+    // Gestionnaires des prestations
     const handleAddService = (e) => {
         e.preventDefault();
         setError('');
@@ -248,7 +248,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
 
     return (
         <div className="anim-fade" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Header */}
+            {/* En-tête */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -725,7 +725,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '260px' }}>
-                                    {/* Reorder arrows */}
+                                    {/* Flèches de réorganisation */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                                         <button
                                             type="button"
@@ -763,7 +763,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                         </button>
                                     </div>
 
-                                    {/* Number pill */}
+                                    {/* Pastille de numéro */}
                                     <span style={{
                                         fontSize: '1rem',
                                         fontWeight: '700',

@@ -24,7 +24,7 @@ export default function AProposClient({ info, services }) {
 
     return (
         <main id="main-content" tabIndex="-1" className="subpage-main">
-            {/* ===== PAGE HERO ===== */}
+            {/* ===== EN-TÊTE DE PAGE ===== */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">{t('about.pageBadge')}</span>
@@ -38,7 +38,7 @@ export default function AProposClient({ info, services }) {
                 </div>
             </section>
 
-            {/* ===== STORY ===== */}
+            {/* ===== HISTOIRE ===== */}
             <section className="subpage-content-section" style={{ background: 'var(--bg)' }}>
                 <div className="container">
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6rem', alignItems: 'center' }}
@@ -108,7 +108,7 @@ export default function AProposClient({ info, services }) {
                 </div>
             </section>
 
-            {/* ===== SERVICES ===== */}
+            {/* ===== PRESTATIONS ===== */}
             <section className="services-section">
                 <div className="container">
                     <div className="section-header anim-up" style={{ maxWidth: '600px', marginBottom: '3.5rem' }}>
@@ -131,7 +131,7 @@ export default function AProposClient({ info, services }) {
                 </div>
             </section>
 
-            {/* ===== CTA ===== */}
+            {/* ===== APPEL À L'ACTION ===== */}
             <section style={{ background: 'var(--bg)', padding: '7rem 0', borderBottom: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
                     <span className="label">{t('cta.badge')}</span>

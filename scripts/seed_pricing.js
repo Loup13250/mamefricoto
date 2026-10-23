@@ -6,7 +6,7 @@ const db = new Database(dbPath);
 
 console.log('Seeding pricing tables in:', dbPath);
 
-// Create tables
+// Crée les tables
 db.exec(`
 CREATE TABLE IF NOT EXISTS pricing_documents (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS fixed_prices (
 );
 `);
 
-// Insert initial fixed prices if empty
+// Insère les prix fixes initiaux si la table est vide
 const countPrices = db.prepare('SELECT COUNT(*) as count FROM fixed_prices').get();
 if (countPrices.count === 0) {
     const insertPrice = db.prepare(`
@@ -105,7 +105,7 @@ if (countPrices.count === 0) {
     console.log('Fixed prices seeded successfully.');
 }
 
-// Initial pricing document if empty
+// Document tarifaire initial si la table est vide
 const countDocs = db.prepare('SELECT COUNT(*) as count FROM pricing_documents').get();
 if (countDocs.count === 0) {
     const insertDoc = db.prepare(`
@@ -127,7 +127,7 @@ if (countDocs.count === 0) {
     console.log('Pricing documents seeded successfully.');
 }
 
-// Ensure site_info has notes
+// Vérifie que site_info contient les notes
 const setInfo = db.prepare('INSERT OR REPLACE INTO site_info (key, value) VALUES (?, ?)');
 setInfo.run('tarifs_note_fr', 'Tous nos tarifs s’entendent TTC. Livraison possible sur Eyguières et les communes environnantes. Menus adaptables selon vos régimes alimentaires (végétarien, sans gluten sur demande).');
 setInfo.run('tarifs_note_en', 'All prices include VAT. Delivery available in Eyguières and nearby towns. Dietary adjustments available upon request (vegetarian, gluten-free).');

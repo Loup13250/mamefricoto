@@ -438,7 +438,7 @@ export default function GalleryClient({ posts }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
 
-            {/* Header */}
+            {/* En-tête */}
             <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Galerie - Photos &amp; Vidéos</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.25rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
@@ -475,7 +475,7 @@ export default function GalleryClient({ posts }) {
                         </span>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* Barre de progression */}
                     <div style={{
                         width: '100%',
                         height: '6px',
@@ -559,7 +559,7 @@ export default function GalleryClient({ posts }) {
                             <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                 <input type="hidden" name="id" value={editingPost.id} />
 
-                                {/* Thumbnail preview */}
+                                {/* Aperçu de la miniature */}
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', padding: '0.75rem', background: 'rgba(0,0,0,0.25)', borderRadius: '6px', border: '1px solid var(--admin-border, #332d27)' }}>
                                     <div style={{ width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, position: 'relative', background: '#000' }}>
                                         {editingPost.media_type === 'video' ? (
@@ -697,7 +697,7 @@ export default function GalleryClient({ posts }) {
                     ) : (
                         <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                            {/* Dropzone / Preview */}
+                            {/* Zone de dépôt / aperçu */}
                             {batchFiles.length > 0 ? (
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -873,7 +873,7 @@ export default function GalleryClient({ posts }) {
                                 </div>
                             )}
 
-                            {/* Type de média (hidden auto-détecté) */}
+                            {/* Type de média (champ caché, détecté automatiquement) */}
                             <input
                                 type="hidden"
                                 name="media_type"
@@ -976,7 +976,7 @@ export default function GalleryClient({ posts }) {
                                     transition: 'border-color 0.2s ease',
                                 }}
                             >
-                                {/* Media Thumbnail */}
+                                {/* Miniature du média */}
                                 <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#000' }}>
                                     {post.media_type === 'video' ? (
                                         <>
@@ -997,7 +997,7 @@ export default function GalleryClient({ posts }) {
                                         />
                                     )}
 
-                                    {/* Badge position */}
+                                    {/* Badge de position */}
                                     <div style={{
                                         position: 'absolute', top: '8px', right: '8px',
                                         background: 'rgba(0,0,0,0.75)', color: 'var(--admin-gold, #C8A96E)',
@@ -1009,7 +1009,7 @@ export default function GalleryClient({ posts }) {
                                     </div>
                                 </div>
 
-                                {/* Text content preview */}
+                                {/* Aperçu du texte */}
                                 <div style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
                                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)', display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                                         <span style={{ fontSize: '0.7rem', padding: '1px 5px', borderRadius: '2px', background: 'rgba(200,169,110,0.15)', color: 'var(--admin-gold)', fontWeight: '700' }}>FR</span>
@@ -1032,7 +1032,7 @@ export default function GalleryClient({ posts }) {
                                     )}
                                 </div>
 
-                                {/* Card Actions bar */}
+                                {/* Barre d'actions de la carte */}
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -1041,7 +1041,7 @@ export default function GalleryClient({ posts }) {
                                     background: 'var(--admin-surface, #F5EFE6)',
                                     borderTop: '1px solid rgba(184, 139, 70, 0.25)',
                                 }}>
-                                    {/* Row 1: Reorder Left/Right & Direct Position Select + Delete */}
+                                    {/* Ligne 1 : déplacement gauche/droite, choix direct de la position et suppression */}
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <button
@@ -1117,7 +1117,7 @@ export default function GalleryClient({ posts }) {
                                             </select>
                                         </div>
 
-                                        {/* Delete button or confirmation */}
+                                        {/* Bouton de suppression ou confirmation */}
                                         <div>
                                             {deleteId === post.id ? (
                                                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -1153,7 +1153,7 @@ export default function GalleryClient({ posts }) {
                                         </div>
                                     </div>
 
-                                    {/* Row 2: Action buttons (Recadrer & Modifier) with high contrast & visibility */}
+                                    {/* Ligne 2 : boutons d'action (Recadrer et Modifier) */}
                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', marginTop: '2px' }}>
                                         {post.media_type !== 'video' && (
                                             <button

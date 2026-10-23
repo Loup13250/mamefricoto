@@ -566,7 +566,7 @@ export default function ImageCropperModal({
                     if (!aliveRef.current) return;
                     setSources((prev) => ({ ...prev, [item.id]: { status: 'ready', ...src } }));
 
-                    // Auto-détection intelligente du ratio d'origine (pour préserver 16:9, 4:5, 4:3, etc. sans forcer 1:1)
+                    // Détection automatique du ratio d'origine (pour préserver 16:9, 4:5, 4:3, etc. sans forcer 1:1)
                     const imgRatio = src.w / src.h;
                     setCrops((prev) => {
                         const itemCrops = prev[item.id];

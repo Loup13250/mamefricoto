@@ -11,13 +11,13 @@ const LanguageContext = createContext({
 });
 
 export function LanguageProvider({ children, initialLang = 'fr', overrides = null }) {
-    // Always start with 'fr' to prevent SSR/client hydration mismatch.
-    // The useEffect below will immediately correct the lang after mount
-    // based on localStorage and browser language preferences.
+    // Démarre toujours en 'fr' pour éviter un écart entre le rendu serveur et le client.
+    // Le useEffect ci-dessous corrige la langue juste après le montage
+    // d’après le localStorage et la langue du navigateur.
     const [lang, setLangState] = useState(initialLang);
     const [mounted, setMounted] = useState(false);
 
-    // Run once after mount: detect language from storage or browser prefs
+    // Exécuté une fois après le montage : détecte la langue (stockage ou navigateur)
     useEffect(() => {
         const raf = requestAnimationFrame(() => {
             setMounted(true);
@@ -42,7 +42,7 @@ export function LanguageProvider({ children, initialLang = 'fr', overrides = nul
         return () => cancelAnimationFrame(raf);
     }, []);
 
-    // Sync document.documentElement.lang whenever lang changes after mount
+    // Met à jour document.documentElement.lang à chaque changement de langue
     useEffect(() => {
         if (!mounted) return;
         try {

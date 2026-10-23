@@ -30,7 +30,7 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
         setCurrentIndex((prev) => (prev === 0 ? slidesCount - 1 : prev - 1));
     }, [slidesCount]);
 
-    // Continuous Autoplay: cycles every 7.0s for an elegant, calm luxury pacing
+    // Défilement automatique : change de photo toutes les 7 secondes
     useEffect(() => {
         if (slidesCount <= 1) return;
 
@@ -56,7 +56,7 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
         const diffX = touchStartX - touchEndX;
         const diffY = touchStartY - touchEndY;
 
-        // Trigger slide swap if horizontal swipe is dominant and exceeds 35px
+        // Change de photo si le glissement est surtout horizontal et dépasse 35 px
         if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
             if (diffX > 0) {
                 handleNext();
@@ -91,7 +91,7 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
                             className={`hero-slide ${isActive ? 'active' : ''}`}
                             aria-hidden={!isActive}
                         >
-                            {/* Desktop Image Layer */}
+                            {/* Image ordinateur */}
                             <div className={`hero-slide-layer hero-layer-desktop ${slide.mobile_image_url ? 'has-mobile-alt' : ''}`}>
                                 <Image
                                     src={slide.image_url}
@@ -105,7 +105,7 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
                                 />
                             </div>
 
-                            {/* Mobile Specific Image Layer */}
+                            {/* Image spécifique au mobile */}
                             {slide.mobile_image_url && (
                                 <div className="hero-slide-layer hero-layer-mobile">
                                     <Image

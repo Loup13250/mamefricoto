@@ -1,6 +1,6 @@
 /* =====================================================
-   PAGE 404 - NOT FOUND MAMÉ FRICOTO
-   Esprit Traiteur Maison Provençal : Chaleureux, Lumineux & Gourmand
+   PAGE 404 - PAGE INTROUVABLE
+   Styles de la page d'erreur 404
    ===================================================== */
 
 .not-found-page {
@@ -61,7 +61,7 @@
     box-shadow: 0 4px 15px rgba(194, 87, 45, 0.08);
 }
 
-/* Chiffre 404 magistral avec icône centrale */
+/* Chiffre 404 avec icône centrale */
 .not-found-digits {
     display: flex;
     align-items: center;
@@ -163,7 +163,7 @@
     height: 52px;
 }
 
-/* Grille de suggestions gourmandes */
+/* Grille de suggestions */
 .not-found-suggestions {
     width: 100%;
     margin-top: 1rem;

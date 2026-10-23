@@ -31,11 +31,11 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     const [success, setSuccess] = useState('');
     const [deleteModal, setDeleteModal] = useState(null); // { type, id, title }
 
-    // --- State for Services ---
+    // --- État des prestations ---
     const [isAddingService, setIsAddingService] = useState(false);
     const [editingService, setEditingService] = useState(null);
 
-    // --- State for Pricing Documents ---
+    // --- État des documents tarifaires ---
     const [isAddingDoc, setIsAddingDoc] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
 
@@ -53,7 +53,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     // ==========================================
-    // HANDLERS: PRICING DOCUMENTS
+    // GESTIONNAIRES : DOCUMENTS TARIFAIRES
     // ==========================================
     const handleAddDoc = (e) => {
         e.preventDefault();
@@ -116,7 +116,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     };
 
     // ==========================================
-    // HANDLERS: SERVICES
+    // GESTIONNAIRES : PRESTATIONS
     // ==========================================
     const handleAddService = (e) => {
         e.preventDefault();
@@ -181,14 +181,14 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
 
-            {/* Header */}
+            {/* En-tête */}
             <div style={{ width: '100%', maxWidth: '850px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Tarifs & Prestations</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
                     Gérez ici vos grilles tarifaires et cartes (PDF ou Images) ainsi que les prestations traiteur présentées sur la page <strong>/tarifs</strong>.
                 </p>
 
-                {/* Tabs Navigation (2 Tabs only) */}
+                {/* Navigation par onglets (2 onglets) */}
                 <div style={{
                     display: 'flex',
                     gap: '0.5rem',
@@ -469,7 +469,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                                 return (
                                     <div key={doc.id} className="admin-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flex: '1 1 300px' }}>
-                                            {/* Preview Thumbnail */}
+                                            {/* Miniature d'aperçu */}
                                             <div style={{
                                                 width: '64px',
                                                 height: '64px',

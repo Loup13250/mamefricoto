@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 /* =====================================================
-   PREVIEW ITEM (Images sélectionnées prêtes à uploader)
+   ÉLÉMENT D'APERÇU (images sélectionnées prêtes à être envoyées)
    ===================================================== */
 function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown, onRecrop }) {
     const src = typeof file === 'string' ? file : URL.createObjectURL(file);
@@ -124,7 +124,7 @@ function PreviewItem({ file, index, total, onRemove, onMoveUp, onMoveDown, onRec
 }
 
 /* =====================================================
-   DROPZONE
+   ZONE DE DÉPÔT
    ===================================================== */
 function DropZone({ onFiles, isDragging, setIsDragging, inputName = "image_files", label = "Glisser les images ici, ou cliquer pour choisir" }) {
     const inputRef = useRef(null);
@@ -467,7 +467,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
 
     const handleReorderExisting = (imgId, direction) => {
         setError('');
-        // Optimistic swap immédiat dans le formulaire
+        // Échange immédiat dans le formulaire (mise à jour optimiste)
         setExistingFrImages(prev => {
             const idx = prev.findIndex(img => img.id === imgId);
             if (idx === -1) return prev;
@@ -1357,7 +1357,7 @@ export default function WeeklyMenuClient({ menus }) {
                                     borderRadius: '6px',
                                     transition: 'background 0.2s',
                                 }}>
-                                    {/* Thumbnail */}
+                                    {/* Miniature */}
                                     <div style={{ width: '80px', height: '60px', borderRadius: '4px', overflow: 'hidden', background: '#000', flexShrink: 0, border: '1px solid var(--admin-border)' }}>
                                         {mainImg ? (
                                             <Image
@@ -1375,7 +1375,7 @@ export default function WeeklyMenuClient({ menus }) {
                                         )}
                                     </div>
 
-                                    {/* Details */}
+                                    {/* Détails */}
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
                                             <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--admin-text, #FDFBF7)', margin: 0 }}>

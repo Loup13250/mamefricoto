@@ -7,9 +7,9 @@ async function generate() {
   const buffer = await res.arrayBuffer();
   const font = opentype.parse(buffer);
 
-  // Canvas 500x500
-  // Center is (250, 250)
-  // Perfectly balanced to fill the circle with maximum impact and zero clipping
+  // Zone de dessin 500x500
+  // Le centre est (250, 250)
+  // Tailles choisies pour remplir le cercle sans rien couper
   const fontSizeLine1 = 134; // "mamé"
   const fontSizeLine2 = 116; // "fricoto"
 
@@ -23,19 +23,19 @@ async function generate() {
   const w2 = bbox2.x2 - bbox2.x1;
   const h2 = bbox2.y2 - bbox2.y1;
 
-  // Center horizontally
+  // Centrage horizontal
   const x1 = 250 - (bbox1.x1 + w1 / 2);
   const x2 = 250 - (bbox2.x1 + w2 / 2);
 
-  // Total block height & vertical centering
+  // Hauteur totale du bloc et centrage vertical
   const totalTop = bbox1.y1;
   const gap = 16;
   const baselineOffset = (bbox1.y2 - bbox1.y1) + gap;
 
-  // Compute bounding box of both lines combined
+  // Calcule la boîte englobante des deux lignes
   const combinedHeight = (bbox1.y2 - bbox1.y1) + gap + (bbox2.y2 - bbox2.y1);
   
-  // Set Y1 such that the center of the combined block is exactly at Y=246 (slight optical lift)
+  // Place Y1 pour que le centre du bloc soit à Y=246 (léger décalage optique)
   const y1 = 246 - combinedHeight / 2 - bbox1.y1;
   const y2 = y1 + (bbox1.y2 - bbox2.y1) + gap;
 

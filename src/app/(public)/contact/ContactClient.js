@@ -12,7 +12,7 @@ export default function ContactClient({ info }) {
 
     return (
         <main id="main-content" tabIndex="-1" className="subpage-main">
-            {/* Page header */}
+            {/* En-tête de la page */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">{t('contact.badge')}</span>
@@ -26,7 +26,7 @@ export default function ContactClient({ info }) {
                 </div>
             </section>
 
-            {/* Main content */}
+            {/* Contenu principal */}
             <section className="subpage-content-section" style={{ background: 'var(--bg)' }}>
                 <div className="container">
                     <div style={{
@@ -38,13 +38,13 @@ export default function ContactClient({ info }) {
                         margin: '0 auto',
                     }} className="contact-page-grid">
 
-                        {/* Form */}
+                        {/* Formulaire */}
                         <ContactForm />
 
-                        {/* Info panels */}
+                        {/* Panneaux d'informations */}
                         <div className="anim-up delay-2" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-                            {/* Direct contact */}
+                            {/* Contact direct */}
                             <div style={{
                                 background: 'var(--bg-card)',
                                 border: '1px solid var(--border)',
@@ -123,7 +123,7 @@ export default function ContactClient({ info }) {
                                 </ul>
                             </div>
 
-                            {/* Reviews & Social */}
+                            {/* Avis et réseaux sociaux */}
                             <div style={{
                                 background: 'var(--bg-card)',
                                 border: '1px solid var(--border)',

@@ -85,7 +85,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         touchStartX.current = 0;
     };
 
-    // Preload all carousel images immediately on mount so first slide transition is 100% instant
+    // Précharge toutes les images du carrousel au montage pour que la première transition soit immédiate
     useEffect(() => {
         if (typeof window === 'undefined') return;
         images.forEach((item) => {
@@ -101,7 +101,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
 
     return (
         <div className="menu-card anim-up" role="region" aria-label="Menu de la semaine">
-            {/* Left: Media */}
+            {/* Gauche : média */}
             <div
                 className="menu-media"
                 onClick={() => {
@@ -157,12 +157,12 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </div>
                 )}
 
-                {/* Counter */}
+                {/* Compteur */}
                 {images.length > 1 && (
                     <div className="menu-counter" aria-live="polite">{currentIndex + 1} / {images.length}</div>
                 )}
 
-                {/* Arrows */}
+                {/* Flèches */}
                 {images.length > 1 && (
                     <>
                         <button
@@ -184,7 +184,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                     </>
                 )}
 
-                {/* Dots */}
+                {/* Points de pagination */}
                 {images.length > 1 && (
                     <div className="menu-dots" role="tablist" aria-label="Sélection du plat">
                         {images.map((img, idx) => (
@@ -202,7 +202,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                 )}
             </div>
 
-            {/* Right: Info */}
+            {/* Droite : informations */}
             <div className="menu-sidebar">
                 <p className="menu-sidebar-label">{t('menu.label')}</p>
                 <h3 className="menu-title">{trans(menu, 'title')}</h3>

@@ -1,5 +1,5 @@
 /* =============================
-   INSTAGRAM GALLERY - DARK PREMIUM
+   GALERIE PHOTOS
    ============================= */
 
 .gallery-header {
@@ -151,7 +151,7 @@
     margin-top: 3rem;
 }
 
-/* Lightbox Modal */
+/* Fenêtre plein écran (lightbox) */
 .modal-backdrop {
     position: fixed;
     inset: 0;

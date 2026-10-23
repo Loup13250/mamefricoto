@@ -78,9 +78,9 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                 onClick={() => setMobileOpen(false)}
             />
 
-            {/* Sidebar Principale */}
+            {/* Barre latérale principale */}
             <aside className={`admin-sidebar ${mobileOpen ? 'open' : ''}`}>
-                {/* Brand Header */}
+                {/* En-tête de marque */}
                 <div className="admin-brand-header">
                     <a href="/" target="_blank" rel="noopener noreferrer" className="admin-brand-link" title="Voir le site public">
                         <div className="admin-brand-icon">
@@ -93,7 +93,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     </a>
                 </div>
 
-                {/* Navigation Navigation principale ordonnée selon le site */}
+                {/* Navigation principale, dans le même ordre que le site */}
                 <nav className="admin-nav-container">
                     {/* SECTION: PAGES DU SITE */}
                     <div className="admin-nav-section-title">

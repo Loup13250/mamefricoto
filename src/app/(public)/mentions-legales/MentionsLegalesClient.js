@@ -25,7 +25,7 @@ export default function MentionsLegalesClient() {
 
     return (
         <main id="main-content" tabIndex="-1" className="legal-main subpage-main">
-            {/* HERO */}
+            {/* EN-TÊTE */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">
@@ -45,11 +45,11 @@ export default function MentionsLegalesClient() {
                 </div>
             </section>
 
-            {/* CONTENT */}
+            {/* CONTENU */}
             <section className="subpage-content-section">
                 <div className="legal-container">
 
-                    {/* Quick navigation */}
+                    {/* Navigation rapide */}
                     <nav aria-label={isEn ? 'Table of contents' : 'Sommaire légal'} className="legal-quick-nav anim-up">
                         <span className="legal-quick-nav-label">
                             <FileText size={14} /> {isEn ? 'Contents' : 'Sommaire'}
@@ -434,7 +434,7 @@ export default function MentionsLegalesClient() {
                         </div>
                     </article>
 
-                    {/* SWITCHER BANNER */}
+                    {/* BANDEAU DE CHANGEMENT DE PAGE LÉGALE */}
                     <div className="legal-switcher anim-up">
                         <div className="legal-switcher-text">
                             <strong>{isEn ? 'Your personal data is fully protected.' : 'Vos données personnelles sont protégées.'}</strong><br />

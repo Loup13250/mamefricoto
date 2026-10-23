@@ -1,11 +1,11 @@
-/* Tarifs & Prestations Page Styling */
+/* Styles de la page Tarifs et Prestations */
 
 .tarifs-page {
     position: relative;
     width: 100%;
 }
 
-/* Quick Filter / Nav Pills */
+/* Filtres rapides / boutons de navigation */
 .tarifs-nav-pills {
     display: flex;
     justify-content: center;
@@ -79,7 +79,7 @@
     line-height: 1.5;
 }
 
-/* Pricing Documents (PDFs & Images) Grid */
+/* Grille des documents tarifaires (PDF et images) */
 .pricing-docs-grid {
     display: flex;
     justify-content: center;
@@ -108,7 +108,7 @@
     border-color: var(--gold);
 }
 
-/* Document Preview Visual - Entire Image Preserved & Visible */
+/* Aperçu du document : l'image entière reste visible */
 .pricing-doc-visual {
     position: relative;
     width: 100%;
@@ -158,7 +158,7 @@
     opacity: 1;
 }
 
-/* Badge pagination & Keyboard hint */
+/* Badge de pagination et indication clavier */
 .pricing-doc-badge-group {
     position: absolute;
     top: 12px;
@@ -209,7 +209,7 @@
     line-height: 1;
 }
 
-/* Dots pagination in card preview */
+/* Pagination par points dans l'aperçu de la carte */
 .pricing-doc-dots {
     position: absolute;
     bottom: 12px;
@@ -252,7 +252,7 @@
     border-color: rgba(200, 169, 110, 0.55);
 }
 
-/* PDF Preview Frame */
+/* Cadre d'aperçu PDF */
 .pricing-doc-pdf-preview {
     width: 100%;
     min-height: 280px;
@@ -295,7 +295,7 @@
     backdrop-filter: blur(4px);
 }
 
-/* Document Info & Actions */
+/* Informations et actions du document */
 .pricing-doc-content {
     padding: 1.25rem 1.5rem 1.5rem;
     display: flex;
@@ -362,7 +362,7 @@
     color: var(--gold);
 }
 
-/* Lightbox Modal */
+/* Fenêtre plein écran (lightbox) */
 .pricing-lightbox {
     position: fixed;
     inset: 0;

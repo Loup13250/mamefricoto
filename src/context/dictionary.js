@@ -4,7 +4,7 @@
 */
 export const DICTIONARY = {
     fr: {
-        // Navigation & Header
+        // Navigation et en-tête
         'nav.home': 'Accueil',
         'nav.tarifs': 'Tarifs',
         'nav.creations': 'Galerie',
@@ -16,12 +16,12 @@ export const DICTIONARY = {
         'nav.closeMenu': 'Fermer le menu',
         'nav.skipContent': 'Aller au contenu principal',
 
-        // Info strip
+        // Bandeau d'informations
         'strip.delivery': 'Livraison à domicile',
         'strip.pickup': 'Retrait au labo · Eyguières',
         'strip.hours': 'Commandes avant 10h',
 
-        // Hero
+        // Bannière
         'hero.eyebrow': 'Traiteur Maison · Eyguières',
         'hero.viewMenu': 'Voir le menu',
         'hero.viewTarifs': 'Voir les tarifs',
@@ -31,7 +31,7 @@ export const DICTIONARY = {
         'hero.defaultTitle': 'Mamé Fricoto',
         'hero.defaultSubtitle': 'Cuisine Maison & Produits Frais',
 
-        // Menu section
+        // Section menu
         'menu.badge': 'Du mardi au samedi',
         'menu.title': 'Le Menu',
         'menu.titleItalic': 'de la Semaine',
@@ -47,12 +47,12 @@ export const DICTIONARY = {
         'menu.prevDish': 'Plat précédent',
         'menu.nextDish': 'Plat suivant',
 
-        // Services section
+        // Section prestations
         'services.badge': 'Votre traiteur à Eyguières',
         'services.title': 'Nos Prestations',
         'services.aboutTitle': 'Ce que Nous Proposons',
 
-        // Tarifs page
+        // Page tarifs
         'tarifs.badge': 'Nos Tarifs & Menus',
         'tarifs.title': 'Cartes &',
         'tarifs.titleItalic': 'Tarifs',
@@ -76,7 +76,7 @@ export const DICTIONARY = {
         'tarifs.orderPhone': 'Commander par téléphone',
         'tarifs.quoteBtn': 'Demander un devis personnalisé',
 
-        // About section
+        // Section à propos
         'about.badge': 'Cuisine familiale & passionnée',
         'about.spirit': "L'Esprit",
         'about.spiritItalic': 'Mamé Fricoto',
@@ -100,7 +100,7 @@ export const DICTIONARY = {
         'about.tasteTitle': 'Envie de goûter ?',
         'about.tasteDesc': 'Appelez-nous pour commander votre repas du jour ou demander un devis pour vos réceptions.',
 
-        // Google reviews strip & section
+        // Bandeau et section avis Google
         'reviews.stars': 'Consultez les avis de nos clients sur Google',
         'reviews.btn': 'Voir les avis Google',
         'reviews.badge': 'Avis Clients Vérifiés',
@@ -110,14 +110,14 @@ export const DICTIONARY = {
         'reviews.starsNote': '5.0 ★ sur Google (51 avis vérifiés)',
         'reviews.viewAll': 'Voir tous les avis sur Google',
 
-        // Final CTA
+        // Appel à l'action final
         'cta.badge': 'Commander',
         'cta.title': 'Une envie gourmande ?',
         'cta.desc': 'Commandez votre repas maison par téléphone. Livraison ou retrait au labo à Eyguières.',
         'cta.callBtn': 'Appeler pour commander',
         'cta.quoteBtn': 'Demander un devis',
 
-        // Realisations / Gallery page
+        // Page réalisations / galerie
         'gallery.badge': 'Galerie Photos & Vidéos',
         'gallery.title': 'Galerie',
         'gallery.titleItalic': 'Les Coulisses de la Cuisine',
@@ -128,7 +128,7 @@ export const DICTIONARY = {
         'gallery.ctaTitle': 'Un événement à organiser ?',
         'gallery.ctaDesc': "Buffet dînatoire, anniversaire, repas d'entreprise ou menu sur mesure : contactez-nous pour échanger sur vos envies.",
 
-        // Contact page & Form
+        // Page contact et formulaire
         'contact.badge': 'Nous contacter',
         'contact.title': 'Contact &',
         'contact.titleItalic': 'Demande de Devis',
@@ -167,12 +167,12 @@ export const DICTIONARY = {
         'contact.errorGuests': 'Veuillez indiquer un nombre de convives valide (ex : 20).',
         'contact.errorPastDate': 'La date souhaitée ne peut pas être déjà passée.',
 
-        // Prestation types in form
+        // Types de prestation du formulaire
         'type.private': 'Événement Privé',
         'type.pro': 'Entreprise',
         'type.other': 'Autre',
 
-        // Footer
+        // Pied de page
         'footer.tagline': 'cuisine · maison · partage',
         'footer.desc': 'Traiteur maison basée à Eyguières. Des plats préparés avec soin, des produits frais et locaux, livrés chez vous ou à retirer au labo.',
         'footer.navTitle': 'Navigation',
@@ -183,7 +183,7 @@ export const DICTIONARY = {
         'footer.legalNotice': 'Mentions Légales',
         'footer.privacyPolicy': 'Politique de Confidentialité',
         'footer.credits': 'Conçu par JL-Développement',
-        // 404 Not Found
+        // Page 404
         '404.badge': 'Page introuvable',
         '404.title': 'Cette page n’est pas',
         '404.titleItalic': 'au menu...',
@@ -205,7 +205,7 @@ export const DICTIONARY = {
         '404.aboutLink': 'Découvrir notre univers',
     },
     en: {
-        // Navigation & Header
+        // Navigation et en-tête
         'nav.home': 'Home',
         'nav.tarifs': 'Tariffs',
         'nav.creations': 'Gallery',
@@ -217,12 +217,12 @@ export const DICTIONARY = {
         'nav.closeMenu': 'Close menu',
         'nav.skipContent': 'Skip to main content',
 
-        // Info strip
+        // Bandeau d'informations
         'strip.delivery': 'Home delivery',
         'strip.pickup': 'Workshop pick-up · Eyguières',
         'strip.hours': 'Orders before 10 AM',
 
-        // Hero
+        // Bannière
         'hero.eyebrow': 'Homemade Caterer · Eyguières, Provence',
         'hero.viewMenu': 'View Weekly Menu',
         'hero.viewTarifs': 'View Pricing',
@@ -232,7 +232,7 @@ export const DICTIONARY = {
         'hero.defaultTitle': 'Mamé Fricoto',
         'hero.defaultSubtitle': 'Homemade Cuisine & Fresh Ingredients',
 
-        // Menu section
+        // Section menu
         'menu.badge': 'Tuesday to Saturday',
         'menu.title': 'Weekly',
         'menu.titleItalic': 'Menu',
@@ -248,12 +248,12 @@ export const DICTIONARY = {
         'menu.prevDish': 'Previous dish',
         'menu.nextDish': 'Next dish',
 
-        // Services section
+        // Section prestations
         'services.badge': 'Your Caterer in Eyguières & Provence',
         'services.title': 'Our Catering Services',
         'services.aboutTitle': 'What We Offer',
 
-        // Tarifs page
+        // Page tarifs
         'tarifs.badge': 'Rates & Menus',
         'tarifs.title': 'Menus &',
         'tarifs.titleItalic': 'Rates',
@@ -277,7 +277,7 @@ export const DICTIONARY = {
         'tarifs.orderPhone': 'Call to Order',
         'tarifs.quoteBtn': 'Request a Custom Quote',
 
-        // About section
+        // Section à propos
         'about.badge': 'Passionate & generous family cooking',
         'about.spirit': 'The Spirit of',
         'about.spiritItalic': 'Mamé Fricoto',
@@ -301,7 +301,7 @@ export const DICTIONARY = {
         'about.tasteTitle': 'Fancy a taste?',
         'about.tasteDesc': 'Call us to order your daily homemade meal or request a tailored quote for your receptions.',
 
-        // Google reviews strip & section
+        // Bandeau et section avis Google
         'reviews.stars': 'Read our customer reviews on Google',
         'reviews.btn': 'View Google Reviews',
         'reviews.badge': 'Verified Customer Reviews',
@@ -311,14 +311,14 @@ export const DICTIONARY = {
         'reviews.starsNote': '5.0 ★ on Google (51 verified reviews)',
         'reviews.viewAll': 'Read all 51 reviews on Google',
 
-        // Final CTA
+        // Appel à l'action final
         'cta.badge': 'Order Now',
         'cta.title': 'Craving something delicious?',
         'cta.desc': 'Order your homemade meal by phone. Delivery or pickup at our culinary workshop in Eyguières.',
         'cta.callBtn': 'Call to order',
         'cta.quoteBtn': 'Request a quote',
 
-        // Realisations / Gallery page
+        // Page réalisations / galerie
         'gallery.badge': 'Photo & Video Gallery',
         'gallery.title': 'Gallery',
         'gallery.titleItalic': 'Behind the Scenes in the Kitchen',
@@ -329,7 +329,7 @@ export const DICTIONARY = {
         'gallery.ctaTitle': 'Planning an event?',
         'gallery.ctaDesc': 'Cocktail buffet, birthday party, corporate seminar, or tailored dinner: contact us to bring your culinary wishes to life.',
 
-        // Contact page & Form
+        // Page contact et formulaire
         'contact.badge': 'Get in touch',
         'contact.title': 'Contact &',
         'contact.titleItalic': 'Quote Request',
@@ -368,12 +368,12 @@ export const DICTIONARY = {
         'contact.errorGuests': 'Please enter a valid number of guests (e.g. 20).',
         'contact.errorPastDate': 'The requested date cannot be in the past.',
 
-        // Prestation types in form
+        // Types de prestation du formulaire
         'type.private': 'Private Event',
         'type.pro': 'Corporate / Business',
         'type.other': 'Other',
 
-        // Footer
+        // Pied de page
         'footer.tagline': 'cuisine · homemade · sharing',
         'footer.desc': 'Homemade caterer based in Eyguières, Provence. Carefully prepared meals crafted with fresh, local ingredients, delivered to you or picked up at our workshop.',
         'footer.navTitle': 'Navigation',
@@ -387,7 +387,7 @@ export const DICTIONARY = {
         'contact.rgpdNotice': 'Your data is collected to answer your request. Learn more in our',
         'contact.rgpdLink': 'Privacy Policy',
 
-        // 404 Not Found
+        // Page 404
         '404.badge': 'Page not found',
         '404.title': 'This page is not',
         '404.titleItalic': 'on the menu...',

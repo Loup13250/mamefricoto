@@ -134,7 +134,7 @@ export default function Header({ siteInfo }) {
                     aria-modal="true"
                     inert={!mobileMenuOpen}
                 >
-                    {/* Drawer Header */}
+                    {/* En-tête du menu */}
                     <div className="mobile-drawer-header">
                         <div className="mobile-drawer-brand">
                             <span className="mobile-drawer-title">Mamé Fricoto</span>
@@ -150,7 +150,7 @@ export default function Header({ siteInfo }) {
                         </button>
                     </div>
 
-                    {/* Main Nav Links */}
+                    {/* Liens de navigation principaux */}
                     <nav className="mobile-nav-body" aria-label="Navigation mobile">
                         <Link href="/" className={pathname === '/' ? 'mobile-link active' : 'mobile-link'} onClick={closeMobileMenu}>
                             {t('nav.home')}
@@ -169,7 +169,7 @@ export default function Header({ siteInfo }) {
                         </Link>
                     </nav>
 
-                    {/* Drawer Footer */}
+                    {/* Pied du menu */}
                     <div className="mobile-drawer-footer">
                         <LanguageToggle showLabel className="drawer-theme-toggle" />
 

@@ -38,7 +38,7 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
 
-  // ===== SECURITY HEADERS =====
+  // ===== EN-TÊTES DE SÉCURITÉ =====
   async headers() {
     return [
       {
@@ -74,7 +74,7 @@ const nextConfig = {
           },
         ],
       },
-      // Admin pages and API: noindex, no-store
+      // Pages admin et API : pas d’indexation, pas de cache
       {
         source: '/admin/:path*',
         headers: [
@@ -101,7 +101,7 @@ const nextConfig = {
           },
         ],
       },
-      // Media cache headers
+      // En-têtes de cache des médias
       {
         source: '/api/media/:path*',
         headers: [

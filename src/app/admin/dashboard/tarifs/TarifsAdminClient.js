@@ -35,7 +35,7 @@ import {
     Crop
 } from 'lucide-react';
 
-/* Utilitaire de compression client-side haute performance */
+/* Utilitaire de compression côté navigateur */
 async function compressImageFile(file, maxWidth = 1400, quality = 0.80) {
     if (!file || !file.type.startsWith('image/')) return file;
     return new Promise((resolve) => {
@@ -94,22 +94,22 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
     const [isAddingDoc, setIsAddingDoc] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
 
-    // Multi-selection state for batch image deletion
+    // État de la sélection multiple pour la suppression groupée d'images
     const [selectedImagesFr, setSelectedImagesFr] = useState([]);
     const [selectedImagesEn, setSelectedImagesEn] = useState([]);
 
-    // Confirmation pop-up for image deletion (single or batch)
+    // Fenêtre de confirmation pour la suppression d'images (unique ou groupée)
     const [deleteImageConfirm, setDeleteImageConfirm] = useState(null); // { type: 'single' | 'batch', id?: string, ids?: [], lang: 'fr' | 'en' }
 
     // Form state pour ajout
     const [addDocType, setAddDocType] = useState('image'); // 'image' | 'pdf'
-    const [addImagesFr, setAddImagesFr] = useState([]); // Array of { file, preview }
-    const [addImagesEn, setAddImagesEn] = useState([]); // Array of { file, preview }
+    const [addImagesFr, setAddImagesFr] = useState([]); // tableau de { file, preview }
+    const [addImagesEn, setAddImagesEn] = useState([]); // tableau de { file, preview }
     const [addFormState, setAddFormState] = useState({ title: '', title_en: '', description: '', description_en: '' });
 
     // Form state pour édition
-    const [editImagesFr, setEditImagesFr] = useState([]); // newly attached files
-    const [editImagesEn, setEditImagesEn] = useState([]); // newly attached files
+    const [editImagesFr, setEditImagesFr] = useState([]); // nouveaux fichiers joints
+    const [editImagesEn, setEditImagesEn] = useState([]); // nouveaux fichiers joints
     const [editFormState, setEditFormState] = useState({ title: '', title_en: '', description: '', description_en: '' });
 
     // Pop-up confirmation pour quitter avec modifications non enregistrées
@@ -141,7 +141,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
         )
     );
 
-    // Navigation / beforeunload protection when form is dirty
+    // Protection à la fermeture de la page quand le formulaire a des modifications non enregistrées
     useEffect(() => {
         const isDirty = (isAddingDoc && isAddDirty) || (editingDoc && isEditDirty);
         const handleBeforeUnload = (e) => {
@@ -413,7 +413,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
     // Suppression d'une sous-image existante dans la DB (édition)
     const handleDeleteExistingImage = (imageId) => {
-        // Optimistic removal from modal immediately
+        // Retrait immédiat dans la fenêtre (mise à jour optimiste)
         setEditingDoc(prev => {
             if (!prev) return prev;
             return {
@@ -442,7 +442,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
         if (!imageIds || imageIds.length === 0) return;
         const idsSet = new Set(imageIds);
 
-        // Optimistic removal
+        // Retrait immédiat (mise à jour optimiste)
         setEditingDoc(prev => {
             if (!prev) return prev;
             return {
@@ -559,7 +559,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
             if (pdfFr) formData.append('file_fr', pdfFr);
             if (pdfEn) formData.append('file_en', pdfEn);
         } else {
-            // Append newly attached images
+            // Ajoute les nouvelles images jointes
             editImagesFr.forEach(item => formData.append('image_files_fr', item.file));
             editImagesEn.forEach(item => formData.append('image_files_en', item.file));
         }
@@ -613,7 +613,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
     return (
         <div className="anim-fade" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Header */}
+            {/* En-tête */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -689,7 +689,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                     </div>
 
                     <form ref={docFormRef} onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        {/* Type de document selector */}
+                        {/* Sélecteur du type de document */}
                         <div>
                             <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
                                 Format du document
@@ -807,10 +807,10 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             </div>
                         </div>
 
-                        {/* Upload section selon doc_type */}
+                        {/* Section d'envoi selon doc_type */}
                         {addDocType === 'image' ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
-                                {/* Multi-images FR */}
+                                {/* Plusieurs images FR */}
                                 <div style={{ background: 'var(--admin-surface)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
                                     <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-text)', display: 'block', marginBottom: '0.5rem' }}>
                                         🇫🇷 Images en Français (Une ou plusieurs photos / pages) *
@@ -834,7 +834,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         />
                                     </label>
 
-                                    {/* Previews FR */}
+                                    {/* Aperçus FR */}
                                     {addImagesFr.length > 0 && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
                                             {addImagesFr.map((item, idx) => (
@@ -867,7 +867,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     )}
                                 </div>
 
-                                {/* Multi-images EN */}
+                                {/* Plusieurs images EN */}
                                 <div style={{ background: 'var(--admin-surface)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--admin-border)' }}>
                                     <label className="admin-label" style={{ fontWeight: '600', color: 'var(--admin-text)', display: 'block', marginBottom: '0.5rem' }}>
                                         🇬🇧 Images en Anglais (Optionnel)
@@ -891,7 +891,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         />
                                     </label>
 
-                                    {/* Previews EN */}
+                                    {/* Aperçus EN */}
                                     {addImagesEn.length > 0 && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
                                             {addImagesEn.map((item, idx) => (
@@ -925,7 +925,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                 </div>
                             </div>
                         ) : (
-                            /* PDF Upload FR & EN */
+                            /* Envoi des PDF FR et EN */
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '0.5rem' }}>
                                 <div>
                                     <label className="admin-label" htmlFor="doc_pdf_fr">
@@ -1075,7 +1075,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                 </div>
                             </div>
 
-                            {/* Images / PDF management */}
+                            {/* Gestion des images / PDF */}
                             {editingDoc.file_type === 'pdf' ? (
                                 <div style={{ background: 'var(--admin-surface)', padding: '1.25rem', borderRadius: '8px' }}>
                                     <p style={{ fontSize: '0.85rem', color: 'var(--admin-text)', marginBottom: '1rem' }}>
@@ -1145,7 +1145,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                             )}
                                         </div>
 
-                                        {/* Existing images list */}
+                                        {/* Liste des images existantes */}
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                                             {(editingDoc.images_fr || []).map((img, idx) => {
                                                 const isSelected = selectedImagesFr.includes(img.id);
@@ -1337,7 +1337,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                             )}
                                         </div>
 
-                                        {/* Existing images EN */}
+                                        {/* Images existantes EN */}
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                                             {(editingDoc.images_en || []).map((img, idx) => {
                                                 const isSelected = selectedImagesEn.includes(img.id);
@@ -1560,7 +1560,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1, minWidth: '280px' }}>
-                                        {/* Reorder Buttons */}
+                                        {/* Boutons de réorganisation */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <button
                                                 type="button"
@@ -1598,7 +1598,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                             </button>
                                         </div>
 
-                                        {/* Thumbnail preview */}
+                                        {/* Aperçu de la miniature */}
                                         <div style={{
                                             width: '64px',
                                             height: '76px',
@@ -1621,7 +1621,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                             )}
                                         </div>
 
-                                        {/* Card Info */}
+                                        {/* Informations de la carte */}
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
                                                 <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-gold)', background: 'rgba(200,169,110,0.15)', padding: '2px 8px', borderRadius: '4px' }}>
@@ -1651,7 +1651,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons */}
+                                    {/* Boutons d'action */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button
                                             type="button"

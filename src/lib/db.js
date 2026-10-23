@@ -16,13 +16,13 @@ function toPlain(row) {
     const plain = {};
     for (const key of Object.keys(row)) {
         const val = row[key];
-        // Preserve binary blobs (ArrayBuffer, Uint8Array, Buffer) - do NOT JSON-serialize them
+        // Conserve les données binaires (ArrayBuffer, Uint8Array, Buffer) : ne pas les sérialiser en JSON
         if (val instanceof ArrayBuffer || val instanceof Uint8Array || Buffer.isBuffer(val)) {
             plain[key] = val;
         } else if (typeof val === 'bigint') {
             plain[key] = Number(val);
         } else if (val !== null && val !== undefined && typeof val === 'object' && !Array.isArray(val)) {
-            // Shallow-copy nested plain objects but guard against hidden binary types
+            // Copie superficielle des objets imbriqués, en protégeant les types binaires cachés
             try {
                 const j = JSON.stringify(val);
                 plain[key] = j === '{}' ? val : JSON.parse(j);
@@ -46,7 +46,7 @@ export function getDb() {
         console.warn('[Turso] Attention : identifiants Turso de repli utilisés en production. Pensez à renseigner TURSO_DATABASE_URL et TURSO_AUTH_TOKEN dans les variables d’environnement Vercel.');
     }
 
-    // Always use https:// instead of libsql:// for rock-solid HTTP transport without WebSocket drops
+    // Utilise toujours https:// plutôt que libsql:// pour un transport HTTP stable, sans coupures WebSocket
     const tursoUrl = rawTursoUrl ? rawTursoUrl.replace(/^libsql:\/\//i, 'https://') : null;
 
     if (tursoUrl && tursoUrl.startsWith('https')) {

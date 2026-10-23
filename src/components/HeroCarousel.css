@@ -1,5 +1,5 @@
 /* ===========================
-   HERO CAROUSEL - DARK PREMIUM
+   CARROUSEL D'ACCUEIL
    =========================== */
 
 .hero {
@@ -65,7 +65,7 @@
     display: none;
 }
 
-/* Gradient overlay - warm terracotta & ambre doux */
+/* Dégradé de superposition sur l'image */
 .hero-slide::after {
     content: '';
     position: absolute;
@@ -81,7 +81,7 @@
     pointer-events: none;
 }
 
-/* Content anchored to bottom */
+/* Contenu aligné en bas */
 .hero-content {
     position: relative;
     z-index: 10;
@@ -224,7 +224,7 @@
     color: #FFFFFF !important;
 }
 
-/* Light Theme Hero Button Overrides */
+/* Boutons de la bannière en thème clair */
 [data-theme="light"] .hero-actions .hero-btn-phone,
 [data-theme="light"] .hero-actions .btn-outline {
     color: #2A1E17 !important;
@@ -262,7 +262,7 @@
     color: #FFFFFF !important;
 }
 
-/* Arrow controls */
+/* Flèches de navigation */
 .hero-arrows {
     position: absolute;
     bottom: 4.5rem;
@@ -320,7 +320,7 @@
     transform: scale(0.96);
 }
 
-/* Dots */
+/* Points de pagination */
 .hero-dots {
     position: absolute;
     bottom: 2.2rem;
@@ -368,7 +368,7 @@
         max-height: none;
     }
 
-    /* Eliminate Ken Burns zoom shift on mobile arrival */
+    /* Supprime l'effet de zoom progressif sur mobile */
     .hero-slide-layer img,
     .hero-slide.active .hero-slide-layer img {
         transform: none !important;
@@ -383,14 +383,14 @@
         display: block !important;
     }
 
-    /* Framing optimized for mobile portraits - head, subject & buffet remain fully in view */
+    /* Cadrage des photos en portrait sur mobile : le haut de la photo reste visible */
     .hero-slide img,
     .hero-layer-mobile img,
     .hero-slide-layer img {
         object-position: center top !important;
     }
 
-    /* Enhanced gradient overlay to guarantee 100% text contrast on any photo */
+    /* Dégradé renforcé pour garder le texte lisible sur toutes les photos */
     .hero-slide::after {
         background: linear-gradient(
             to bottom,

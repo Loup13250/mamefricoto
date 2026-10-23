@@ -1,5 +1,5 @@
 /* ===========================
-   FOOTER - DARK PREMIUM & COMPACT
+   PIED DE PAGE
    =========================== */
 
 .site-footer {
@@ -18,7 +18,7 @@
     align-items: start;
 }
 
-/* Brand Column */
+/* Colonne de la marque */
 .footer-name {
     font-family: var(--font-heading);
     font-size: 1.7rem;
@@ -72,7 +72,7 @@
     transform: translateY(-2px);
 }
 
-/* Titles */
+/* Titres */
 .footer-links h3,
 .footer-contact h3 {
     font-family: var(--font-body);
@@ -84,7 +84,7 @@
     margin-bottom: 0.85rem;
 }
 
-/* Lists & Links */
+/* Listes et liens */
 .footer-links ul,
 .footer-contact ul {
     list-style: none;
@@ -129,7 +129,7 @@
     transform: translateX(2px);
 }
 
-/* Contact Column */
+/* Colonne contact */
 .footer-contact li {
     display: flex;
     align-items: flex-start;
@@ -159,7 +159,7 @@
     text-underline-offset: 3px;
 }
 
-/* Bottom bar */
+/* Barre du bas */
 .footer-bottom {
     padding: 1rem 0;
     border-top: 1px solid var(--border-soft);
@@ -242,7 +242,7 @@
     text-decoration-color: var(--gold);
 }
 
-/* Grand écran (Desktop) : toujours sur une seule ligne équilibrée */
+/* Grand écran : toujours sur une seule ligne */
 @media (min-width: 960px) {
     .footer-bottom-inner {
         flex-wrap: nowrap;
@@ -267,7 +267,7 @@
     }
 }
 
-/* Tablette (601px - 959px) : centré proprement */
+/* Tablette (601px - 959px) : centré */
 @media (max-width: 959px) and (min-width: 601px) {
     .footer-bottom-inner {
         flex-direction: column;
@@ -280,7 +280,7 @@
     }
 }
 
-/* Tablet */
+/* Tablette */
 @media (max-width: 900px) {
     .footer-top {
         padding: 2.25rem 0 1.75rem;

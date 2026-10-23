@@ -29,7 +29,7 @@ export default function NotFoundView({ siteInfo }) {
                     <span>{t('404.badge')}</span>
                 </div>
 
-                {/* Chiffre 404 magistral avec assiette / couverts rotatifs */}
+                {/* Chiffre 404 avec assiette et couverts animés */}
                 <div className="not-found-digits" aria-hidden="true">
                     <span className="not-found-num">4</span>
                     <div className="not-found-emblem" title="Mamé Fricoto">
@@ -38,7 +38,7 @@ export default function NotFoundView({ siteInfo }) {
                     <span className="not-found-num">4</span>
                 </div>
 
-                {/* Titre & Description provençale */}
+                {/* Titre et description */}
                 <h1 className="not-found-title">
                     {t('404.title')} <em>{t('404.titleItalic')}</em>
                 </h1>
@@ -60,7 +60,7 @@ export default function NotFoundView({ siteInfo }) {
                     </a>
                 </div>
 
-                {/* Suggestions gourmandes */}
+                {/* Liens de suggestion */}
                 <section className="not-found-suggestions" aria-label={t('404.suggestionsTitle')}>
                     <h2 className="not-found-suggestions-title">
                         {t('404.suggestionsTitle')}

@@ -25,7 +25,7 @@ import {
     isEditableTextKey,
 } from '@/lib/siteTexts';
 
-// --- AUTHENTICATION HELPER ---
+// --- OUTIL D'AUTHENTIFICATION ---
 export async function verifyAdminAuth() {
     return isAdminRequest();
 }
@@ -46,7 +46,7 @@ function extractId(idOrFormData) {
     return parseInt(idOrFormData, 10);
 }
 
-// --- AUTH ACTIONS ---
+// --- ACTIONS D'AUTHENTIFICATION ---
 export async function adminLogout() {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -81,7 +81,7 @@ export async function changeAdminPassword(currentPassword, newPassword) {
     return { success: true, message: 'Mot de passe mis à jour avec succès.' };
 }
 
-// --- SECURE FILE UPLOAD HELPER ---
+// --- ENVOI SÉCURISÉ DE FICHIERS ---
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm', '.mov', '.jfif', '.heic', '.heif', '.avif', '.bmp', '.pdf']);
 
 async function saveUploadedFile(file) {
@@ -124,7 +124,7 @@ async function saveUploadedFile(file) {
         };
         const mimeType = file.type || mimeTypes[ext] || (ext === '.pdf' ? 'application/pdf' : 'image/jpeg');
 
-        // Stockage ultra-performant dans media_storage pour éviter de gonfler le payload HTML avec de gros Data URIs
+        // Stockage dans media_storage pour éviter d'alourdir le HTML avec de grosses URL de données (Data URI)
         const mediaId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
         const db = getDb();
         await db.prepare('INSERT INTO media_storage (id, mime_type, data) VALUES (?, ?, ?)').run(mediaId, mimeType, buffer);
@@ -157,7 +157,7 @@ const DEFAULT_MENU_IMAGES = [
     '/uploads/insta-menu-5.png'
 ];
 
-// --- SITE INFO & SETTINGS ---
+// --- INFORMATIONS ET PARAMÈTRES DU SITE ---
 export async function updateSiteInfo(formData) {
     await requireAdminAuth();
     const db = getDb();
@@ -262,7 +262,7 @@ export async function saveSiteTexts(updates) {
     }
 }
 
-// --- WEEKLY MENU ---
+// --- MENU DE LA SEMAINE ---
 export async function addWeeklyMenu(formData) {
     try {
         await requireAdminAuth();
@@ -382,7 +382,7 @@ export async function editWeeklyMenu(formData) {
             await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
         }
 
-        // Migrate legacy single image into weekly_menu_images if subtable is empty before appending new ones
+        // Migre l'ancienne image unique vers weekly_menu_images si la sous-table est vide, avant d'ajouter les nouvelles
         const existingFrCount = (await db.prepare("SELECT COUNT(*) as count FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id))?.count || 0;
         if (existingFrCount === 0 && existing.image_url) {
             await db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, 1, 'fr')").run(id, existing.image_url);
@@ -393,7 +393,7 @@ export async function editWeeklyMenu(formData) {
             await db.prepare("INSERT INTO weekly_menu_images (menu_id, image_url, display_order, lang) VALUES (?, ?, 1, 'en')").run(id, existing.image_url_en);
         }
 
-        // Insert new FR images if uploaded
+        // Ajoute les nouvelles images FR si elles ont été envoyées
         if (uploadedUrlsFr.length > 0) {
             const highestOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id);
             let startOrder = (highestOrderRow?.max_order || 0) + 1;
@@ -403,7 +403,7 @@ export async function editWeeklyMenu(formData) {
             }
         }
 
-        // Insert new EN images if uploaded
+        // Ajoute les nouvelles images EN si elles ont été envoyées
         if (uploadedUrlsEn.length > 0) {
             const highestOrderRow = await db.prepare("SELECT MAX(display_order) as max_order FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en'").get(id);
             let startOrder = (highestOrderRow?.max_order || 0) + 1;
@@ -413,7 +413,7 @@ export async function editWeeklyMenu(formData) {
             }
         }
 
-        // Sync main image URLs with first image of each language
+        // Synchronise les URL principales avec la première image de chaque langue
         const firstFr = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
         const firstEn = await db.prepare("SELECT image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
 
@@ -473,7 +473,7 @@ export async function toggleWeeklyMenuCurrent(idOrFormData) {
     }
 }
 
-// --- HERO CAROUSEL ---
+// --- CARROUSEL D'ACCUEIL ---
 export async function addCarouselImage(formData) {
     try {
         await requireAdminAuth();
@@ -630,7 +630,7 @@ export async function reorderCarouselImage(idOrFormData, direction) {
     }
 }
 
-// --- GALLERY ---
+// --- GALERIE ---
 export async function addGalleryPost(formData) {
     try {
         await requireAdminAuth();
@@ -810,13 +810,13 @@ export async function reorderGalleryPost(idOrFormData, direction) {
     const currentIndex = posts.findIndex(p => p.id === id);
     if (currentIndex === -1) return { error: 'Photo introuvable' };
 
-    const targetPos = direction === 'up' ? currentIndex : currentIndex + 2; // 1-indexed target
+    const targetPos = direction === 'up' ? currentIndex : currentIndex + 2; // position cible (à partir de 1)
     if (targetPos < 1 || targetPos > posts.length) return { success: true };
 
     return moveGalleryPostPosition(id, targetPos);
 }
 
-// --- CONTACT & DEVIS FORM (PUBLIC) ---
+// --- FORMULAIRE DE CONTACT ET DEVIS (PUBLIC) ---
 export async function submitContactForm(formData) {
     const headerStore = await headers();
     const ip = clientIp(headerStore);
@@ -825,10 +825,10 @@ export async function submitContactForm(formData) {
         return { error: 'Trop de messages envoyés récemment. Merci de patienter quelques minutes avant de renouveler votre demande.' };
     }
 
-    // 1. Anti-spam honeypot check
+    // 1. Vérification anti-spam (champ piège)
     const honeypot = (formData.get('_hp_check') || '').toString().trim();
     if (honeypot) {
-        // Silently succeed to trick spam bots without storing garbage in database
+        // Réponse de succès silencieuse pour tromper les robots sans rien enregistrer en base
         return { success: true, message: 'Votre demande a bien été envoyée.' };
     }
 
@@ -1025,7 +1025,7 @@ export async function deleteWeeklyMenuImages(imageIds) {
         }
 
         for (const menuId of affectedMenuIds) {
-            // Re-order and sync FR
+            // Réordonne et synchronise la version FR
             const remainingFr = await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(menuId);
             const stmtFr = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
             for (let i = 0; i < remainingFr.length; i++) {
@@ -1034,7 +1034,7 @@ export async function deleteWeeklyMenuImages(imageIds) {
             const nextUrlFr = remainingFr.length > 0 ? remainingFr[0].image_url : null;
             await db.prepare('UPDATE weekly_menus SET image_url = ? WHERE id = ?').run(nextUrlFr, menuId);
 
-            // Re-order and sync EN
+            // Réordonne et synchronise la version EN
             const remainingEn = await db.prepare("SELECT id, image_url FROM weekly_menu_images WHERE menu_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(menuId);
             const stmtEn = db.prepare('UPDATE weekly_menu_images SET display_order = ? WHERE id = ?');
             for (let i = 0; i < remainingEn.length; i++) {
@@ -1139,7 +1139,7 @@ export async function replaceWeeklyMenuImage(imageId, formData) {
     }
 }
 
-// --- SERVICES / PRESTATIONS ---
+// --- PRESTATIONS ---
 export async function addService(formData) {
     try {
         await requireAdminAuth();
@@ -1331,7 +1331,7 @@ export async function updateAboutInfo(formData) {
     }
 }
 
-// --- PRICING DOCUMENTS (TARIFS MULTI-IMAGES & PDFS) ---
+// --- DOCUMENTS TARIFAIRES (TARIFS MULTI-IMAGES ET PDF) ---
 export async function addPricingDocument(formData) {
     try {
         await requireAdminAuth();
@@ -1365,14 +1365,14 @@ export async function addPricingDocument(formData) {
                 if (u) uploadedUrlsEn.push(u);
             }
         } else {
-            // Multiple images FR
+            // Plusieurs images FR
             for (const file of files_fr) {
                 if (file && file.size > 0) {
                     const u = await saveUploadedFile(file);
                     if (u) uploadedUrlsFr.push(u);
                 }
             }
-            // Multiple images EN
+            // Plusieurs images EN
             for (const file of files_en) {
                 if (file && file.size > 0) {
                     const u = await saveUploadedFile(file);
@@ -1399,7 +1399,7 @@ export async function addPricingDocument(formData) {
         `).run(title, title_en, description, description_en, mainUrlFr, mainUrlEn, file_type, nextOrder);
         const docId = result.lastInsertRowid;
 
-        // If image collection, populate pricing_document_images subtable
+        // Si c'est une collection d'images, remplit la sous-table pricing_document_images
         if (!isPdf) {
             const stmt = db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, ?, ?)");
             for (let i = 0; i < uploadedUrlsFr.length; i++) {
@@ -1457,7 +1457,7 @@ export async function editPricingDocument(formData) {
                 mainFileUrlEn = await saveUploadedFile(singlePdfEn);
             }
         } else {
-            // Check and migrate legacy single images into pricing_document_images if subtable is empty before appending new ones
+            // Migre les anciennes images uniques vers pricing_document_images si la sous-table est vide, avant d'ajouter les nouvelles
             const existingFrCount = (await db.prepare("SELECT COUNT(*) as count FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL)").get(id))?.count || 0;
             if (existingFrCount === 0 && existing.file_url && existing.file_type !== 'pdf') {
                 await db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, 1, 'fr')").run(id, existing.file_url);
@@ -1468,7 +1468,7 @@ export async function editPricingDocument(formData) {
                 await db.prepare("INSERT INTO pricing_document_images (doc_id, image_url, display_order, lang) VALUES (?, ?, 1, 'en')").run(id, existing.file_url_en);
             }
 
-            // Upload newly attached FR images
+            // Envoie les nouvelles images FR
             const newFrUrls = [];
             for (const f of files_fr) {
                 if (f && f.size > 0) {
@@ -1485,7 +1485,7 @@ export async function editPricingDocument(formData) {
                 }
             }
 
-            // Upload newly attached EN images
+            // Envoie les nouvelles images EN
             const newEnUrls = [];
             for (const f of files_en) {
                 if (f && f.size > 0) {
@@ -1502,7 +1502,7 @@ export async function editPricingDocument(formData) {
                 }
             }
 
-            // Sync main file URLs with first image of each language
+            // Synchronise les URL principales avec la première image de chaque langue
             const firstFr = await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
             const firstEn = await db.prepare("SELECT image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC LIMIT 1").get(id);
 
@@ -1585,7 +1585,7 @@ export async function deletePricingDocumentImage(imageId) {
         await requireAdminAuth();
         const db = getDb();
 
-        // Handle virtual legacy ID if passed
+        // Gère l'identifiant historique virtuel s'il est fourni
         if (typeof imageId === 'string' && imageId.startsWith('legacy-')) {
             const parts = imageId.split('-');
             const docId = parseInt(parts[1], 10);
@@ -1669,7 +1669,7 @@ export async function deletePricingDocumentImages(imageIds) {
         }
 
         for (const docId of affectedDocIds) {
-            // Re-order and sync FR
+            // Réordonne et synchronise la version FR
             const remainingFr = await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND (lang = 'fr' OR lang IS NULL) ORDER BY display_order ASC, id ASC").all(docId);
             const stmtFr = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
             for (let i = 0; i < remainingFr.length; i++) {
@@ -1678,7 +1678,7 @@ export async function deletePricingDocumentImages(imageIds) {
             const nextUrlFr = remainingFr.length > 0 ? remainingFr[0].image_url : null;
             await db.prepare('UPDATE pricing_documents SET file_url = ? WHERE id = ?').run(nextUrlFr, docId);
 
-            // Re-order and sync EN
+            // Réordonne et synchronise la version EN
             const remainingEn = await db.prepare("SELECT id, image_url FROM pricing_document_images WHERE doc_id = ? AND lang = 'en' ORDER BY display_order ASC, id ASC").all(docId);
             const stmtEn = db.prepare('UPDATE pricing_document_images SET display_order = ? WHERE id = ?');
             for (let i = 0; i < remainingEn.length; i++) {
@@ -1755,7 +1755,7 @@ export async function replacePricingDocumentImage(imageId, formData) {
         if (!file || file.size === 0) return { error: 'Aucun fichier reçu' };
         const db = getDb();
 
-        // Handle legacy ID format 'legacy-${docId}-${lang}'
+        // Gère l'ancien format d'identifiant 'legacy-${docId}-${lang}'
         if (typeof imageId === 'string' && imageId.startsWith('legacy-')) {
             const parts = imageId.split('-');
             const docId = parseInt(parts[1], 10);
@@ -1810,7 +1810,7 @@ export async function replacePricingDocumentImage(imageId, formData) {
     }
 }
 
-// --- FIXED MEAL PRICES ---
+// --- PRIX DES REPAS FIXES ---
 export async function addFixedPrice(formData) {
     await requireAdminAuth();
     const name = (formData.get('name') || '').toString().trim();
@@ -1910,7 +1910,7 @@ export async function reorderFixedPrice(id, direction) {
     return { success: true };
 }
 
-// --- DATABASE BACKUP & RESTORE ---
+// --- SAUVEGARDE ET RESTAURATION DE LA BASE ---
 export async function restoreDatabaseFromBackup(formData) {
     await requireAdminAuth();
     const backupFile = formData.get('backup_file');

@@ -29,10 +29,10 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
 
     return (
         <main id="main-content" tabIndex="-1">
-            {/* ===== HERO ===== */}
+            {/* ===== EN-TÊTE ===== */}
             <HeroCarousel slides={carousel} siteInfo={siteInfo} />
 
-            {/* ===== INFO STRIP ===== */}
+            {/* ===== BANDEAU D'INFORMATIONS ===== */}
             <div className="info-strip">
                 <div className="container info-strip-inner">
                     <div className="info-strip-item">

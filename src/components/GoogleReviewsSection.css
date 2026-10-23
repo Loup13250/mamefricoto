@@ -1,5 +1,5 @@
 /* ===================================================
-   GOOGLE REVIEWS SECTION - HAUTE GASTRONOMIE PROVENCE
+   SECTION AVIS GOOGLE
    =================================================== */
 
 .reviews-section {
@@ -70,7 +70,7 @@
     color: var(--text);
 }
 
-/* Reviews Grid */
+/* Grille d'avis */
 .reviews-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -189,7 +189,7 @@
     font-weight: 400;
 }
 
-/* Footer CTA */
+/* Appel à l'action du bas */
 .reviews-footer {
     text-align: center;
     display: flex;

@@ -1,5 +1,5 @@
 /* ==================================
-   CONTACT FORM - DARK PREMIUM
+   FORMULAIRE DE CONTACT
    ================================== */
 
 .contact-card {
@@ -34,7 +34,7 @@
     line-height: 1.6;
 }
 
-/* Alerts */
+/* Alertes */
 .form-alert {
     padding: 1.25rem 1.5rem;
     border-radius: var(--radius-sm);
@@ -57,7 +57,7 @@
     color: #fca5a5;
 }
 
-/* Form */
+/* Formulaire */
 .contact-form {
     display: flex;
     flex-direction: column;
@@ -112,7 +112,7 @@
     flex-shrink: 0;
 }
 
-/* Pills */
+/* Boutons de choix */
 .form-pills {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -146,7 +146,7 @@
     color: var(--gold);
 }
 
-/* Inputs */
+/* Champs */
 .form-input {
     width: 100%;
     padding: 13px 16px;
@@ -176,7 +176,7 @@
     line-height: 1.6;
 }
 
-/* Submit */
+/* Envoi */
 .form-submit-row {
     padding-top: 0.5rem;
 }

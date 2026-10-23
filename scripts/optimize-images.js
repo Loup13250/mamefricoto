@@ -24,7 +24,7 @@ async function optimizeUploads() {
                 const buffer = fs.readFileSync(fullPath);
                 const metadata = await sharp(buffer).metadata();
                 
-                // Resize if wider than 1600px
+                // Redimensionne si la largeur dépasse 1600px
                 let pipeline = sharp(buffer);
                 if (metadata.width && metadata.width > 1600) {
                     pipeline = pipeline.resize(1600, null, { withoutEnlargement: true });
@@ -34,7 +34,7 @@ async function optimizeUploads() {
                 fs.writeFileSync(webpPath, webpBuffer);
                 console.log(`Converted ${file} (${(stat.size / 1024).toFixed(1)} KB) -> ${webpName} (${(webpBuffer.length / 1024).toFixed(1)} KB)`);
 
-                // Also overwrite original with compressed version if large
+                // Écrase aussi l'original par la version compressée s'il est volumineux
                 if (file.endsWith('.png') && stat.size > 200 * 1024) {
                     const pngBuffer = await pipeline.png({ quality: 80, compressionLevel: 9 }).toBuffer();
                     fs.writeFileSync(fullPath, pngBuffer);

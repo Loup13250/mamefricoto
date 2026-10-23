@@ -22,7 +22,7 @@ export default async function DashboardOverview() {
 
     return (
         <div className="anim-fade" style={{ width: '100%' }}>
-            {/* Header section with site link */}
+            {/* En-tête avec lien vers le site */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -70,10 +70,10 @@ export default async function DashboardOverview() {
                 </div>
             )}
 
-            {/* Practical Notification & Status Cards with Vivid Color Accents */}
+            {/* Cartes de notifications et de statut */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
                 
-                {/* 1. Messages Notification Card - Blue Ocean */}
+                {/* 1. Carte des messages - bleu */}
                 <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', position: 'relative', borderLeft: '3px solid #0284C7' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -102,7 +102,7 @@ export default async function DashboardOverview() {
                     </Link>
                 </div>
 
-                {/* 2. Menu de la semaine Status Card - Fresh Emerald Green */}
+                {/* 2. Carte du menu de la semaine - vert */}
                 <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderLeft: '3px solid #059669' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -125,7 +125,7 @@ export default async function DashboardOverview() {
                     </Link>
                 </div>
 
-                {/* 3. Galerie - Coral Rose */}
+                {/* 3. Carte de la galerie - rose */}
                 <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderLeft: '3px solid #E11D48' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -150,7 +150,7 @@ export default async function DashboardOverview() {
 
             </div>
 
-            {/* Quick Navigation Tools Grid - 8 Colorful Shortcuts */}
+            {/* Grille de raccourcis (8 raccourcis colorés) */}
             <div style={{ marginBottom: '2.5rem' }}>
                 <h2 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Sparkles size={18} style={{ color: 'var(--admin-gold)' }} /> Raccourcis de Gestion
@@ -257,7 +257,7 @@ export default async function DashboardOverview() {
 
             </div>
 
-            {/* Recent Messages Section */}
+            {/* Derniers messages */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
                 <div className="admin-card">
                     <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

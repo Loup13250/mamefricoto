@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// Parse .env.local manually
+// Lit .env.local manuellement
 try {
     const envContent = fs.readFileSync(path.join(process.cwd(), '.env.local'), 'utf8');
     envContent.split('\n').forEach(line => {
@@ -28,7 +28,7 @@ async function seed() {
     console.log('TURSO_DATABASE_URL:', process.env.TURSO_DATABASE_URL ? 'PRESENT' : 'NOT SET');
     const db = getDb();
 
-    // Ensure tables exist
+    // Vérifie que les tables existent
     await db.exec(`
         CREATE TABLE IF NOT EXISTS pricing_documents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,7 +59,7 @@ async function seed() {
         );
     `);
 
-    // Check fixed_prices
+    // Vérifie fixed_prices
     const priceCountRow = await db.prepare('SELECT COUNT(*) as count FROM fixed_prices').get();
     const countPrices = priceCountRow ? priceCountRow.count : 0;
     console.log('Current fixed_prices count in DB:', countPrices);
@@ -129,7 +129,7 @@ async function seed() {
         console.log('Fixed prices inserted successfully!');
     }
 
-    // Check pricing_documents
+    // Vérifie pricing_documents
     const docCountRow = await db.prepare('SELECT COUNT(*) as count FROM pricing_documents').get();
     const countDocs = docCountRow ? docCountRow.count : 0;
     console.log('Current pricing_documents count in DB:', countDocs);

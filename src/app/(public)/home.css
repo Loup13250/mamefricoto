@@ -1,8 +1,8 @@
 /* =========================
-   HOME PAGE - DARK PREMIUM
+   PAGE D'ACCUEIL
    ========================= */
 
-/* ===== INFO STRIP ===== */
+/* ===== BANDEAU D'INFORMATIONS ===== */
 .info-strip {
     background: var(--bg-2);
     border-bottom: 1px solid var(--border);
@@ -138,7 +138,7 @@
     }
 }
 
-/* ===== WEEKLY MENU SECTION ===== */
+/* ===== SECTION MENU DE LA SEMAINE ===== */
 .menu-section {
     background: var(--bg);
     padding: 7rem 0;
@@ -170,7 +170,7 @@
     color: var(--text-1);
 }
 
-/* ===== SERVICES SECTION ===== */
+/* ===== SECTION PRESTATIONS ===== */
 .services-section {
     background: var(--bg-2);
     padding: 7rem 0;
@@ -295,13 +295,13 @@
     }
 }
 
-/* ===== GALLERY SECTION ===== */
+/* ===== SECTION GALERIE ===== */
 .gallery-section {
     background: var(--bg);
     padding: 7rem 0;
 }
 
-/* ===== ABOUT SECTION ===== */
+/* ===== SECTION À PROPOS ===== */
 .about-section {
     background: var(--bg-2);
     border-top: 1px solid var(--border);
@@ -398,7 +398,7 @@
     }
 }
 
-/* ===== REVIEWS STRIP ===== */
+/* ===== BANDEAU D'AVIS ===== */
 .reviews-strip {
     background: var(--bg-card);
     border-top: 1px solid var(--border);
@@ -433,7 +433,7 @@
     }
 }
 
-/* ===== FINAL CTA ===== */
+/* ===== APPEL À L'ACTION FINAL ===== */
 .final-cta {
     background: var(--bg-2);
     padding: 8rem 0;
@@ -492,7 +492,7 @@
     }
 }
 
-/* ===== SUBPAGES LAYOUT (Realisations, A Propos, Contact) ===== */
+/* ===== MISE EN PAGE DES SOUS-PAGES (Réalisations, À propos, Contact) ===== */
 .subpage-main {
     padding-top: 0;
     min-height: 100vh;

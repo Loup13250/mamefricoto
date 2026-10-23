@@ -1,6 +1,6 @@
 /*
-  Mamé Fricoto - Admin Panel Styles
-  Haute Gastronomie Dark & Gold Theme (Aesthetics aligned with the main site)
+  Mamé Fricoto - Styles du panneau d'administration
+  Thème sombre et doré, aligné sur le site public
 */
 
 :root,
@@ -36,7 +36,7 @@
   --admin-transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Light mode component specific overrides */
+/* Ajustements spécifiques au mode clair */
 [data-theme="light"] .admin-login-container {
   background-color: var(--admin-bg);
   background-image: 
@@ -139,7 +139,7 @@
 }
 
 /* ==========================================================================
-   LOGIN PAGE
+   PAGE DE CONNEXION
    ========================================================================== */
 .admin-login-container {
   min-height: 100vh;
@@ -210,7 +210,7 @@
 }
 
 /* ==========================================================================
-   MAIN DASHBOARD LAYOUT & RESPONSIVE NAVIGATION
+   MISE EN PAGE DU TABLEAU DE BORD ET NAVIGATION ADAPTATIVE
    ========================================================================== */
 .admin-dashboard-layout {
   display: flex;
@@ -240,7 +240,7 @@
   line-height: 1.25;
 }
 
-/* Overlay for Mobile Drawer */
+/* Voile derrière le menu mobile */
 .admin-sidebar-overlay {
   display: none;
   position: fixed;
@@ -259,7 +259,7 @@
   pointer-events: auto;
 }
 
-/* Mobile Header Bar */
+/* Barre d'en-tête mobile */
 .admin-mobile-header {
   display: none;
   position: fixed;
@@ -297,7 +297,7 @@
   cursor: pointer;
 }
 
-/* Sidebar */
+/* Barre latérale */
 .admin-sidebar {
   width: 275px;
   background-color: var(--admin-bg-2);
@@ -438,7 +438,7 @@
   filter: brightness(1.05);
 }
 
-/* Dashboard Shortcut Cards */
+/* Cartes de raccourcis du tableau de bord */
 .admin-shortcut-card {
   display: flex;
   align-items: center;
@@ -614,7 +614,7 @@
 }
 
 /* ==========================================================================
-   CARDS & CONTAINERS
+   CARTES ET CONTENEURS
    ========================================================================== */
 .admin-card {
   background: var(--admin-card-bg);
@@ -645,7 +645,7 @@
   letter-spacing: -0.01em;
 }
 
-/* Responsive Form Helpers */
+/* Aides pour formulaires adaptatifs */
 .admin-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -665,7 +665,7 @@
 }
 
 /* ==========================================================================
-   FORM ELEMENTS
+   ÉLÉMENTS DE FORMULAIRE
    ========================================================================== */
 .admin-label {
   display: block;
@@ -706,7 +706,7 @@
 }
 
 /* ==========================================================================
-   BUTTONS
+   BOUTONS
    ========================================================================== */
 .admin-btn {
   display: inline-flex;
@@ -764,7 +764,7 @@
   box-shadow: 0 8px 25px rgba(196, 89, 58, 0.3);
 }
 
-/* Dropzone */
+/* Zone de dépôt */
 .admin-dropzone {
   border: 2px dashed var(--admin-border);
   border-radius: var(--admin-radius-md);
@@ -780,7 +780,7 @@
   background-color: rgba(200, 169, 110, 0.05);
 }
 
-/* Grids */
+/* Grilles */
 .admin-grid-carousel {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -845,7 +845,7 @@
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN BREAKPOINTS
+   POINTS DE RUPTURE (ADAPTATION AUX ÉCRANS)
    ========================================================================== */
 @media (max-width: 1024px) {
   .admin-content {
@@ -891,7 +891,7 @@
     gap: 1rem !important;
   }
 
-  /* Automatically collapse any 2-column or 3-column inline grid on mobile */
+  /* Replie automatiquement les grilles en ligne à 2 ou 3 colonnes sur mobile */
   [style*="gridTemplateColumns: '1fr 1fr'"],
   [style*="grid-template-columns: 1fr 1fr"],
   [style*="gridTemplateColumns: '100px 1fr 1fr'"],

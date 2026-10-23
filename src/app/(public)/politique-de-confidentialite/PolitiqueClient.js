@@ -27,7 +27,7 @@ export default function PolitiqueClient() {
 
     return (
         <main id="main-content" tabIndex="-1" className="legal-main subpage-main">
-            {/* HERO */}
+            {/* EN-TÊTE */}
             <section className="subpage-hero">
                 <div className="container anim-fade">
                     <span className="label">
@@ -47,11 +47,11 @@ export default function PolitiqueClient() {
                 </div>
             </section>
 
-            {/* CONTENT */}
+            {/* CONTENU */}
             <section className="subpage-content-section">
                 <div className="legal-container">
 
-                    {/* Quick navigation */}
+                    {/* Navigation rapide */}
                     <nav aria-label={isEn ? 'Privacy summary' : 'Sommaire de la politique'} className="legal-quick-nav anim-up">
                         <span className="legal-quick-nav-label">
                             <FileCheck size={14} /> {isEn ? 'Contents' : 'Sommaire'}
@@ -79,7 +79,7 @@ export default function PolitiqueClient() {
                         </a>
                     </nav>
 
-                    {/* INTRO CALLOUT */}
+                    {/* ENCADRÉ D'INTRODUCTION */}
                     <div className="legal-callout legal-callout-success anim-up" style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
                             <CheckCircle2 size={18} color="#2E7D32" />
@@ -617,7 +617,7 @@ export default function PolitiqueClient() {
                         </div>
                     </article>
 
-                    {/* SWITCHER BANNER */}
+                    {/* BANDEAU DE CHANGEMENT DE PAGE LÉGALE */}
                     <div className="legal-switcher anim-up">
                         <div className="legal-switcher-text">
                             <strong>{isEn ? 'View Company Legal Information.' : "Consulter l'identification de l'entreprise."}</strong><br />

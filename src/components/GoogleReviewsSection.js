@@ -65,7 +65,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
     return (
         <section className="reviews-section" id="avis-clients">
             <div className="container">
-                {/* Section Header */}
+                {/* En-tête de section */}
                 <div className="reviews-header anim-up">
                     <span className="reviews-badge">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -92,7 +92,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
                     </div>
                 </div>
 
-                {/* Reviews Grid */}
+                {/* Grille d'avis */}
                 <div className="reviews-grid">
                     {reviews.map((rev) => (
                         <div key={rev.id} className="review-card anim-up">
@@ -123,7 +123,7 @@ export default function GoogleReviewsSection({ siteInfo }) {
                     ))}
                 </div>
 
-                {/* Footer Action */}
+                {/* Action du bas */}
                 <div className="reviews-footer anim-up">
                     <a
                         href={googleUrl}

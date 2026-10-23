@@ -39,7 +39,7 @@ async function normalizeUrl(url) {
     return url;
 }
 
-// --- Site Info ---
+// --- Informations du site ---
 export const getSiteInfo = cache(async function getSiteInfo() {
     const db = getDb();
     const rows = await db.prepare('SELECT * FROM site_info').all();
@@ -50,7 +50,7 @@ export const getSiteInfo = cache(async function getSiteInfo() {
     return info;
 });
 
-// --- Weekly Menus ---
+// --- Menus de la semaine ---
 export const getCurrentWeeklyMenu = cache(async function getCurrentWeeklyMenu() {
     const db = getDb();
     const menu = await db.prepare('SELECT * FROM weekly_menus WHERE is_current = 1 ORDER BY created_at DESC LIMIT 1').get();
@@ -115,7 +115,7 @@ export const getAllWeeklyMenus = cache(async function getAllWeeklyMenus() {
     }));
 });
 
-// --- Contact Messages ---
+// --- Messages de contact ---
 export async function getContactMessages() {
     const db = getDb();
     const rows = await db.prepare('SELECT * FROM contact_messages ORDER BY created_at DESC').all();
@@ -141,7 +141,7 @@ export async function getUnreadMessageCount() {
     return row ? row.count : 0;
 }
 
-// --- Gallery Posts (Instagram Stories / Dish Photos) ---
+// --- Publications de la galerie (photos de plats) ---
 export const getGalleryPosts = cache(async function getGalleryPosts() {
     const db = getDb();
     const posts = await db.prepare('SELECT * FROM gallery_posts ORDER BY display_order ASC, created_at DESC').all();
@@ -151,7 +151,7 @@ export const getGalleryPosts = cache(async function getGalleryPosts() {
     })));
 });
 
-// --- Carousel ---
+// --- Carrousel ---
 const DEFAULT_CAROUSEL_SLIDES = [
     { id: 1, image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop', title: 'Cuisine Maison & Produits Frais', subtitle: 'Vos plats du jour mijotés et traiteur sur-mesure à Eyguières' },
     { id: 2, image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1920&auto=format&fit=crop', title: 'Buffets & Événements Sur-Mesure', subtitle: 'Formules gastronomiques pour vos mariages, anniversaires et cocktails' },
@@ -173,7 +173,7 @@ export const getCarouselImages = cache(async function getCarouselImages() {
     return DEFAULT_CAROUSEL_SLIDES;
 });
 
-// --- Services / Prestations ---
+// --- Prestations ---
 const DEFAULT_SERVICES = [
     { id: 1, num: '01', title: 'Plats du Jour', description: 'Chaque jour, des plats mijotés frais. Commandez la veille ou le matin pour un repas livré ou à retirer.', badge: 'Quotidien' },
     { id: 2, num: '02', title: 'Événements', description: 'Anniversaires, mariages, baptêmes : un menu sur mesure adapté à votre nombre de convives.', badge: 'Sur-mesure' },
@@ -194,7 +194,7 @@ export const getServices = cache(async function getServices() {
     return DEFAULT_SERVICES;
 });
 
-// --- Pricing Documents (PDFs & Images) ---
+// --- Documents tarifaires (PDF et images) ---
 export const getPricingDocuments = cache(async function getPricingDocuments() {
     const db = getDb();
     try {
@@ -219,10 +219,10 @@ export const getPricingDocuments = cache(async function getPricingDocuments() {
                         }
                     }
                 } catch {
-                    // Table might be initializing
+                    // La table est peut-être en cours d'initialisation
                 }
 
-                // If no subtable images and this is an image type, populate from primary URLs
+                // S'il n'y a pas d'images en sous-table et que c'est un document image, utilise les URL principales
                 if (images_fr.length === 0 && doc.file_type !== 'pdf' && normFileUrl) {
                     images_fr.push({ id: `legacy-${doc.id}-fr`, image_url: normFileUrl, lang: 'fr', display_order: 1 });
                 }
@@ -246,7 +246,7 @@ export const getPricingDocuments = cache(async function getPricingDocuments() {
     return [];
 });
 
-// --- Fixed Meal Prices ---
+// --- Prix des repas fixes ---
 export const getFixedPrices = cache(async function getFixedPrices() {
     const db = getDb();
     try {

@@ -104,7 +104,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     <div className="admin-nav-group">
                         <Link
                             href="/admin/dashboard"
-                            className={`admin-nav-item ${isAccueilActive ? 'active' : ''}`}
+                            className={`admin-nav-item nav-theme-amber ${isAccueilActive ? 'active' : ''}`}
                         >
                             <div className="admin-nav-item-icon">
                                 <LayoutDashboard size={18} />
@@ -119,14 +119,14 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                                 href="/admin/dashboard/menu-semaine"
                                 className={`admin-nav-subitem ${isMenuSemaineActive ? 'active' : ''}`}
                             >
-                                <CalendarDays size={14} />
+                                <CalendarDays size={14} style={{ color: '#059669' }} />
                                 <span>Menu de la Semaine</span>
                             </Link>
                             <Link
                                 href="/admin/dashboard/carousel"
                                 className={`admin-nav-subitem ${isCarouselActive ? 'active' : ''}`}
                             >
-                                <ImageIcon size={14} />
+                                <ImageIcon size={14} style={{ color: '#7C3AED' }} />
                                 <span>Carrousel Bannière</span>
                             </Link>
                         </div>
@@ -135,7 +135,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 2. TARIFS */}
                     <Link
                         href="/admin/dashboard/tarifs"
-                        className={`admin-nav-item ${isTarifsActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-terracotta ${isTarifsActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Receipt size={18} />
@@ -147,7 +147,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 3. GALERIE */}
                     <Link
                         href="/admin/dashboard/galerie"
-                        className={`admin-nav-item ${isGalerieActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-rose ${isGalerieActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Camera size={18} />
@@ -159,7 +159,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 4. À PROPOS (Histoire, Photo & Prestations) */}
                     <Link
                         href="/admin/dashboard/a-propos"
-                        className={`admin-nav-item ${isAProposActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-pink ${isAProposActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Heart size={18} />
@@ -171,7 +171,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 5. CONTACT & DEVIS */}
                     <Link
                         href="/admin/dashboard/messages"
-                        className={`admin-nav-item ${isMessagesActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-blue ${isMessagesActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Mail size={18} />
@@ -192,7 +192,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 6. INFORMATIONS SITE */}
                     <Link
                         href="/admin/dashboard/settings"
-                        className={`admin-nav-item ${isSettingsActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-amber ${isSettingsActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Settings size={18} />
@@ -204,7 +204,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     {/* 7. TEXTES DU SITE (FR / EN) */}
                     <Link
                         href="/admin/dashboard/textes"
-                        className={`admin-nav-item ${isTextesActive ? 'active' : ''}`}
+                        className={`admin-nav-item nav-theme-indigo ${isTextesActive ? 'active' : ''}`}
                     >
                         <div className="admin-nav-item-icon">
                             <Languages size={18} />

@@ -406,9 +406,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--admin-text-subtle);
-  transition: color 0.2s ease, transform 0.2s ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
+
+.nav-theme-amber .admin-nav-item-icon { color: #D97706; background: rgba(217, 119, 6, 0.12); }
+.nav-theme-emerald .admin-nav-item-icon { color: #059669; background: rgba(5, 150, 105, 0.12); }
+.nav-theme-purple .admin-nav-item-icon { color: #7C3AED; background: rgba(124, 58, 237, 0.12); }
+.nav-theme-terracotta .admin-nav-item-icon { color: #C2410C; background: rgba(194, 65, 12, 0.12); }
+.nav-theme-rose .admin-nav-item-icon { color: #E11D48; background: rgba(225, 29, 72, 0.12); }
+.nav-theme-pink .admin-nav-item-icon { color: #BE185D; background: rgba(190, 24, 93, 0.12); }
+.nav-theme-blue .admin-nav-item-icon { color: #0284C7; background: rgba(2, 132, 199, 0.12); }
+.nav-theme-indigo .admin-nav-item-icon { color: #4F46E5; background: rgba(79, 70, 229, 0.12); }
 
 .admin-nav-item-text {
   flex: 1;
@@ -422,8 +434,54 @@
 }
 
 .admin-nav-item:hover .admin-nav-item-icon {
-  color: var(--admin-gold);
-  transform: scale(1.08);
+  transform: scale(1.1);
+  filter: brightness(1.05);
+}
+
+/* Dashboard Shortcut Cards */
+.admin-shortcut-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-shortcut-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.admin-shortcut-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.admin-shortcut-card:hover .admin-shortcut-icon {
+  transform: scale(1.12);
+}
+
+.admin-shortcut-arrow {
+  margin-left: auto;
+  opacity: 0.35;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.admin-shortcut-card:hover .admin-shortcut-arrow {
+  opacity: 1;
+  transform: translateX(3px);
 }
 
 .admin-nav-item.active {

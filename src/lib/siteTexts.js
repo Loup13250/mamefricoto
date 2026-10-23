@@ -98,6 +98,14 @@ export const TEXT_LABELS = {
     'strip.delivery': 'Bandeau du haut — livraison',
     'strip.pickup': 'Bandeau du haut — retrait',
     'strip.hours': 'Bandeau du haut — horaires de commande',
+    // Page 404
+    '404.badge': 'Page 404 — petit badge supérieur',
+    '404.title': 'Page 404 — titre principal (ligne 1)',
+    '404.titleItalic': 'Page 404 — suite du titre (ligne 2 en italique)',
+    '404.desc': 'Page 404 — message explicatif',
+    '404.backHome': 'Page 404 — bouton retour à l’accueil',
+    '404.call': 'Page 404 — bouton contact téléphone',
+    '404.suggestionsTitle': 'Page 404 — titre de la section raccourcis',
 };
 
 /** Libellé d'une clé : libellé dédié, sinon texte d'origine tronqué. */
@@ -152,6 +160,13 @@ export const SITE_TEXT_GROUPS = [
         description: 'Liens du menu, texte du pied de page, mentions affichées sur toutes les pages.',
         href: '/',
         prefixes: ['nav.', 'footer.'],
+    },
+    {
+        id: 'notfound',
+        title: 'Page Erreur 404',
+        description: 'Titres, textes d’accroche et boutons de la page 404.',
+        href: '/404',
+        prefixes: ['404.'],
     },
 ];
 

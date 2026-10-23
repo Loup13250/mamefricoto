@@ -4,12 +4,13 @@
 
 .hero {
     position: relative;
-    height: 100vh;
-    min-height: 680px;
+    height: calc(100vh - var(--header-h, 80px));
+    height: calc(100dvh - var(--header-h, 80px));
+    min-height: 540px;
     overflow: hidden;
     display: flex;
     align-items: flex-end;
-    margin-top: calc(-1 * var(--header-h, 80px));
+    margin-top: 0;
     touch-action: pan-y;
     user-select: none;
 }

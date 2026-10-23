@@ -80,25 +80,38 @@ export const HERO_CROP_TARGETS = [
     },
 ];
 
-/** Formats utilisés par la galerie photos. */
+/** Formats utilisés par la galerie photos : photo grand format (lightbox) + miniature (grille vitrine). */
 export const GALLERY_CROP_TARGETS = [
     {
         key: 'image',
-        label: 'Photo de la galerie',
-        shortLabel: 'Galerie',
+        label: 'Photo grand format (Lightbox)',
+        shortLabel: 'Photo (Ouverture)',
+        ratioLabel: '16:9',
+        aspect: 16 / 9,
+        icon: 'image',
+        maxWidth: 1920,
+        quality: 0.88,
+        optional: false,
+        hint: 'Photo entière affichée lorsque le visiteur clique dessus pour l’ouvrir en grand dans la galerie',
+        aspectOptions: [
+            { label: 'Paysage 16:9', shortLabel: '16:9', value: 16 / 9 },
+            { label: 'Standard 4:3', shortLabel: '4:3', value: 4 / 3 },
+            { label: 'Portrait 4:5', shortLabel: '4:5', value: 4 / 5 },
+            { label: 'Standard 3:4', shortLabel: '3:4', value: 3 / 4 },
+            { label: 'Carré 1:1', shortLabel: '1:1', value: 1 },
+        ],
+    },
+    {
+        key: 'thumbnail',
+        label: 'Miniature de la grille (Vignette vitrine)',
+        shortLabel: 'Miniature (Grille)',
         ratioLabel: '1:1',
         aspect: 1,
         icon: 'square',
-        maxWidth: 1400,
+        maxWidth: 900,
         quality: 0.85,
         optional: false,
-        hint: 'Format carré 1:1 idéal pour la galerie et la grille Instagram',
-        aspectOptions: [
-            { label: 'Carré 1:1 (recommandé)', shortLabel: '1:1', value: 1 },
-            { label: 'Portrait 4:5', shortLabel: '4:5', value: 4 / 5 },
-            { label: 'Paysage 16:9', shortLabel: '16:9', value: 16 / 9 },
-            { label: 'Standard 4:3', shortLabel: '4:3', value: 4 / 3 },
-        ],
+        hint: 'Format carré 1:1 pour la vitrine et la grille du site (choisissez ce qui est visible dans la vignette)',
     },
 ];
 
@@ -212,6 +225,26 @@ const defaultCrop = (target) => ({
     enabled: target.optional ? target.defaultEnabled !== false : true,
     touched: false,
 });
+
+/** Trouve l'option de format qui correspond au ratio réel de l'image (si proche à moins de 8%) */
+function findClosestAspect(ratio, options, fallback) {
+    if (!options || options.length === 0) return fallback;
+    let best = null;
+    let minDiff = Infinity;
+    for (const opt of options) {
+        const val = typeof opt.value === 'number' ? opt.value : opt.aspect;
+        if (!val) continue;
+        const diff = Math.abs(ratio - val) / val;
+        if (diff < minDiff) {
+            minDiff = diff;
+            best = val;
+        }
+    }
+    if (minDiff < 0.08 && best !== null) {
+        return best;
+    }
+    return fallback;
+}
 
 function canvasToBlob(canvas, type, quality) {
     return new Promise((resolve) => canvas.toBlob((b) => resolve(b), type, quality));
@@ -531,13 +564,33 @@ export default function ImageCropperModal({
                     urlsRef.current.push(src.url);
                     if (!aliveRef.current) return;
                     setSources((prev) => ({ ...prev, [item.id]: { status: 'ready', ...src } }));
+
+                    // Auto-détection intelligente du ratio d'origine (pour préserver 16:9, 4:5, 4:3, etc. sans forcer 1:1)
+                    const imgRatio = src.w / src.h;
+                    setCrops((prev) => {
+                        const itemCrops = prev[item.id];
+                        if (!itemCrops) return prev;
+                        let modified = false;
+                        const nextTargetCrops = { ...itemCrops };
+                        targets.forEach((t) => {
+                            const cur = nextTargetCrops[t.key];
+                            if (cur && !cur.touched && t.aspectOptions) {
+                                const detected = findClosestAspect(imgRatio, t.aspectOptions, cur.aspect || t.aspect);
+                                if (detected && Math.abs(detected - (cur.aspect || 0)) > 0.01) {
+                                    nextTargetCrops[t.key] = { ...cur, aspect: detected };
+                                    modified = true;
+                                }
+                            }
+                        });
+                        return modified ? { ...prev, [item.id]: nextTargetCrops } : prev;
+                    });
                 })
                 .catch(() => {
                     if (!aliveRef.current) return;
                     setSources((prev) => ({ ...prev, [item.id]: { status: 'error' } }));
                 });
         });
-    }, [list]);
+    }, [list, targets]);
 
     const item = list[activeIdx] || list[0];
     const source = item ? sources[item.id] : null;

@@ -168,7 +168,7 @@
 .modal-wrapper {
     position: relative;
     width: 100%;
-    max-width: 880px;
+    max-width: 1180px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -179,11 +179,13 @@
     border: 1px solid var(--border);
     width: 100%;
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1.8fr) 380px;
+    min-height: clamp(500px, 80vh, 700px);
+    max-height: 88vh;
     overflow: hidden;
     border-radius: var(--radius-md);
     position: relative;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.75);
 }
 
 .modal-close {
@@ -211,17 +213,22 @@
 }
 
 .modal-img-box {
-    background: #000;
+    background: #060504;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: 560px;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    position: relative;
     user-select: none;
+    overflow: hidden;
 }
 
 .modal-img {
     width: 100%;
     height: 100%;
+    max-height: 84vh;
     object-fit: contain;
     display: block;
 }
@@ -279,18 +286,21 @@
     font-size: 0.82rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
     .modal-card {
         grid-template-columns: 1fr;
+        min-height: auto;
         max-height: 90vh;
         overflow-y: auto;
     }
     .modal-img-box {
-        max-height: 320px;
+        min-height: 260px;
+        max-height: 55vh;
     }
     .modal-info {
         border-left: none;
         border-top: 1px solid var(--border);
+        padding: 1.5rem;
     }
 }
 

@@ -73,7 +73,7 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                 </>
                             ) : (
                                 <Image
-                                    src={post.image_url}
+                                    src={post.thumbnail_url || post.image_url}
                                     alt={postTitle || postCaption || 'Réalisation traiteur Mamé Fricoto'}
                                     width={500}
                                     height={500}
@@ -177,11 +177,11 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
                                     <Image
                                         src={selectedPost.image_url}
                                         alt={trans(selectedPost, 'title') || ''}
-                                        width={800}
-                                        height={800}
+                                        width={1600}
+                                        height={1200}
                                         className="modal-img"
-                                        style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
-                                        sizes="(max-width: 768px) 100vw, 800px"
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                        sizes="(max-width: 768px) 100vw, 1200px"
                                         priority
                                         decoding="async"
                                         unoptimized

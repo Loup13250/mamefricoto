@@ -82,7 +82,8 @@ export function getDb() {
                         client.execute(`ALTER TABLE carousel_images ADD COLUMN title_en TEXT`),
                         client.execute(`ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT`),
                         client.execute(`ALTER TABLE gallery_posts ADD COLUMN title_en TEXT`),
-                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT`)
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT`),
+                        client.execute(`ALTER TABLE gallery_posts ADD COLUMN thumbnail_url TEXT`)
                     ]);
                     tablesEnsured = true;
                 } catch (err) {
@@ -193,6 +194,7 @@ export function getDb() {
             try { localDbInstance.prepare("ALTER TABLE carousel_images ADD COLUMN subtitle_en TEXT").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE gallery_posts ADD COLUMN title_en TEXT").run(); } catch {}
             try { localDbInstance.prepare("ALTER TABLE gallery_posts ADD COLUMN caption_en TEXT").run(); } catch {}
+            try { localDbInstance.prepare("ALTER TABLE gallery_posts ADD COLUMN thumbnail_url TEXT").run(); } catch {}
             try {
                 localDbInstance.exec(`
                     CREATE TABLE IF NOT EXISTS services (

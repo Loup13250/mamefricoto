@@ -173,7 +173,8 @@ export default function GalleryClient({ posts }) {
     const [isAdding, setIsAdding] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [batchFiles, setBatchFiles] = useState([]); // [{ id, file, name, title, title_en, caption, caption_en }]
+    const [selectedThumbnail, setSelectedThumbnail] = useState(null);
+    const [batchFiles, setBatchFiles] = useState([]); // [{ id, file, thumbnail, name, title, title_en, caption, caption_en }]
     const [batchPublishing, setBatchPublishing] = useState(null); // { done, total }
     const [cropper, setCropper] = useState(null); // { mode: 'new' | 'recrop', post?, items }
     const [isDragging, setIsDragging] = useState(false);
@@ -239,12 +240,15 @@ export default function GalleryClient({ posts }) {
         if (cropper?.mode === 'new') {
             if (results.length === 1) {
                 setSelectedFile(results[0].outputs.image || results[0].original);
+                setSelectedThumbnail(results[0].outputs.thumbnail || null);
                 setBatchFiles([]);
             } else {
                 setSelectedFile(null);
+                setSelectedThumbnail(null);
                 setBatchFiles(results.map(r => ({
                     id: r.id,
                     file: r.outputs.image || r.original,
+                    thumbnail: r.outputs.thumbnail || null,
                     name: r.name,
                     title: '',
                     title_en: '',
@@ -254,20 +258,23 @@ export default function GalleryClient({ posts }) {
             }
         } else if (cropper?.mode === 'recrop') {
             const post = cropper.post;
-            const croppedFile = results[0].outputs.image || results[0].original;
-            if (post && croppedFile) {
+            const croppedImage = results[0]?.outputs.image || results[0]?.original;
+            const croppedThumb = results[0]?.outputs.thumbnail || null;
+            if (post && (croppedImage || croppedThumb)) {
                 startTransition(async () => {
                     const fd = new FormData();
                     fd.append('id', post.id);
-                    fd.append('image_file', croppedFile);
+                    if (croppedImage) fd.append('image_file', croppedImage);
+                    if (croppedThumb) fd.append('thumbnail_file', croppedThumb);
                     const res = await editGalleryPost(fd);
                     if (res?.error) {
                         setError(res.error);
                     } else {
-                        const tempUrl = URL.createObjectURL(croppedFile);
-                        setItems(prev => prev.map(p => p.id === post.id ? { ...p, image_url: tempUrl } : p));
+                        const tempUrl = croppedImage ? URL.createObjectURL(croppedImage) : post.image_url;
+                        const tempThumbUrl = croppedThumb ? URL.createObjectURL(croppedThumb) : (post.thumbnail_url || tempUrl);
+                        setItems(prev => prev.map(p => p.id === post.id ? { ...p, image_url: tempUrl, thumbnail_url: tempThumbUrl } : p));
                         if (editingPost?.id === post.id) {
-                            setEditingPost(prev => prev ? { ...prev, image_url: tempUrl } : null);
+                            setEditingPost(prev => prev ? { ...prev, image_url: tempUrl, thumbnail_url: tempThumbUrl } : null);
                         }
                     }
                 });
@@ -286,6 +293,9 @@ export default function GalleryClient({ posts }) {
                 const item = batchFiles[i];
                 const fd = new FormData();
                 fd.append('image_file', item.file);
+                if (item.thumbnail) {
+                    fd.append('thumbnail_file', item.thumbnail);
+                }
                 fd.append('title', item.title || '');
                 fd.append('title_en', item.title_en || '');
                 fd.append('caption', item.caption || '');
@@ -318,11 +328,16 @@ export default function GalleryClient({ posts }) {
         formData.delete('image_file');
         if (selectedFile) {
             if (selectedFile.type.startsWith('image/')) {
-                const compressed = await compressImageFile(selectedFile, 1200, 0.80);
+                const compressed = await compressImageFile(selectedFile, 1800, 0.88);
                 formData.append('image_file', compressed);
             } else {
                 formData.append('image_file', selectedFile);
             }
+        }
+
+        if (selectedThumbnail) {
+            const compressedThumb = await compressImageFile(selectedThumbnail, 900, 0.85);
+            formData.append('thumbnail_file', compressedThumb);
         }
 
         if (selectedFile?.type.startsWith('video/')) {
@@ -341,6 +356,7 @@ export default function GalleryClient({ posts }) {
             } else {
                 setSuccess(true);
                 setSelectedFile(null);
+                setSelectedThumbnail(null);
                 formRef.current?.reset();
                 setTimeout(() => {
                     setSuccess(false);
@@ -969,7 +985,7 @@ export default function GalleryClient({ posts }) {
                                         </>
                                     ) : (
                                         <Image
-                                            src={post.image_url}
+                                            src={post.thumbnail_url || post.image_url}
                                             alt={post.title || 'Photo galerie'}
                                             width={400}
                                             height={300}

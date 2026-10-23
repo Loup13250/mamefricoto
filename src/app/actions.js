@@ -643,6 +643,7 @@ export async function addGalleryPost(formData) {
         const file = formData.get('image_file');
 
         let image_url = image_url_text;
+        let thumbnail_url = '';
         if (file && file.size > 0) {
             if (file.type && file.type.startsWith('video/')) {
                 media_type = 'video';
@@ -651,22 +652,32 @@ export async function addGalleryPost(formData) {
             if (uploaded) image_url = uploaded;
         }
 
+        const thumbFile = formData.get('thumbnail_file');
+        if (thumbFile && thumbFile.size > 0) {
+            const uploadedThumb = await saveUploadedFile(thumbFile);
+            if (uploadedThumb) thumbnail_url = uploadedThumb;
+        }
+        if (!thumbnail_url) thumbnail_url = image_url;
+
         if (!image_url) {
             return { error: 'Veuillez sélectionner un fichier ou coller une URL' };
         }
 
         const db = getDb();
         await db.prepare('UPDATE gallery_posts SET display_order = display_order + 1').run();
-        await db.prepare('INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, 1)').run(
-            title, title_en, caption, caption_en, image_url, media_type
+        await db.prepare('INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, thumbnail_url, media_type, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, 1)').run(
+            title, title_en, caption, caption_en, image_url, thumbnail_url, media_type
         );
 
         // Nettoyage automatique : limiter la galerie aux 30 plus récentes
-        const allPosts = await db.prepare('SELECT id, image_url FROM gallery_posts ORDER BY created_at DESC').all();
+        const allPosts = await db.prepare('SELECT id, image_url, thumbnail_url FROM gallery_posts ORDER BY created_at DESC').all();
         if (allPosts.length > 30) {
             const postsToDelete = allPosts.slice(30);
             for (const oldPost of postsToDelete) {
                 deleteLocalFileIfPresent(oldPost.image_url);
+                if (oldPost.thumbnail_url && oldPost.thumbnail_url !== oldPost.image_url) {
+                    deleteLocalFileIfPresent(oldPost.thumbnail_url);
+                }
                 await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(oldPost.id);
             }
         }
@@ -695,7 +706,10 @@ export async function editGalleryPost(formData) {
 
         const db = getDb();
         const file = formData.get('image_file');
+        const thumbFile = formData.get('thumbnail_file');
         let newImageUrl = null;
+        let newThumbUrl = null;
+
         if (file && file.size > 0) {
             const uploaded = await saveUploadedFile(file);
             if (uploaded) {
@@ -703,6 +717,18 @@ export async function editGalleryPost(formData) {
                 const oldPost = await db.prepare('SELECT image_url FROM gallery_posts WHERE id = ?').get(id);
                 if (oldPost) deleteLocalFileIfPresent(oldPost.image_url);
                 await db.prepare('UPDATE gallery_posts SET image_url = ? WHERE id = ?').run(uploaded, id);
+            }
+        }
+
+        if (thumbFile && thumbFile.size > 0) {
+            const uploadedThumb = await saveUploadedFile(thumbFile);
+            if (uploadedThumb) {
+                newThumbUrl = uploadedThumb;
+                const oldPost = await db.prepare('SELECT thumbnail_url, image_url FROM gallery_posts WHERE id = ?').get(id);
+                if (oldPost && oldPost.thumbnail_url && oldPost.thumbnail_url !== oldPost.image_url) {
+                    deleteLocalFileIfPresent(oldPost.thumbnail_url);
+                }
+                await db.prepare('UPDATE gallery_posts SET thumbnail_url = ? WHERE id = ?').run(uploadedThumb, id);
             }
         }
 
@@ -716,7 +742,7 @@ export async function editGalleryPost(formData) {
         revalidatePath('/realisations');
         revalidatePath('/galerie');
         revalidatePath('/admin/dashboard/galerie');
-        return { success: true, image_url: newImageUrl };
+        return { success: true, image_url: newImageUrl, thumbnail_url: newThumbUrl };
     } catch (err) {
         console.error('[Gallery Edit] Erreur :', err);
         return { error: err.message || 'Erreur lors de la mise à jour.' };
@@ -729,8 +755,13 @@ export async function deleteGalleryPost(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    const post = await db.prepare('SELECT image_url FROM gallery_posts WHERE id = ?').get(id);
-    if (post) deleteLocalFileIfPresent(post.image_url);
+    const post = await db.prepare('SELECT image_url, thumbnail_url FROM gallery_posts WHERE id = ?').get(id);
+    if (post) {
+        deleteLocalFileIfPresent(post.image_url);
+        if (post.thumbnail_url && post.thumbnail_url !== post.image_url) {
+            deleteLocalFileIfPresent(post.thumbnail_url);
+        }
+    }
 
     await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
     revalidatePath('/');

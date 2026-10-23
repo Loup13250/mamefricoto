@@ -1875,6 +1875,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                     items={cropper.items}
                     targets={TARIFS_CROP_TARGETS}
                     onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
                     onComplete={handleCropped}
                 />
             )}

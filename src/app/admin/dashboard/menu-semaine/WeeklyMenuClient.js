@@ -1273,6 +1273,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                     items={cropper.items}
                     targets={MENU_CROP_TARGETS}
                     onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
                     onComplete={handleCropped}
                 />
             )}

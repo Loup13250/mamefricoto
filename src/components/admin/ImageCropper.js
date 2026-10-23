@@ -499,6 +499,7 @@ export default function ImageCropperModal({
     heroPreview = true,
     onCancel,
     onConfirm,
+    onComplete,
 }) {
     const [list, setList] = useState(initialItems);
     const [activeIdx, setActiveIdx] = useState(0);
@@ -668,7 +669,10 @@ export default function ImageCropperModal({
                 });
                 if (aliveRef.current) setProcessing({ done: i + 1, total: list.length });
             }
-            await onConfirm?.(results);
+            const callback = onConfirm || onComplete;
+            if (callback) {
+                await callback(results);
+            }
         } catch (err) {
             console.error('Crop error:', err);
             if (aliveRef.current) {

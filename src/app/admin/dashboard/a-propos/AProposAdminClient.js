@@ -89,6 +89,8 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
     const [aboutPhotoPreview, setAboutPhotoPreview] = useState(info?.about_image || null);
     const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
     const [cropper, setCropper] = useState(null); // { items: [...] }
+    const [photoAspect, setPhotoAspect] = useState('4 / 5');
+    const [photoRatioLabel, setPhotoRatioLabel] = useState('Format 4:5 (Portrait)');
 
     const serviceFormRef = useRef(null);
     const storyFormRef = useRef(null);
@@ -129,20 +131,21 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
 
     // Résultat du recadrage
     const handleCropped = async (results) => {
-        if (!results || results.length === 0) {
+        try {
+            if (!results || results.length === 0) return;
+            const croppedBlob = results[0]?.outputs?.image || results[0]?.outputs?.desktop || results[0]?.original;
+            if (croppedBlob) {
+                const file = croppedBlob instanceof File 
+                    ? croppedBlob 
+                    : new File([croppedBlob], 'a-propos.webp', { type: 'image/webp' });
+                setSelectedPhotoFile(file);
+                setAboutPhotoPreview(URL.createObjectURL(file));
+            }
+        } catch (err) {
+            console.error('Error handling cropped about photo:', err);
+        } finally {
             setCropper(null);
-            return;
         }
-        const croppedBlob = results[0]?.outputs.image || results[0]?.original;
-        if (croppedBlob) {
-            const file = croppedBlob instanceof File 
-                ? croppedBlob 
-                : new File([croppedBlob], 'a-propos.webp', { type: 'image/webp' });
-            const compressed = await compressImageFile(file, 1600, 0.88);
-            setSelectedPhotoFile(compressed);
-            setAboutPhotoPreview(URL.createObjectURL(compressed));
-        }
-        setCropper(null);
     };
 
     // Soumission du formulaire Histoire & Photo
@@ -358,7 +361,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                 width: '100%',
                                 maxWidth: '320px',
                                 margin: '0 auto 1.25rem',
-                                aspectRatio: '4 / 5',
+                                aspectRatio: photoAspect,
                                 borderRadius: '10px',
                                 overflow: 'hidden',
                                 border: '1px solid var(--admin-border)',
@@ -367,7 +370,8 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                 background: 'var(--admin-surface)',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                transition: 'aspect-ratio 0.25s ease',
                             }}>
                                 {aboutPhotoPreview ? (
                                     <>
@@ -376,6 +380,25 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                             src={aboutPhotoPreview}
                                             alt="Aperçu photo À Propos"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                            onLoad={(e) => {
+                                                const w = e.target.naturalWidth;
+                                                const h = e.target.naturalHeight;
+                                                if (w && h) {
+                                                    setPhotoAspect(`${w} / ${h}`);
+                                                    const r = w / h;
+                                                    if (Math.abs(r - 1) < 0.08) {
+                                                        setPhotoRatioLabel('Format 1:1 (Carré)');
+                                                    } else if (Math.abs(r - 0.8) < 0.08) {
+                                                        setPhotoRatioLabel('Format 4:5 (Portrait)');
+                                                    } else if (Math.abs(r - 0.75) < 0.08) {
+                                                        setPhotoRatioLabel('Format 3:4 (Standard)');
+                                                    } else if (Math.abs(r - 16 / 9) < 0.1) {
+                                                        setPhotoRatioLabel('Format 16:9 (Paysage)');
+                                                    } else {
+                                                        setPhotoRatioLabel(`${w} × ${h} px`);
+                                                    }
+                                                }
+                                            }}
                                         />
                                         <div style={{
                                             position: 'absolute',
@@ -421,7 +444,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                             borderRadius: '4px',
                                             border: '1px solid var(--admin-border)',
                                         }}>
-                                            Format 4:5 (Portrait)
+                                            {photoRatioLabel}
                                         </div>
                                     </>
                                 ) : (
@@ -822,6 +845,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                     items={cropper.items}
                     targets={ABOUT_CROP_TARGETS}
                     onCancel={() => setCropper(null)}
+                    onConfirm={handleCropped}
                     onComplete={handleCropped}
                 />
             )}

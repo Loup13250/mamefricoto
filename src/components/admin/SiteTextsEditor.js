@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SiteTextsEditor — modification des textes du site, en français ET en anglais
+ * SiteTextsEditor - modification des textes du site, en français ET en anglais
  * ----------------------------------------------------------------------------
  * Chaque champ est pré-rempli avec le texte actuellement affiché sur le site
  * (texte d'origine ou texte déjà personnalisé). Enregistrer = le site public est
@@ -163,7 +163,7 @@ export default function SiteTextsEditor({
                 });
                 setValues(next);
                 setSaved(next);
-                setFeedback({ type: 'ok', text: 'Textes enregistrés — le site est mis à jour en français et en anglais.' });
+                setFeedback({ type: 'ok', text: 'Textes enregistrés - le site est mis à jour en français et en anglais.' });
                 setTimeout(() => setFeedback((f) => (f?.type === 'ok' ? null : f)), 5000);
             } catch (err) {
                 console.error(err);
@@ -296,7 +296,7 @@ export default function SiteTextsEditor({
                     </span>
                 ) : (
                     <span className="st-dirty">
-                        <span className="st-dot" /> {changedKeys.length} texte{changedKeys.length > 1 ? 's' : ''} modifié{changedKeys.length > 1 ? 's' : ''} — non enregistré{changedKeys.length > 1 ? 's' : ''}
+                        <span className="st-dot" /> {changedKeys.length} texte{changedKeys.length > 1 ? 's' : ''} modifié{changedKeys.length > 1 ? 's' : ''} - non enregistré{changedKeys.length > 1 ? 's' : ''}
                     </span>
                 )}
                 <div className="st-save-actions">

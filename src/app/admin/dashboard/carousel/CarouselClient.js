@@ -74,7 +74,7 @@ function PhotoDropzone({ onFiles, onError, compact = false, label, sublabel }) {
             >
                 <UploadCloud size={compact ? 22 : 34} />
                 <strong>{label || 'Glissez vos photos ici ou cliquez pour les choisir'}</strong>
-                <span>{sublabel || 'Vous pouvez en sélectionner plusieurs à la fois — vous les cadrerez ensuite une par une.'}</span>
+                <span>{sublabel || 'Vous pouvez en sélectionner plusieurs à la fois - vous les cadrerez ensuite une par une.'}</span>
             </button>
             <input
                 ref={inputRef}
@@ -213,7 +213,7 @@ function AddSlidesFlow({ onCancel }) {
                     <div className="cr-flow-head">
                         <p>
                             <strong>{slides.length} photo{slides.length > 1 ? 's' : ''} prête{slides.length > 1 ? 's' : ''}</strong>
-                            {' '}— ajoutez un titre (facultatif), puis publiez. Si le titre est vide, le titre par défaut du site s&apos;affiche.
+                            {' '} - ajoutez un titre (facultatif), puis publiez. Si le titre est vide, le titre par défaut du site s&apos;affiche.
                         </p>
                         <button type="button" className="admin-btn admin-btn-secondary" onClick={() => addMoreRef.current?.click()} disabled={!!publishing}>
                             <Plus size={15} /> Ajouter d&apos;autres photos

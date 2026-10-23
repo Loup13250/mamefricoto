@@ -30,13 +30,13 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
         setCurrentIndex((prev) => (prev === 0 ? slidesCount - 1 : prev - 1));
     }, [slidesCount]);
 
-    // Continuous Autoplay: cycles every 5.5s reliably across all devices and Mac/Safari
+    // Continuous Autoplay: cycles every 7.0s for an elegant, calm luxury pacing
     useEffect(() => {
         if (slidesCount <= 1) return;
 
         timerRef.current = setInterval(() => {
             handleNext();
-        }, 5500);
+        }, 7000);
 
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);

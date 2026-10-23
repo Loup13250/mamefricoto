@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ImageCropperModal — outil de cadrage d'images pour l'administration
+ * ImageCropperModal - outil de cadrage d'images pour l'administration
  * --------------------------------------------------------------------
  * - Plusieurs photos à la fois (bandeau de vignettes + navigation).
  * - Un ou plusieurs "formats" par photo (ex. ordinateur 16:9 ET mobile 9:16),
@@ -61,7 +61,7 @@ export const HERO_CROP_TARGETS = [
         maxWidth: 1920,
         quality: 0.82,
         optional: false,
-        hint: 'Paysage — affiché en grand sur ordinateur',
+        hint: 'Paysage - affiché en grand sur ordinateur',
     },
     {
         key: 'mobile',
@@ -74,7 +74,7 @@ export const HERO_CROP_TARGETS = [
         quality: 0.8,
         optional: true,
         defaultEnabled: true,
-        hint: 'Portrait — affiché plein écran sur smartphone',
+        hint: 'Portrait - affiché plein écran sur smartphone',
         disabledHint:
             "Sans format mobile, la photo « Ordinateur » est utilisée sur téléphone : seule une bande verticale de la photo sera visible.",
     },
@@ -195,7 +195,7 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
 /**
  * crop = { zoom, cx, cy } : zoom (1 = photo couvrant tout le cadre) et centre
- * visible en coordonnées normalisées (0–1) de la photo d'origine.
+ * visible en coordonnées normalisées (0-1) de la photo d'origine.
  * Retourne la zone visible (en pixels de la photo d'origine), toujours contenue dans la photo.
  */
 function getView(dim, aspect, crop) {
@@ -953,7 +953,7 @@ export default function ImageCropperModal({
 
                     {unreadableCount > 0 && ready && (
                         <p className="ic-warning">
-                            {unreadableCount} photo{unreadableCount > 1 ? 's' : ''} ne peu{unreadableCount > 1 ? 'vent' : 't'} pas être recadrée{unreadableCount > 1 ? 's' : ''} (format non lisible) — elle{unreadableCount > 1 ? 's seront importées' : ' sera importée'} telle{unreadableCount > 1 ? 's' : ''} quelle{unreadableCount > 1 ? 's' : ''}.
+                            {unreadableCount} photo{unreadableCount > 1 ? 's' : ''} ne peu{unreadableCount > 1 ? 'vent' : 't'} pas être recadrée{unreadableCount > 1 ? 's' : ''} (format non lisible) - elle{unreadableCount > 1 ? 's seront importées' : ' sera importée'} telle{unreadableCount > 1 ? 's' : ''} quelle{unreadableCount > 1 ? 's' : ''}.
                         </p>
                     )}
                     {error && <p className="ic-error">{error}</p>}

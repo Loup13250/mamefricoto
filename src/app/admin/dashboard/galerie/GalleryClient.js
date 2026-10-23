@@ -66,13 +66,14 @@ function MediaPreview({ file, onRemove, onRecrop }) {
                         aria-label="Recadrer cette photo"
                         style={{
                             width: '28px', height: '28px',
-                            background: 'rgba(184, 139, 70, 0.9)',
-                            border: 'none', borderRadius: '3px', color: 'white',
+                            background: 'linear-gradient(135deg, #C85B3F 0%, #B54A2F 100%)',
+                            border: 'none', borderRadius: '4px', color: 'white',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             cursor: 'pointer',
+                            boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
                         }}
                     >
-                        <Crop size={14} />
+                        <Crop size={14} strokeWidth={2.2} />
                     </button>
                 )}
                 <button
@@ -584,20 +585,21 @@ export default function GalleryClient({ posts }) {
                                                 })}
                                                 style={{
                                                     marginTop: '6px',
-                                                    padding: '3px 9px',
-                                                    background: 'rgba(200,169,110,0.15)',
-                                                    border: '1px solid var(--admin-gold)',
-                                                    color: 'var(--admin-gold)',
-                                                    borderRadius: '4px',
+                                                    padding: '5px 12px',
+                                                    background: 'linear-gradient(135deg, #C85B3F 0%, #B54A2F 100%)',
+                                                    border: '1px solid #A84026',
+                                                    color: '#FFFFFF',
+                                                    borderRadius: '5px',
                                                     cursor: 'pointer',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
-                                                    gap: '5px',
-                                                    fontSize: '0.72rem',
-                                                    fontWeight: '600',
+                                                    gap: '6px',
+                                                    fontSize: '0.76rem',
+                                                    fontWeight: '700',
+                                                    boxShadow: '0 2px 5px rgba(194, 87, 45, 0.25)',
                                                 }}
                                             >
-                                                <Crop size={12} /> Recadrer la photo
+                                                <Crop size={13} strokeWidth={2.2} /> Recadrer la photo
                                             </button>
                                         )}
                                     </div>
@@ -736,10 +738,10 @@ export default function GalleryClient({ posts }) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setCropper({ mode: 'new', items: [{ id: item.id, file: item.file, name: item.name }] })}
-                                                                style={{ width: '24px', height: '24px', background: 'rgba(184, 139, 70, 0.9)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                style={{ width: '26px', height: '26px', background: 'linear-gradient(135deg, #C85B3F 0%, #B54A2F 100%)', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.25)' }}
                                                                 title="Recadrer cette photo"
                                                             >
-                                                                <Crop size={12} />
+                                                                <Crop size={13} strokeWidth={2.2} />
                                                             </button>
                                                             <button
                                                                 type="button"
@@ -1034,13 +1036,13 @@ export default function GalleryClient({ posts }) {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: '8px',
-                                    padding: '0.65rem 0.8rem',
-                                    background: 'rgba(0,0,0,0.22)',
-                                    borderTop: '1px solid var(--admin-border-soft, #332d27)',
+                                    padding: '0.75rem 0.8rem',
+                                    background: 'var(--admin-surface, #F5EFE6)',
+                                    borderTop: '1px solid rgba(184, 139, 70, 0.25)',
                                 }}>
                                     {/* Row 1: Reorder Left/Right & Direct Position Select + Delete */}
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <button
                                                 type="button"
                                                 onClick={() => handleReorder(post.id, 'up')}
@@ -1048,12 +1050,14 @@ export default function GalleryClient({ posts }) {
                                                 title="Déplacer vers la gauche"
                                                 aria-label={`Déplacer ${post.title || 'cette photo'} vers la gauche`}
                                                 style={{
-                                                    width: '28px', height: '28px',
-                                                    background: idx === 0 ? 'transparent' : 'rgba(200,169,110,0.15)',
-                                                    border: '1px solid rgba(200,169,110,0.25)',
-                                                    color: idx === 0 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
-                                                    borderRadius: '4px', cursor: idx === 0 ? 'default' : 'pointer',
+                                                    width: '30px', height: '30px',
+                                                    background: idx === 0 ? 'rgba(0,0,0,0.04)' : '#FFFFFF',
+                                                    border: '1px solid rgba(184, 139, 70, 0.4)',
+                                                    color: idx === 0 ? 'rgba(36, 30, 25, 0.25)' : 'var(--admin-text, #241E19)',
+                                                    borderRadius: '5px',
+                                                    cursor: idx === 0 ? 'default' : 'pointer',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    boxShadow: idx === 0 ? 'none' : '0 1px 2px rgba(0,0,0,0.05)',
                                                 }}
                                             >
                                                 <ArrowLeft size={13} />
@@ -1065,12 +1069,14 @@ export default function GalleryClient({ posts }) {
                                                 title="Déplacer vers la droite"
                                                 aria-label={`Déplacer ${post.title || 'cette photo'} vers la droite`}
                                                 style={{
-                                                    width: '28px', height: '28px',
-                                                    background: idx === items.length - 1 ? 'transparent' : 'rgba(200,169,110,0.15)',
-                                                    border: '1px solid rgba(200,169,110,0.25)',
-                                                    color: idx === items.length - 1 ? 'rgba(255,255,255,0.15)' : 'var(--admin-gold)',
-                                                    borderRadius: '4px', cursor: idx === items.length - 1 ? 'default' : 'pointer',
+                                                    width: '30px', height: '30px',
+                                                    background: idx === items.length - 1 ? 'rgba(0,0,0,0.04)' : '#FFFFFF',
+                                                    border: '1px solid rgba(184, 139, 70, 0.4)',
+                                                    color: idx === items.length - 1 ? 'rgba(36, 30, 25, 0.25)' : 'var(--admin-text, #241E19)',
+                                                    borderRadius: '5px',
+                                                    cursor: idx === items.length - 1 ? 'default' : 'pointer',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    boxShadow: idx === items.length - 1 ? 'none' : '0 1px 2px rgba(0,0,0,0.05)',
                                                 }}
                                             >
                                                 <ArrowRight size={13} />
@@ -1089,20 +1095,21 @@ export default function GalleryClient({ posts }) {
                                                 title="Changer directement l'emplacement (ex : placer en #4)"
                                                 aria-label={`Changer la position de ${post.title || 'cette réalisation'}`}
                                                 style={{
-                                                    height: '28px',
+                                                    height: '30px',
                                                     padding: '0 8px',
-                                                    background: 'rgba(200,169,110,0.15)',
-                                                    border: '1px solid rgba(200,169,110,0.3)',
-                                                    color: 'var(--admin-gold, #C8A96E)',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.75rem',
+                                                    background: '#FFFFFF',
+                                                    border: '1px solid rgba(184, 139, 70, 0.45)',
+                                                    color: 'var(--admin-text, #241E19)',
+                                                    borderRadius: '5px',
+                                                    fontSize: '0.78rem',
                                                     fontWeight: '700',
                                                     cursor: 'pointer',
                                                     outline: 'none',
+                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                                                 }}
                                             >
                                                 {items.map((_, pIdx) => (
-                                                     <option key={pIdx + 1} value={pIdx + 1} style={{ background: '#1e1b18', color: '#FDFBF7' }}>
+                                                     <option key={pIdx + 1} value={pIdx + 1}>
                                                          #{pIdx + 1}
                                                      </option>
                                                  ))}
@@ -1118,7 +1125,7 @@ export default function GalleryClient({ posts }) {
                                                         onClick={() => handleDelete(post.id)}
                                                         disabled={isDeleting}
                                                         aria-label="Confirmer la suppression"
-                                                        style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.95)', border: 'none', color: 'white', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                                                        style={{ padding: '5px 10px', background: '#DC2626', border: 'none', color: 'white', borderRadius: '5px', fontSize: '0.74rem', fontWeight: '700', cursor: 'pointer' }}
                                                     >
                                                         {isDeleting ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : 'Confirmer'}
                                                     </button>
@@ -1126,7 +1133,7 @@ export default function GalleryClient({ posts }) {
                                                         type="button"
                                                         onClick={() => setDeleteId(null)}
                                                         aria-label="Annuler la suppression"
-                                                        style={{ width: '26px', height: '26px', background: 'rgba(255,255,255,0.12)', border: 'none', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                        style={{ width: '28px', height: '28px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.15)', color: 'var(--admin-text, #241E19)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                     >
                                                         <X size={13} />
                                                     </button>
@@ -1135,7 +1142,7 @@ export default function GalleryClient({ posts }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setDeleteId(post.id)}
-                                                    style={{ width: '28px', height: '28px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                    style={{ width: '30px', height: '30px', background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#DC2626', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                                     title="Supprimer cette publication"
                                                     aria-label={`Supprimer la publication ${post.title || ''}`}
                                                 >
@@ -1145,8 +1152,8 @@ export default function GalleryClient({ posts }) {
                                         </div>
                                     </div>
 
-                                    {/* Row 2: Action buttons (Recadrer & Modifier) with guaranteed full text */}
-                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', width: '100%' }}>
+                                    {/* Row 2: Action buttons (Recadrer & Modifier) with high contrast & visibility */}
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', marginTop: '2px' }}>
                                         {post.media_type !== 'video' && (
                                             <button
                                                 type="button"
@@ -1157,24 +1164,27 @@ export default function GalleryClient({ posts }) {
                                                 })}
                                                 style={{
                                                     flex: 1,
-                                                    padding: '6px 10px',
-                                                    background: 'rgba(200,169,110,0.12)',
-                                                    border: '1px solid rgba(200,169,110,0.4)',
-                                                    color: 'var(--admin-gold)',
-                                                    borderRadius: '5px',
+                                                    padding: '8px 12px',
+                                                    background: 'linear-gradient(135deg, #C85B3F 0%, #B54A2F 100%)',
+                                                    border: '1px solid #A84026',
+                                                    color: '#FFFFFF',
+                                                    borderRadius: '6px',
                                                     cursor: 'pointer',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    gap: '5px',
-                                                    fontSize: '0.78rem',
-                                                    fontWeight: '600',
+                                                    gap: '6px',
+                                                    fontSize: '0.82rem',
+                                                    fontWeight: '700',
+                                                    letterSpacing: '0.01em',
                                                     whiteSpace: 'nowrap',
+                                                    boxShadow: '0 2px 6px rgba(194, 87, 45, 0.35)',
+                                                    transition: 'all 0.15s ease',
                                                 }}
                                                 title="Recadrer cette photo"
                                                 aria-label={`Recadrer ${post.title || 'cette photo'}`}
                                             >
-                                                <Crop size={13} /> Recadrer
+                                                <Crop size={14} strokeWidth={2.2} /> Recadrer
                                             </button>
                                         )}
 
@@ -1184,24 +1194,27 @@ export default function GalleryClient({ posts }) {
                                             style={{
                                                 flex: post.media_type === 'video' ? 'none' : 1,
                                                 width: post.media_type === 'video' ? '100%' : 'auto',
-                                                padding: '6px 10px',
-                                                background: 'rgba(200,169,110,0.22)',
-                                                border: '1px solid var(--admin-gold)',
-                                                color: 'var(--admin-gold)',
-                                                borderRadius: '5px',
+                                                padding: '8px 12px',
+                                                background: '#FFFFFF',
+                                                border: '1.5px solid rgba(184, 139, 70, 0.5)',
+                                                color: 'var(--admin-text, #241E19)',
+                                                borderRadius: '6px',
                                                 cursor: 'pointer',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '5px',
-                                                fontSize: '0.78rem',
-                                                fontWeight: '600',
+                                                gap: '6px',
+                                                fontSize: '0.82rem',
+                                                fontWeight: '700',
+                                                letterSpacing: '0.01em',
                                                 whiteSpace: 'nowrap',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                                transition: 'all 0.15s ease',
                                             }}
                                             title="Modifier les textes FR &amp; EN"
                                             aria-label={`Modifier les textes FR et EN de ${post.title || 'cette publication'}`}
                                          >
-                                             <Pencil size={13} /> Modifier
+                                             <Pencil size={14} strokeWidth={2.2} /> Modifier
                                          </button>
                                      </div>
                                  </div>

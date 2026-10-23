@@ -6,7 +6,7 @@ import './not-found.css';
 
 export const metadata = {
   title: 'Page non trouvée | Mamé Fricoto',
-  description: "Ce plat n'est plus à la carte... Retrouvez toute la cuisine provençale et le service traiteur de Mamé Fricoto.",
+  description: "Cette page n'est pas au menu ! Retrouvez nos plats faits maison, cartes et formules traiteur chez Mamé Fricoto.",
   robots: {
     index: false,
     follow: false,

@@ -414,18 +414,46 @@ function EditCarouselForm({ item, onCancel }) {
             setCropper(null);
             return;
         }
+        let newDesktop = null;
+        let newMobile = null;
         if (out.desktop) {
             release(desktopPreview);
             setDesktopFile(out.desktop);
             setDesktopPreview(make(out.desktop));
+            newDesktop = out.desktop;
         }
         if (out.mobile) {
             release(mobilePreview);
             setMobileFile(out.mobile);
             setMobilePreview(make(out.mobile));
             setRemoveMobile(false);
+            newMobile = out.mobile;
         }
         setCropper(null);
+
+        // Sauvegarde directe automatique du recadrage
+        const formData = new FormData();
+        formData.set('id', item.id);
+        formData.set('title', item.title || '');
+        formData.set('title_en', item.title_en || '');
+        formData.set('subtitle', item.subtitle || '');
+        formData.set('subtitle_en', item.subtitle_en || '');
+        if (newDesktop) formData.append('image_file', newDesktop);
+        if (newMobile) formData.append('mobile_image_file', newMobile);
+
+        startTransition(async () => {
+            try {
+                const result = await editCarouselImage(formData);
+                if (result?.error) {
+                    setError(result.error);
+                } else {
+                    setSuccess(true);
+                    setTimeout(() => setSuccess(false), 2500);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
     };
 
     const handleSubmit = (e) => {

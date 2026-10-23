@@ -129,7 +129,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
         }
     };
 
-    // Résultat du recadrage
+    // Résultat du recadrage : sauvegarde DIRECTE automatique
     const handleCropped = async (results) => {
         try {
             if (!results || results.length === 0) return;
@@ -138,11 +138,32 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                 const file = croppedBlob instanceof File 
                     ? croppedBlob 
                     : new File([croppedBlob], 'a-propos.webp', { type: 'image/webp' });
-                setSelectedPhotoFile(file);
+                
+                // Mettre à jour la prévisualisation immédiatement
                 setAboutPhotoPreview(URL.createObjectURL(file));
+                setSelectedPhotoFile(null);
+
+                // Sauvegarde immédiate en base de données
+                const formData = new FormData();
+                const form = storyFormRef.current;
+                formData.append('about_text', form?.about_text?.value || info?.about_text || '');
+                formData.append('about_text_en', form?.about_text_en?.value || info?.about_text_en || '');
+                formData.append('tagline', form?.tagline?.value || info?.tagline || '');
+                formData.append('tagline_en', form?.tagline_en?.value || info?.tagline_en || '');
+                formData.append('about_file', file);
+
+                startTransition(async () => {
+                    const res = await updateAboutInfo(formData);
+                    if (res?.error) {
+                        showNotification(res.error, true);
+                    } else {
+                        showNotification('Photo À Propos enregistrée et mise à jour avec succès !');
+                    }
+                });
             }
         } catch (err) {
             console.error('Error handling cropped about photo:', err);
+            showNotification('Erreur lors de l’enregistrement de la photo.', true);
         } finally {
             setCropper(null);
         }

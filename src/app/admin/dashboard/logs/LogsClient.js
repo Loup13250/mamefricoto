@@ -370,7 +370,7 @@ export default function LogsClient({ initialLogs = [] }) {
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        Tout l&apos;historique ({logs.length})
+                        Tout l&apos;historique
                     </button>
                 </div>
             </div>
@@ -597,7 +597,7 @@ export default function LogsClient({ initialLogs = [] }) {
                             marginTop: '0.5rem'
                         }}>
                             <p style={{ margin: '0 0 0.6rem', fontSize: '0.9rem', color: 'var(--admin-text-muted)' }}>
-                                Affichage concentré sur <strong>{PERIOD_LABELS[period].toLowerCase()}</strong> pour garder des chiffres lisibles ({filtered.length} événement{filtered.length > 1 ? 's' : ''} affiché{filtered.length > 1 ? 's' : ''} sur {logs.length} au total).
+                                Affichage concentré sur <strong>{PERIOD_LABELS[period].toLowerCase()}</strong> pour garder des chiffres clairs et lisibles.
                             </p>
                             <button
                                 type="button"
@@ -605,7 +605,7 @@ export default function LogsClient({ initialLogs = [] }) {
                                 onClick={() => setPeriod('all')}
                                 style={{ fontSize: '0.82rem' }}
                             >
-                                Afficher tout l&apos;historique ({logs.length} événements)
+                                Afficher tout l&apos;historique
                             </button>
                         </div>
                     )}
@@ -618,7 +618,7 @@ export default function LogsClient({ initialLogs = [] }) {
                             fontSize: '0.82rem',
                             marginTop: '0.5rem'
                         }}>
-                            <span>Fin de l&apos;historique complet ({logs.length} événements).</span>
+                            <span>Fin de l&apos;historique complet.</span>
                             {' '}
                             <button
                                 type="button"

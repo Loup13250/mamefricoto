@@ -455,19 +455,35 @@ export default function LogsClient({ initialLogs = [] }) {
                     </div>
 
                     {/* Section */}
-                    <select value={category} onChange={e => setCategory(e.target.value)} className="admin-select" style={{ minWidth: '160px' }}>
-                        <option value="ALL">Toutes les sections</option>
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <select
+                            value={category}
+                            onChange={e => setCategory(e.target.value)}
+                            className="admin-select"
+                            style={{ minWidth: '165px', paddingRight: '32px', backgroundImage: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="ALL">Toutes les sections</option>
+                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <ChevronDown size={15} style={{ position: 'absolute', right: '11px', color: 'var(--admin-gold)', pointerEvents: 'none' }} />
+                    </div>
 
                     {/* Type d'action */}
-                    <select value={kind} onChange={e => setKind(e.target.value)} className="admin-select" style={{ minWidth: '150px' }}>
-                        <option value="ALL">Tous les types</option>
-                        <option value="add">Ajouts</option>
-                        <option value="update">Modifications</option>
-                        <option value="delete">Suppressions</option>
-                        <option value="access">Connexions</option>
-                    </select>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <select
+                            value={kind}
+                            onChange={e => setKind(e.target.value)}
+                            className="admin-select"
+                            style={{ minWidth: '155px', paddingRight: '32px', backgroundImage: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="ALL">Tous les types</option>
+                            <option value="add">Ajouts</option>
+                            <option value="update">Modifications</option>
+                            <option value="delete">Suppressions</option>
+                            <option value="access">Connexions</option>
+                        </select>
+                        <ChevronDown size={15} style={{ position: 'absolute', right: '11px', color: 'var(--admin-gold)', pointerEvents: 'none' }} />
+                    </div>
                 </div>
 
                 {/* Raccourcis date rapides & récapitulatif */}

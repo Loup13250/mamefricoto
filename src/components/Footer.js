@@ -1,10 +1,12 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { Facebook, Instagram, MapPin, Phone, Clock } from 'lucide-react';
 import './Footer.css';
 
 export default function Footer({ siteInfo }) {
+    const router = useRouter();
     const { t, trans, lang } = useLanguage();
     const info = siteInfo || {};
     const phone = info.phone || '07 43 64 64 11';
@@ -126,7 +128,34 @@ export default function Footer({ siteInfo }) {
 
             <div className="footer-bottom">
                 <div className="container footer-bottom-inner">
-                    <p className="footer-copyright">&copy; {new Date().getFullYear()} {t('footer.copyright')}</p>
+                    <p className="footer-copyright">
+                        &copy; {new Date().getFullYear()}{' '}
+                        {(() => {
+                            const full = t('footer.copyright') || 'Mamé Fricoto. Tous droits réservés.';
+                            const target = lang === 'en' ? 'reserved.' : 'réservés.';
+                            const idx = full.lastIndexOf(target);
+                            if (idx === -1) return full;
+                            const prefix = full.slice(0, idx);
+                            return (
+                                <>
+                                    {prefix}
+                                    <span
+                                        onClick={(e) => {
+                                            if (e.metaKey || e.ctrlKey) {
+                                                window.open('/admin', '_blank');
+                                            } else {
+                                                router.push('/admin');
+                                            }
+                                        }}
+                                        className="footer-secret-admin"
+                                        tabIndex={-1}
+                                    >
+                                        {target}
+                                    </span>
+                                </>
+                            );
+                        })()}
+                    </p>
                     <div className="footer-legal-links">
                         <Link href="/mentions-legales" className="footer-legal-link">
                             {t('footer.legalNotice')}

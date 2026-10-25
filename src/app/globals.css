@@ -509,7 +509,7 @@ img {
 [data-theme="light"] input,
 [data-theme="light"] textarea,
 [data-theme="light"] select {
-  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
   color: var(--text-1) !important;
   border-color: rgba(184, 139, 70, 0.3) !important;
 }

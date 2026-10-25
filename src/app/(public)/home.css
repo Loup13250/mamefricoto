@@ -142,6 +142,8 @@
 .menu-section {
     background: var(--bg);
     padding: 7rem 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 700px;
 }
 
 .menu-section-header {
@@ -178,6 +180,8 @@
     overflow: hidden;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 650px;
 }
 
 .services-section::before {
@@ -267,6 +271,8 @@
     background: var(--bg-2);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
 }
 
 .about-grid {

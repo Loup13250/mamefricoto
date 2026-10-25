@@ -85,16 +85,25 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
         touchStartX.current = 0;
     };
 
-    // Précharge toutes les images du carrousel au montage pour que la première transition soit immédiate
+    // Précharge les images secondaires de manière différée (idle) pour ne pas bloquer le premier affichage
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-        images.forEach((item) => {
-            const src = item?.image_url;
-            if (src && !isVideoUrl(src)) {
-                const img = new window.Image();
-                img.src = src;
-            }
-        });
+        if (typeof window === 'undefined' || images.length <= 1) return;
+        const preloadOthers = () => {
+            images.slice(1).forEach((item) => {
+                const src = item?.image_url;
+                if (src && !isVideoUrl(src)) {
+                    const img = new window.Image();
+                    img.src = src;
+                }
+            });
+        };
+        if ('requestIdleCallback' in window) {
+            const handle = window.requestIdleCallback(preloadOthers, { timeout: 3000 });
+            return () => window.cancelIdleCallback(handle);
+        } else {
+            const timer = setTimeout(preloadOthers, 2500);
+            return () => clearTimeout(timer);
+        }
     }, [images]);
 
     if (!menu) return null;
@@ -142,7 +151,7 @@ export default function WeeklyMenuCarousel({ menu, siteInfo }) {
                                             style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                                             priority={idx === 0}
-                                            loading="eager"
+                                            loading={idx === 0 ? 'eager' : 'lazy'}
                                             unoptimized
                                             draggable={false}
                                         />

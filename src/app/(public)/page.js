@@ -5,10 +5,12 @@ import HomePageClient from './HomePageClient';
 export const revalidate = 3600;
 
 export default async function Home() {
-    const siteInfo = await getSiteInfo();
-    const carousel = await getCarouselImages();
-    const weeklyMenu = await getCurrentWeeklyMenu();
-    const services = await getServices();
+    const [siteInfo, carousel, weeklyMenu, services] = await Promise.all([
+        getSiteInfo(),
+        getCarouselImages(),
+        getCurrentWeeklyMenu(),
+        getServices(),
+    ]);
 
     return (
         <HomePageClient

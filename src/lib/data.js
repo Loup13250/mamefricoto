@@ -153,9 +153,27 @@ export const getGalleryPosts = cache(async function getGalleryPosts() {
 
 // --- Carrousel ---
 const DEFAULT_CAROUSEL_SLIDES = [
-    { id: 1, image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop', title: 'Cuisine Maison & Produits Frais', subtitle: 'Vos plats du jour mijotés et traiteur sur-mesure à Eyguières' },
-    { id: 2, image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1920&auto=format&fit=crop', title: 'Buffets & Événements Sur-Mesure', subtitle: 'Formules gastronomiques pour vos mariages, anniversaires et cocktails' },
-    { id: 3, image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop', title: 'Savoir-Faire Artisanal', subtitle: 'Des recettes authentiques préparées chaque jour avec passion' }
+    {
+        id: 1,
+        image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop',
+        mobile_image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800&auto=format&fit=crop',
+        title: 'Cuisine Maison & Produits Frais',
+        subtitle: 'Vos plats du jour mijotés et traiteur sur-mesure à Eyguières'
+    },
+    {
+        id: 2,
+        image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1920&auto=format&fit=crop',
+        mobile_image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800&auto=format&fit=crop',
+        title: 'Buffets & Événements Sur-Mesure',
+        subtitle: 'Formules gastronomiques pour vos mariages, anniversaires et cocktails'
+    },
+    {
+        id: 3,
+        image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop',
+        mobile_image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop',
+        title: 'Savoir-Faire Artisanal',
+        subtitle: 'Des recettes authentiques préparées chaque jour avec passion'
+    }
 ];
 
 export const getCarouselImages = cache(async function getCarouselImages() {

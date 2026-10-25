@@ -85,41 +85,34 @@ export default function HeroCarousel({ slides = [], siteInfo }) {
             <div className="hero-track">
                 {slides.map((slide, index) => {
                     const isActive = index === currentIndex;
+                    const isFirst = index === 0;
                     return (
                         <div
                             key={slide.id || index}
                             className={`hero-slide ${isActive ? 'active' : ''}`}
                             aria-hidden={!isActive}
                         >
-                            {/* Image ordinateur */}
-                            <div className={`hero-slide-layer hero-layer-desktop ${slide.mobile_image_url ? 'has-mobile-alt' : ''}`}>
-                                <Image
-                                    src={slide.image_url}
-                                    alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
-                                    fill
-                                    sizes="100vw"
-                                    priority={index < 2}
-                                    fetchPriority={index === 0 ? 'high' : 'auto'}
-                                    loading={index < 2 ? 'eager' : 'lazy'}
-                                    unoptimized
-                                />
-                            </div>
-
-                            {/* Image spécifique au mobile */}
-                            {slide.mobile_image_url && (
-                                <div className="hero-slide-layer hero-layer-mobile">
-                                    <Image
-                                        src={slide.mobile_image_url}
+                            <div className="hero-slide-layer">
+                                <picture style={{ display: 'block', width: '100%', height: '100%' }}>
+                                    {slide.mobile_image_url && (
+                                        <source media="(max-width: 768px)" srcSet={slide.mobile_image_url} />
+                                    )}
+                                    <img
+                                        src={slide.image_url}
                                         alt={trans(slide, 'title') || 'Traiteur Maison Mamé Fricoto à Eyguières'}
-                                        fill
-                                        sizes="100vw"
-                                        priority={index < 2}
-                                        fetchPriority={index < 2 ? 'high' : 'auto'}
-                                        loading={index < 2 ? 'eager' : 'lazy'}
-                                        unoptimized
+                                        loading={isFirst ? 'eager' : 'lazy'}
+                                        fetchPriority={isFirst ? 'high' : 'low'}
+                                        decoding={isFirst ? 'sync' : 'async'}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                        }}
                                     />
-                                </div>
-                            )}
+                                </picture>
+                            </div>
                         </div>
                     );
                 })}

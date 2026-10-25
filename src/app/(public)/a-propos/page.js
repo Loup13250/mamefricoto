@@ -18,8 +18,10 @@ export const metadata = {
 export const revalidate = 3600;
 
 export default async function AProposPage() {
-    const info = await getSiteInfo();
-    const services = await getServices();
+    const [info, services] = await Promise.all([
+        getSiteInfo(),
+        getServices(),
+    ]);
 
     return <AProposClient info={info} services={services} />;
 }

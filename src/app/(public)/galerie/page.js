@@ -18,8 +18,10 @@ export const metadata = {
 export const revalidate = 3600;
 
 export default async function GaleriePage() {
-    const siteInfo = await getSiteInfo();
-    const galleryPosts = await getGalleryPosts();
+    const [siteInfo, galleryPosts] = await Promise.all([
+        getSiteInfo(),
+        getGalleryPosts(),
+    ]);
 
     return <RealisationsClient siteInfo={siteInfo} galleryPosts={galleryPosts} />;
 }

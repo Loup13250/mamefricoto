@@ -981,28 +981,28 @@ export default function GalleryClient({ posts }) {
                     <div style={{
                         textAlign: 'center',
                         padding: '3.5rem 2rem',
-                        background: 'linear-gradient(180deg, rgba(30, 27, 24, 0.9) 0%, rgba(20, 18, 16, 0.95) 100%)',
-                        border: '1px dashed rgba(200, 169, 110, 0.35)',
-                        borderRadius: '12px',
-                        color: 'var(--admin-text-muted)'
+                        background: '#FFFFFF',
+                        border: '1.5px dashed rgba(194, 87, 45, 0.3)',
+                        borderRadius: '14px',
+                        boxShadow: '0 4px 20px rgba(42, 30, 23, 0.04)',
                     }}>
                         <div style={{
-                            width: '56px',
-                            height: '56px',
+                            width: '58px',
+                            height: '58px',
                             margin: '0 auto 1.25rem',
                             borderRadius: '50%',
-                            background: 'rgba(200, 169, 110, 0.12)',
-                            color: 'var(--admin-gold)',
+                            background: 'rgba(194, 87, 45, 0.09)',
+                            color: '#C2572D',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
                             <Camera size={28} />
                         </div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '0.4rem' }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#2A1E17', marginBottom: '0.5rem' }}>
                             Aucune photo publiée pour le moment
                         </h3>
-                        <p style={{ fontSize: '0.88rem', color: 'var(--admin-text-muted)', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: '1.5' }}>
+                        <p style={{ fontSize: '0.9rem', color: '#665A51', maxWidth: '520px', margin: '0 auto 1.75rem', lineHeight: '1.6' }}>
                             La galerie en ligne est actuellement vide (peut-être après une session de test ou de suppression). Vous pouvez ajouter vos nouvelles photos ci-dessus, ou restaurer 3 exemples culinaires en 1 clic.
                         </p>
                         <button
@@ -1014,11 +1014,16 @@ export default function GalleryClient({ posts }) {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '0.6rem',
-                                padding: '10px 20px',
-                                background: 'rgba(200, 169, 110, 0.15)',
-                                borderColor: 'var(--admin-gold)',
-                                color: 'var(--admin-gold)',
-                                fontWeight: '600'
+                                padding: '12px 24px',
+                                background: '#FAF7F2',
+                                border: '1.5px solid #C2572D',
+                                color: '#C2572D',
+                                fontWeight: '700',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                boxShadow: '0 2px 8px rgba(194, 87, 45, 0.1)',
+                                transition: 'all 0.2s ease',
+                                cursor: 'pointer'
                             }}
                         >
                             {isSeeding ? (

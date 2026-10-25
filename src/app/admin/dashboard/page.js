@@ -9,15 +9,15 @@ export const metadata = {
 };
 
 const SHORTCUTS = [
-    { href: '/admin/dashboard/menu-semaine', icon: CalendarDays, title: 'Menu de la semaine', text: 'Mettre à jour la carte' },
-    { href: '/admin/dashboard/carousel', icon: ImageIcon, title: 'Carrousel d\u2019accueil', text: 'Photos plein écran' },
-    { href: '/admin/dashboard/tarifs', icon: Receipt, title: 'Tarifs & cartes', text: 'Formules et cartes PDF' },
-    { href: '/admin/dashboard/galerie', icon: Camera, title: 'Galerie photos', text: 'Coulisses et plats' },
-    { href: '/admin/dashboard/a-propos', icon: Heart, title: 'À propos', text: 'Photo officielle et histoire' },
-    { href: '/admin/dashboard/messages', icon: MessageSquare, title: 'Contact & devis', text: 'Boîte de réception' },
-    { href: '/admin/dashboard/textes', icon: Languages, title: 'Textes du site', text: 'Éditeur bilingue FR / EN' },
-    { href: '/admin/dashboard/settings', icon: Settings, title: 'Infos & réglages', text: 'Téléphone, logo et favicon' },
-    { href: '/admin/dashboard/logs', icon: History, title: 'Journal d\u2019activité', text: 'Modifications et connexions' },
+    { href: '/admin/dashboard/menu-semaine', icon: CalendarDays, title: 'Menu de la semaine', text: 'Mettre à jour la carte', color: '#C2572D', bg: 'rgba(194, 87, 45, 0.1)', border: 'rgba(194, 87, 45, 0.25)' },
+    { href: '/admin/dashboard/carousel', icon: ImageIcon, title: 'Carrousel d’accueil', text: 'Photos plein écran', color: '#315B8C', bg: 'rgba(49, 91, 140, 0.1)', border: 'rgba(49, 91, 140, 0.25)' },
+    { href: '/admin/dashboard/tarifs', icon: Receipt, title: 'Tarifs & cartes', text: 'Formules et cartes PDF', color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', border: 'rgba(217, 119, 6, 0.25)' },
+    { href: '/admin/dashboard/galerie', icon: Camera, title: 'Galerie photos', text: 'Coulisses et plats', color: '#059669', bg: 'rgba(5, 150, 105, 0.12)', border: 'rgba(5, 150, 105, 0.25)' },
+    { href: '/admin/dashboard/a-propos', icon: Heart, title: 'À propos', text: 'Photo officielle et histoire', color: '#E11D48', bg: 'rgba(225, 29, 72, 0.1)', border: 'rgba(225, 29, 72, 0.25)' },
+    { href: '/admin/dashboard/messages', icon: MessageSquare, title: 'Contact & devis', text: 'Boîte de réception', color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)', border: 'rgba(2, 132, 199, 0.25)' },
+    { href: '/admin/dashboard/textes', icon: Languages, title: 'Textes du site', text: 'Éditeur bilingue FR / EN', color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)', border: 'rgba(124, 58, 237, 0.25)' },
+    { href: '/admin/dashboard/settings', icon: Settings, title: 'Infos & réglages', text: 'Téléphone, logo et favicon', color: '#8D5B4C', bg: 'rgba(141, 91, 76, 0.1)', border: 'rgba(141, 91, 76, 0.25)' },
+    { href: '/admin/dashboard/logs', icon: History, title: 'Journal d’activité', text: 'Modifications et connexions', color: '#475569', bg: 'rgba(71, 85, 105, 0.1)', border: 'rgba(71, 85, 105, 0.25)' },
 ];
 
 function frenchToday() {
@@ -57,11 +57,25 @@ export default async function DashboardOverview() {
                 borderBottom: '1px solid var(--admin-border)',
             }}>
                 <div>
-                    <span style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--admin-gold-dark)' }}>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        marginBottom: '0.6rem',
+                        padding: '4px 12px',
+                        borderRadius: '999px',
+                        background: 'linear-gradient(135deg, rgba(194, 87, 45, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%)',
+                        border: '1px solid rgba(194, 87, 45, 0.22)',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        color: '#C2572D',
+                        letterSpacing: '0.04em'
+                    }}>
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#C2572D' }} />
                         {date}
-                    </span>
+                    </div>
                     <h1 style={{ fontSize: '2.6rem', lineHeight: 1.05, color: 'var(--admin-text)', margin: 0 }}>
-                        {greeting}, Mamé Fricoto
+                        {greeting}, <span style={{ color: '#C2572D' }}>Mamé Fricoto</span>
                     </h1>
                     <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.95rem', margin: '0.6rem 0 0' }}>
                         Menus, messages et visuels du site, au même endroit.
@@ -71,7 +85,16 @@ export default async function DashboardOverview() {
                     href="/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="admin-btn admin-btn-secondary"
+                    className="admin-btn"
+                    style={{
+                        background: 'linear-gradient(135deg, #3A669A 0%, #244872 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        boxShadow: '0 4px 14px rgba(36, 72, 114, 0.28)',
+                        padding: '10px 18px',
+                        fontWeight: '600',
+                        fontSize: '0.85rem'
+                    }}
                 >
                     <ExternalLink size={15} /> Voir le site public
                 </a>
@@ -94,12 +117,29 @@ export default async function DashboardOverview() {
                 </div>
             )}
 
-            {/* Trois tuiles d'état : entièrement cliquables */}
+            {/* Trois tuiles d'état : entièrement cliquables avec couleurs provençales */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.1rem', marginBottom: '3rem' }}>
-                <Link href="/admin/dashboard/messages" className="admin-tile">
+                <Link href="/admin/dashboard/messages" className="admin-tile admin-tile--blue">
                     <div className="admin-tile-top">
-                        <span className="admin-tile-eyebrow"><Mail size={14} /> Messages</span>
-                        <span className={`admin-tile-status ${unreadCount > 0 ? 'is-alert' : ''}`}>
+                        <span className="admin-tile-eyebrow" style={{ color: '#2563EB' }}>
+                            <span style={{
+                                width: '26px', height: '26px', borderRadius: '50%',
+                                background: 'rgba(37, 99, 235, 0.12)',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                color: '#2563EB', flexShrink: 0
+                            }}>
+                                <Mail size={14} />
+                            </span>
+                            Messages &amp; Devis
+                        </span>
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            fontSize: '0.74rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px',
+                            background: unreadCount > 0 ? '#FEE2E2' : '#EFF6FF',
+                            color: unreadCount > 0 ? '#DC2626' : '#2563EB',
+                            border: unreadCount > 0 ? '1px solid #FCA5A5' : '1px solid #BFDBFE'
+                        }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: unreadCount > 0 ? '#DC2626' : '#2563EB' }} />
                             {unreadCount > 0 ? `${unreadCount} non lu${unreadCount > 1 ? 's' : ''}` : 'À jour'}
                         </span>
                     </div>
@@ -110,10 +150,27 @@ export default async function DashboardOverview() {
                     <span className="admin-tile-go">Accéder aux messages <ArrowRight size={15} /></span>
                 </Link>
 
-                <Link href="/admin/dashboard/menu-semaine" className="admin-tile">
+                <Link href="/admin/dashboard/menu-semaine" className="admin-tile admin-tile--terra">
                     <div className="admin-tile-top">
-                        <span className="admin-tile-eyebrow"><CalendarDays size={14} /> Menu de la semaine</span>
-                        <span className={`admin-tile-status ${currentMenu ? '' : 'is-neutral'}`}>
+                        <span className="admin-tile-eyebrow" style={{ color: '#C2572D' }}>
+                            <span style={{
+                                width: '26px', height: '26px', borderRadius: '50%',
+                                background: 'rgba(194, 87, 45, 0.12)',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                color: '#C2572D', flexShrink: 0
+                            }}>
+                                <CalendarDays size={14} />
+                            </span>
+                            Menu de la semaine
+                        </span>
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            fontSize: '0.74rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px',
+                            background: currentMenu ? '#ECFDF5' : '#F3F4F6',
+                            color: currentMenu ? '#059669' : '#6B7280',
+                            border: currentMenu ? '1px solid #A7F3D0' : '1px solid #E5E7EB'
+                        }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: currentMenu ? '#059669' : '#9CA3AF' }} />
                             {currentMenu ? 'En ligne' : 'Aucun menu'}
                         </span>
                     </div>
@@ -124,10 +181,27 @@ export default async function DashboardOverview() {
                     <span className="admin-tile-go">Gérer le menu <ArrowRight size={15} /></span>
                 </Link>
 
-                <Link href="/admin/dashboard/galerie" className="admin-tile">
+                <Link href="/admin/dashboard/galerie" className="admin-tile admin-tile--amber">
                     <div className="admin-tile-top">
-                        <span className="admin-tile-eyebrow"><Camera size={14} /> Galerie</span>
-                        <span className={`admin-tile-status ${galleryPosts.length > 0 ? '' : 'is-neutral'}`}>
+                        <span className="admin-tile-eyebrow" style={{ color: '#D97706' }}>
+                            <span style={{
+                                width: '26px', height: '26px', borderRadius: '50%',
+                                background: 'rgba(217, 119, 6, 0.12)',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                color: '#D97706', flexShrink: 0
+                            }}>
+                                <Camera size={14} />
+                            </span>
+                            Galerie &amp; coulisses
+                        </span>
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            fontSize: '0.74rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px',
+                            background: galleryPosts.length > 0 ? '#FEF3C7' : '#F3F4F6',
+                            color: galleryPosts.length > 0 ? '#B45309' : '#6B7280',
+                            border: galleryPosts.length > 0 ? '1px solid #FDE68A' : '1px solid #E5E7EB'
+                        }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: galleryPosts.length > 0 ? '#D97706' : '#9CA3AF' }} />
                             {galleryPosts.length > 0 ? `${galleryPosts.length} média${galleryPosts.length > 1 ? 's' : ''}` : 'Vide'}
                         </span>
                     </div>
@@ -144,9 +218,20 @@ export default async function DashboardOverview() {
                     <span style={{ flex: 1, height: '1px', background: 'var(--admin-border)' }} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.9rem' }}>
-                    {SHORTCUTS.map(({ href, icon: Icon, title, text }) => (
-                        <Link key={href} href={href} className="admin-tile admin-tile--compact">
-                            <span className="admin-tile-icon"><Icon size={19} strokeWidth={1.7} /></span>
+                    {SHORTCUTS.map(({ href, icon: Icon, title, text, color, bg, border }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="admin-tile admin-tile--compact"
+                            style={{
+                                '--tile-color': color,
+                                '--tile-bg': bg,
+                                '--tile-border': border,
+                            }}
+                        >
+                            <span className="admin-tile-icon">
+                                <Icon size={19} strokeWidth={1.8} />
+                            </span>
                             <span style={{ minWidth: 0 }}>
                                 <strong className="admin-tile-title" style={{ display: 'block' }}>{title}</strong>
                                 <span className="admin-tile-text" style={{ display: 'block' }}>{text}</span>

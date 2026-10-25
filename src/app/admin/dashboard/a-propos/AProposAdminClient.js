@@ -265,7 +265,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                         À Propos &amp; Prestations
                     </h1>
                     <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.95rem' }}>
-                        Gérez ici l&apos;histoire de Mamé Fricoto, la photo officielle et vos prestations traiteur.
+                        Gère ici l&apos;histoire de Mamé Fricoto, la photo officielle et les prestations traiteur.
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -320,9 +320,9 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                     name="about_text"
                                     rows={6}
                                     required
-                                    defaultValue={info?.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager ses recettes maison avec vous.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis : juste de la vraie cuisine."}
+                                    defaultValue={info?.about_text || "Mamé Fricoto, c'est l'histoire d'une passionnée de cuisine qui a décidé de partager sa cuisine maison avec tous les gourmands.\n\nChaque plat est préparé dans notre labo à domicile à Eyguières, avec des ingrédients soigneusement sélectionnés auprès de producteurs locaux. Pas d'additifs, pas de raccourcis : juste de la vraie cuisine."}
                                     className="admin-textarea"
-                                    placeholder="Racontez la passion de Mamé Fricoto..."
+                                    placeholder="Raconte la passion de Mamé Fricoto..."
                                 />
                             </div>
 
@@ -375,7 +375,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                                 Photo officielle d&apos;illustration (Portrait ou cuisine)
                             </label>
                             <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>
-                                Cette photo apparaît à droite de votre histoire sur la page /a-propos.
+                                Cette photo apparaît à droite de l&apos;histoire sur la page /a-propos.
                             </p>
 
                             <div style={{
@@ -837,7 +837,7 @@ export default function AProposAdminClient({ info = {}, services = [], customTex
                             Supprimer la prestation
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-                            Êtes-vous sûr(e) de vouloir supprimer <strong>&quot;{deleteModal.title}&quot;</strong> ?
+                            Es-tu sûr(e) de vouloir supprimer <strong>&quot;{deleteModal.title}&quot;</strong> ?
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                             <button

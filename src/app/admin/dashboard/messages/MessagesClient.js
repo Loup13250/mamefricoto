@@ -256,7 +256,7 @@ function MessageCard({ msg }) {
                 <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Écrivez vos notes privées ici (ex: client super sympa, devis 400€ validé, ou raison d'annulation)..."
+                    placeholder="Écris tes notes privées ici (ex: client super sympa, devis 400€ validé, ou raison d'annulation)..."
                     className="admin-textarea"
                     rows="2"
                     style={{ fontSize: '0.88rem', lineHeight: '1.6', marginBottom: '0.75rem' }}
@@ -291,7 +291,7 @@ export default function MessagesClient({ messages }) {
             <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Messages &amp; Demandes de Devis</h1>
                 <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.92rem', marginTop: '0.35rem' }}>
-                    Gérez les demandes clients, attribuez des statuts de prestation et notez vos remarques internes.
+                    Gère les demandes clients, attribue des statuts de prestation et note tes remarques internes.
                 </p>
             </div>
 

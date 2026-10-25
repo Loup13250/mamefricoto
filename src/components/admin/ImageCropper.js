@@ -217,7 +217,7 @@ export const FAVICON_CROP_TARGETS = [
         maxWidth: 512,
         quality: 0.95,
         optional: false,
-        hint: 'Médaillon circulaire officiel avec fond Bleu Provence et liseré doré pour l’onglet du navigateur web',
+        hint: 'Médaillon circulaire officiel avec fond bleu et liseré doré pour l’onglet du navigateur web',
     },
 ];
 
@@ -312,7 +312,7 @@ async function renderCrop(source, target, crop, baseName) {
         ctx.closePath();
         ctx.clip();
 
-        // Dégradé Bleu Provence signature officiel
+        // Dégradé bleu signature officiel
         const grad = ctx.createLinearGradient(0, 0, outW, outH);
         grad.addColorStop(0, '#3A669A');
         grad.addColorStop(0.5, '#315B8C');
@@ -394,8 +394,8 @@ function HeroOverlay({ portrait }) {
         <div className={`ic-hero ${portrait ? 'is-portrait' : 'is-landscape'}`} aria-hidden="true">
             <div className="ic-hero-inner">
                 <span className="ic-hero-eyebrow">Traiteur maison · Eyguières</span>
-                <span className="ic-hero-title">Le titre de votre bannière</span>
-                <span className="ic-hero-sub">Votre sous-titre apparaît ici</span>
+                <span className="ic-hero-title">Le titre de ta bannière</span>
+                <span className="ic-hero-sub">Ton sous-titre apparaît ici</span>
                 <span className="ic-hero-btns">
                     <i className="ic-hero-btn is-primary" />
                     <i className="ic-hero-btn" />
@@ -571,7 +571,7 @@ function CropFrame({ source, target, crop, onChange, showOverlay }) {
 export default function ImageCropperModal({
     items: initialItems,
     targets = HERO_CROP_TARGETS,
-    title = 'Cadrer vos photos',
+    title = 'Cadre tes photos',
     confirmLabel,
     heroPreview = false,
     onCancel,
@@ -782,7 +782,7 @@ export default function ImageCropperModal({
                         <h2 className="ic-title">{title}</h2>
                         <p className="ic-subtitle">
                             {multi ? `Photo ${activeIdx + 1} sur ${list.length} · ` : ''}
-                            Déplacez et zoomez la photo : ce que vous voyez dans le cadre sera publié.
+                            Déplace et zoome la photo : ce que tu vois dans le cadre sera publié.
                         </p>
                     </div>
                     {heroPreview && (
@@ -841,8 +841,8 @@ export default function ImageCropperModal({
                                 <strong>Cette photo ne peut pas être affichée pour le recadrage.</strong>
                                 <br />
                                 {item.file
-                                    ? 'Le format n’est pas lu par votre navigateur (ex. HEIC). Elle sera importée telle quelle, sans recadrage.'
-                                    : 'Impossible de charger cette image (source externe ou fichier introuvable). Importez-la à nouveau depuis votre appareil.'}
+                                    ? 'Le format n’est pas lu par ton navigateur (ex. HEIC). Elle sera importée telle quelle, sans recadrage.'
+                                    : 'Impossible de charger cette image (source externe ou fichier introuvable). Importe-la à nouveau depuis ton appareil.'}
                             </p>
                         </div>
                     )}

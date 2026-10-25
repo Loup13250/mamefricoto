@@ -1162,7 +1162,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
                             {deleteImageConfirm.type === 'batch'
-                                ? "Cette action supprimera définitivement toutes les images sélectionnées de ce menu. Êtes-vous sûr(e) ?"
+                                ? "Cette action supprimera définitivement toutes les images sélectionnées de ce menu. Es-tu sûr(e) ?"
                                 : "Cette action supprimera définitivement cette photo du menu. Cette action est irréversible."
                             }
                         </p>
@@ -1216,7 +1216,7 @@ function WeeklyMenuForm({ menu, initialData, onCancel }) {
                             Modifications non enregistrées
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-                            Vous avez apporté des modifications à ce menu qui n&apos;ont pas encore été enregistrées. Que souhaitez-vous faire ?
+                            Tu as apporté des modifications à ce menu qui n&apos;ont pas encore été enregistrées. Que souhaites-tu faire ?
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                             <button
@@ -1305,7 +1305,7 @@ export default function WeeklyMenuClient({ menus }) {
             <div style={{ width: '100%', maxWidth: '850px', marginBottom: '2.5rem' }}>
                 <h1 className="admin-page-title">Menu de la Semaine</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Créez ou modifiez le menu de la semaine affiché sur le site. Vous pouvez séparer les photos en français et en anglais : les visiteurs anglophones verront automatiquement la version anglaise (ou française si non renseignée).
+                    Crée ou modifie le menu de la semaine affiché sur le site. Tu peux séparer les photos en français et en anglais : les visiteurs anglophones verront automatiquement la version anglaise (ou française si non renseignée).
                 </p>
                 {!isAdding && !editingId && (
                     <button onClick={() => setIsAdding(true)} className="admin-btn admin-btn-primary">

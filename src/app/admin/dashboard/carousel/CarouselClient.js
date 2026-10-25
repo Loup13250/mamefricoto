@@ -73,8 +73,8 @@ function PhotoDropzone({ onFiles, onError, compact = false, label, sublabel }) {
                 onDrop={(e) => { e.preventDefault(); setDragging(false); handle(e.dataTransfer.files); }}
             >
                 <UploadCloud size={compact ? 22 : 34} />
-                <strong>{label || 'Glissez vos photos ici ou cliquez pour les choisir'}</strong>
-                <span>{sublabel || 'Vous pouvez en sélectionner plusieurs à la fois - vous les cadrerez ensuite une par une.'}</span>
+                <strong>{label || 'Glisse tes photos ici ou clique pour les choisir'}</strong>
+                <span>{sublabel || 'Tu peux en sélectionner plusieurs à la fois - tu les cadreras ensuite une par une.'}</span>
             </button>
             <input
                 ref={inputRef}
@@ -190,7 +190,7 @@ function AddSlidesFlow({ onCancel }) {
             setTimeout(() => onCancel(), 1600);
         } catch (err) {
             console.error('Publish error:', err);
-            setError('La publication a échoué (connexion ou fichiers trop lourds). Les photos déjà publiées restent en ligne ; vous pouvez réessayer pour les autres.');
+            setError('La publication a échoué (connexion ou fichiers trop lourds). Les photos déjà publiées restent en ligne ; tu peux réessayer pour les autres.');
             setPublishing(null);
         }
     };
@@ -213,7 +213,7 @@ function AddSlidesFlow({ onCancel }) {
                     <div className="cr-flow-head">
                         <p>
                             <strong>{slides.length} photo{slides.length > 1 ? 's' : ''} prête{slides.length > 1 ? 's' : ''}</strong>
-                            {' '} - ajoutez un titre (facultatif), puis publiez. Si le titre est vide, le titre par défaut du site s&apos;affiche.
+                            {' '} - ajoute un titre (facultatif), puis publie. Si le titre est vide, le titre par défaut du site s&apos;affiche.
                         </p>
                         <button type="button" className="admin-btn admin-btn-secondary" onClick={() => addMoreRef.current?.click()} disabled={!!publishing}>
                             <Plus size={15} /> Ajouter d&apos;autres photos
@@ -289,7 +289,7 @@ function AddSlidesFlow({ onCancel }) {
                                         </div>
                                         <div>
                                             <label className="admin-label">Sous-titre (FR)</label>
-                                            <input type="text" className="admin-input" value={slide.subtitle} onChange={(e) => updateSlide(slide.id, { subtitle: e.target.value })} placeholder="Ex : Des plats faits maison livrés chez vous" />
+                                            <input type="text" className="admin-input" value={slide.subtitle} onChange={(e) => updateSlide(slide.id, { subtitle: e.target.value })} placeholder="Ex : Des plats faits maison livrés à domicile" />
                                         </div>
                                         <div>
                                             <label className="admin-label">Subtitle (EN)</label>
@@ -330,7 +330,7 @@ function AddSlidesFlow({ onCancel }) {
                     items={cropper.items}
                     targets={HERO_CROP_TARGETS}
                     heroPreview={true}
-                    title={cropper.mode === 'new' ? (cropper.items.length > 1 ? 'Cadrer vos photos' : 'Cadrer votre photo') : 'Modifier le cadrage'}
+                    title={cropper.mode === 'new' ? (cropper.items.length > 1 ? 'Cadre tes photos' : 'Cadre ta photo') : 'Modifier le cadrage'}
                     onCancel={() => setCropper(null)}
                     onConfirm={handleCropped}
                 />
@@ -411,7 +411,7 @@ function EditCarouselForm({ item, onCancel }) {
     const handleCropped = (results) => {
         const out = results[0]?.outputs || {};
         if (!out.desktop && !out.mobile) {
-            setError("Cette image ne peut pas être recadrée ici. Importez-la de nouveau depuis votre appareil.");
+            setError("Cette image ne peut pas être recadrée ici. Importe-la de nouveau depuis ton appareil.");
             setCropper(null);
             return;
         }

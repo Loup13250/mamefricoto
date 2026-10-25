@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
             setLoading(false);
         } catch (err) {
             console.error('Login error:', err);
-            setError('Erreur réseau. Veuillez vérifier votre connexion.');
+            setError('Erreur réseau. Vérifie ta connexion Internet.');
             setLoading(false);
         }
     }
@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
                         <input
                             type="text"
                             name="username"
-                            placeholder="Votre identifiant"
+                            placeholder="Ton identifiant"
                             required
                             autoComplete="username"
                             className="admin-input"
@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
                         <input
                             type="password"
                             name="password"
-                            placeholder="Votre mot de passe"
+                            placeholder="Ton mot de passe"
                             required
                             autoComplete="current-password"
                             className="admin-input"

@@ -113,11 +113,11 @@ export default async function DashboardOverview() {
                     background: 'var(--admin-card-bg)',
                 }}>
                     <strong style={{ color: 'var(--admin-text)' }}>Astuce persistance (Vercel).</strong>{' '}
-                    Les conteneurs Vercel sont éphémères : pour conserver à 100 % vos ajouts et suppressions, liez les variables d&apos;environnement <code>TURSO_DATABASE_URL</code> et <code>TURSO_AUTH_TOKEN</code> (Settings ➔ Environment Variables).
+                    Les conteneurs Vercel sont éphémères : pour conserver à 100 % tes ajouts et suppressions, lie les variables d&apos;environnement <code>TURSO_DATABASE_URL</code> et <code>TURSO_AUTH_TOKEN</code> (Settings ➔ Environment Variables).
                 </div>
             )}
 
-            {/* Trois tuiles d'état : entièrement cliquables avec couleurs provençales */}
+            {/* Trois tuiles d'état : entièrement cliquables */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.1rem', marginBottom: '3rem' }}>
                 <Link href="/admin/dashboard/messages" className="admin-tile admin-tile--blue">
                     <div className="admin-tile-top">
@@ -145,7 +145,7 @@ export default async function DashboardOverview() {
                     </div>
                     <h2 className="admin-tile-title">Messages &amp; demandes</h2>
                     <p className="admin-tile-text">
-                        {messages.length} message{messages.length > 1 ? 's' : ''} reçu{messages.length > 1 ? 's' : ''} dans votre boîte de contact.
+                        {messages.length} message{messages.length > 1 ? 's' : ''} reçu{messages.length > 1 ? 's' : ''} dans la boîte de contact.
                     </p>
                     <span className="admin-tile-go">Accéder aux messages <ArrowRight size={15} /></span>
                 </Link>
@@ -176,7 +176,7 @@ export default async function DashboardOverview() {
                     </div>
                     <h2 className="admin-tile-title">{currentMenu ? currentMenu.title : 'Aucun menu actif'}</h2>
                     <p className="admin-tile-text">
-                        {currentMenu?.week_dates ? `Période : ${currentMenu.week_dates}` : 'Mettez à jour le menu publié sur le site.'}
+                        {currentMenu?.week_dates ? `Période : ${currentMenu.week_dates}` : 'Mets à jour le menu publié sur le site.'}
                     </p>
                     <span className="admin-tile-go">Gérer le menu <ArrowRight size={15} /></span>
                 </Link>

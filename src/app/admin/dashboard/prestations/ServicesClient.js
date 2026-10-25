@@ -185,7 +185,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
             <div style={{ width: '100%', maxWidth: '850px', marginBottom: '2rem' }}>
                 <h1 className="admin-page-title">Tarifs & Prestations</h1>
                 <p style={{ color: 'var(--admin-text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    Gérez ici vos grilles tarifaires et cartes (PDF ou Images) ainsi que les prestations traiteur présentées sur la page <strong>/tarifs</strong>.
+                    Gère ici tes grilles tarifaires et cartes (PDF ou Images) ainsi que les prestations traiteur présentées sur la page <strong>/tarifs</strong>.
                 </p>
 
                 {/* Navigation par onglets (2 onglets) */}
@@ -281,7 +281,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                         <div>
                             <h2 style={{ fontSize: '1.15rem', color: 'var(--admin-text)', margin: 0 }}>Cartes & Menus à Consulter</h2>
                             <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', margin: '4px 0 0' }}>
-                                Téléversez vos PDF ou images (JPG, PNG, WEBP) avec version FR et version EN.
+                                Téléverse tes PDF ou images (JPG, PNG, WEBP) avec version FR et version EN.
                             </p>
                         </div>
                         {!isAddingDoc && !editingDoc && (
@@ -827,7 +827,7 @@ export default function ServicesClient({ services = [], pricingDocuments = [] })
                             Confirmer la suppression
                         </h3>
                         <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                            Êtes-vous sûr de vouloir supprimer &laquo; <strong>{deleteModal.title}</strong> &raquo; ? Cette action est irréversible.
+                            Es-tu sûr de vouloir supprimer &laquo; <strong>{deleteModal.title}</strong> &raquo; ? Cette action est irréversible.
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                             <button

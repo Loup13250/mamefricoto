@@ -508,7 +508,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
 
         if (addDocType === 'image') {
             if (addImagesFr.length === 0) {
-                showNotification('Veuillez ajouter au moins une image en Français pour cette carte.', true);
+                showNotification('Ajoute au moins une image en Français pour cette carte.', true);
                 return;
             }
             addImagesFr.forEach(item => formData.append('image_files_fr', item.file));
@@ -517,7 +517,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
             const pdfFr = form.file_fr?.files?.[0];
             const pdfEn = form.file_en?.files?.[0];
             if (!pdfFr) {
-                showNotification('Veuillez sélectionner un fichier PDF en Français.', true);
+                showNotification('Sélectionne un fichier PDF en Français.', true);
                 return;
             }
             formData.append('file_fr', pdfFr);
@@ -816,13 +816,13 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         🇫🇷 Images en Français (Une ou plusieurs photos / pages) *
                                     </label>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>
-                                        Sélectionnez vos pages de menus. Si plusieurs photos sont ajoutées, un carrousel interactif sera automatiquement créé sur le site.
+                                        Sélectionne les pages de menus. Si plusieurs photos sont ajoutées, un carrousel interactif sera automatiquement créé sur le site.
                                     </p>
                                     
                                     <label className="admin-dropzone" style={{ cursor: 'pointer', display: 'block', textAlign: 'center', padding: '1.5rem', border: '2px dashed var(--admin-border)', borderRadius: '8px' }}>
                                         <UploadCloud size={28} style={{ color: 'var(--admin-gold)', margin: '0 auto 0.5rem' }} />
                                         <span style={{ fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '500', display: 'block' }}>
-                                            Cliquez ou glissez vos images FR
+                                            Clique ou glisse tes images FR
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG ou WebP</span>
                                         <input
@@ -873,13 +873,13 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                                         🇬🇧 Images en Anglais (Optionnel)
                                     </label>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>
-                                        Si vous avez une version traduite de cette carte en anglais, importez-la ici.
+                                        Si tu as une version traduite de cette carte en anglais, importe-la ici.
                                     </p>
                                     
                                     <label className="admin-dropzone" style={{ cursor: 'pointer', display: 'block', textAlign: 'center', padding: '1.5rem', border: '2px dashed var(--admin-border)', borderRadius: '8px' }}>
                                         <UploadCloud size={28} style={{ color: 'var(--admin-gold)', margin: '0 auto 0.5rem' }} />
                                         <span style={{ fontSize: '0.85rem', color: 'var(--admin-text)', fontWeight: '500', display: 'block' }}>
-                                            Cliquez ou glissez vos images EN
+                                            Clique ou glisse tes images EN
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG ou WebP</span>
                                         <input
@@ -1525,7 +1525,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             Aucune carte de tarif pour le moment
                         </h3>
                         <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.9rem', maxWidth: '460px', margin: '0 auto 1.5rem' }}>
-                            Ajoutez votre première carte (buffet, menus traiteur, cocktails...) pour qu&apos;elle s&apos;affiche sur la page publique <strong>/tarifs</strong>.
+                            Ajoute ta première carte (buffet, menus traiteur, cocktails...) pour qu&apos;elle s&apos;affiche sur la page publique <strong>/tarifs</strong>.
                         </p>
                         <button
                             type="button"
@@ -1701,7 +1701,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
                             {deleteImageConfirm.type === 'batch'
-                                ? "Cette action supprimera définitivement toutes les images sélectionnées de cette carte. Êtes-vous sûr(e) ?"
+                                ? "Cette action supprimera définitivement toutes les images sélectionnées de cette carte. Es-tu sûr(e) ?"
                                 : "Cette action supprimera définitivement cette photo de la carte. Cette action est irréversible."
                             }
                         </p>
@@ -1755,7 +1755,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             Modifications non enregistrées
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-                            Vous avez apporté des modifications qui n&apos;ont pas encore été enregistrées. Que souhaitez-vous faire ?
+                            Tu as apporté des modifications qui n&apos;ont pas encore été enregistrées. Que souhaites-tu faire ?
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                             <button
@@ -1844,7 +1844,7 @@ export default function TarifsAdminClient({ pricingDocuments = [] }) {
                             Confirmer la suppression
                         </h3>
                         <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-                            Êtes-vous sûr(e) de vouloir supprimer définitivement le tarif <strong>&quot;{deleteModal.title}&quot;</strong> ? Toutes les images associées seront retirées.
+                            Es-tu sûr(e) de vouloir supprimer définitivement le tarif <strong>&quot;{deleteModal.title}&quot;</strong> ? Toutes les images associées seront retirées.
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                             <button

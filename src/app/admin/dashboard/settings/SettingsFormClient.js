@@ -153,7 +153,7 @@ export default function SettingsFormClient({ info }) {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!confirm('Attention : La restauration va remplacer les données actuelles par celles de la sauvegarde. Voulez-vous continuer ?')) {
+        if (!confirm('Attention : La restauration va remplacer les données actuelles par celles de la sauvegarde. Veux-tu continuer ?')) {
             e.target.value = '';
             return;
         }
@@ -204,7 +204,7 @@ export default function SettingsFormClient({ info }) {
                         </span>
                     </div>
                     <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
-                        Le logo officiel qui apparaît en haut de toutes les pages de votre site. Vous pouvez le recadrer à tout moment pour qu&apos;il s&apos;adapte parfaitement sans déformation ni rond disgracieux.
+                        Le logo officiel qui apparaît en haut de toutes les pages du site. Tu peux le recadrer à tout moment pour qu&apos;il s&apos;adapte parfaitement sans déformation ni rond disgracieux.
                     </p>
 
                     <div style={{
@@ -223,7 +223,7 @@ export default function SettingsFormClient({ info }) {
                                     Aperçu en conditions réelles (sur la barre de navigation claire du site) :
                                 </span>
                                 <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: '600', background: 'rgba(22, 163, 74, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                                    ✓ Badge Bleu Provence officiel
+                                    ✓ Badge bleu officiel
                                 </span>
                             </div>
                             <div style={{
@@ -350,7 +350,7 @@ export default function SettingsFormClient({ info }) {
                         </span>
                     </div>
                     <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
-                        La petite icône carrée qui s&apos;affiche à côté du titre sur l&apos;onglet du navigateur web (Chrome, Safari, Firefox) et dans les favoris de vos visiteurs.
+                        La petite icône carrée qui s&apos;affiche à côté du titre sur l&apos;onglet du navigateur web (Chrome, Safari, Firefox) et dans les favoris des visiteurs.
                     </p>
 
                     <div style={{
@@ -452,9 +452,9 @@ export default function SettingsFormClient({ info }) {
                             </div>
                             <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', lineHeight: '1.5' }}>
                                 <strong style={{ color: 'var(--admin-text)', display: 'block', marginBottom: '2px', fontSize: '0.88rem' }}>
-                                    Médaillon circulaire officiel (Fond Bleu Provence &amp; liseré doré)
+                                    Médaillon circulaire officiel (Fond bleu &amp; liseré doré)
                                 </strong>
-                                C&apos;est la forme bleue officielle tout en haut du site : même si votre image d&apos;origine a un fond transparent, ce médaillon rond bleu et or assure que le logo et les textes clairs soient parfaitement visibles dans l&apos;onglet de chaque visiteur.
+                                C&apos;est la forme bleue officielle tout en haut du site : même si ton image d&apos;origine a un fond transparent, ce médaillon rond bleu et or assure que le logo et les textes clairs soient parfaitement visibles dans l&apos;onglet de chaque visiteur.
                             </div>
                         </div>
 
@@ -723,7 +723,7 @@ export default function SettingsFormClient({ info }) {
                     </h3>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-                    Téléchargez un fichier de sauvegarde complet (menus, prestations, galerie, messages et paramètres). Ce fichier est ultra-léger (~100 Ko). Vous pouvez également restaurer une sauvegarde précédente en 1 clic.
+                    Télécharge un fichier de sauvegarde complet (menus, prestations, galerie, messages et paramètres). Ce fichier est ultra-léger (~100 Ko). Tu peux également restaurer une sauvegarde précédente en 1 clic.
                 </p>
 
                 {restoreStatus.success && (

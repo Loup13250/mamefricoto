@@ -167,7 +167,7 @@ export default function SiteTextsEditor({
                 setTimeout(() => setFeedback((f) => (f?.type === 'ok' ? null : f)), 5000);
             } catch (err) {
                 console.error(err);
-                setFeedback({ type: 'error', text: "L'enregistrement a échoué. Vérifiez votre connexion et réessayez." });
+                setFeedback({ type: 'error', text: "L'enregistrement a échoué. Vérifie ta connexion et réessaie." });
             }
         });
     };

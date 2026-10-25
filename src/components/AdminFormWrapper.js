@@ -23,7 +23,7 @@ export default function AdminFormWrapper({ children, action, className, style })
         const handleBeforeUnload = (e) => {
             if (isDirty) {
                 e.preventDefault();
-                e.returnValue = 'Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?';
+                e.returnValue = 'Tu as des modifications non enregistrées. Veux-tu vraiment quitter ?';
                 return e.returnValue;
             }
         };

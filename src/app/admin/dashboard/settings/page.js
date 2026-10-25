@@ -18,7 +18,7 @@ export default async function SettingsPage() {
                     Informations &amp; Visuels du Site
                 </h1>
                 <p style={{ color: 'var(--admin-text-muted)' }}>
-                    Modifiez facilement le logo, la photo d&apos;accueil, vos coordonnées et vos réseaux.
+                    Modifie facilement le logo, la photo d&apos;accueil, les coordonnées et les réseaux.
                 </p>
             </div>
 

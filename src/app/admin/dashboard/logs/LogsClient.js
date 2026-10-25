@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Trash2, Download, RefreshCw, X, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
+import { Search, Trash2, Download, RefreshCw, X, ChevronDown, ChevronRight, Calendar, Clock } from 'lucide-react';
 import { clearActivityLogs } from '@/app/actions';
 
 const TZ = 'Europe/Paris';
@@ -18,6 +18,24 @@ function parseDate(dateStr) {
 function dayKeyOf(date) {
     return date ? date.toLocaleDateString('en-CA', { timeZone: TZ }) : 'unknown';
 }
+
+function isInPeriod(date, periodKey, todayKey) {
+    if (!date) return false;
+    if (periodKey === 'all') return true;
+    if (periodKey === 'today') return dayKeyOf(date) === todayKey;
+    const now = Date.now();
+    const time = date.getTime();
+    if (periodKey === '7d') return time >= now - 7 * 86400000;
+    if (periodKey === '30d') return time >= now - 30 * 86400000;
+    return true;
+}
+
+const PERIOD_LABELS = {
+    today: "Aujourd'hui",
+    '7d': '7 derniers jours',
+    '30d': '30 derniers jours',
+    all: "Tout l'historique",
+};
 
 function formatRelativeTime(dateString) {
     const date = parseDate(dateString);
@@ -89,6 +107,7 @@ function groupOf(action) {
 export default function LogsClient({ initialLogs = [] }) {
     const router = useRouter();
     const logs = initialLogs;
+    const [period, setPeriod] = useState('30d');
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('ALL');
     const [kind, setKind] = useState('ALL');
@@ -114,6 +133,10 @@ export default function LogsClient({ initialLogs = [] }) {
             if (dateFilter && dayKey !== dateFilter) return false;
             if (category !== 'ALL' && l.category !== category) return false;
             if (kind !== 'ALL' && groupOf(l.action) !== kind) return false;
+
+            // Si aucune recherche libre ni date précise n'est active, on applique la période (30 jours par défaut)
+            if (!dateFilter && !q && !isInPeriod(d, period, todayKey)) return false;
+
             if (!q) return true;
 
             const dateShort = d ? d.toLocaleDateString('fr-FR', { timeZone: TZ }) : '';
@@ -123,7 +146,7 @@ export default function LogsClient({ initialLogs = [] }) {
             return [l.summary, l.category, l.action, l.username, l.details, l.ip, dayKey, dateShort, dateLong, weekday]
                 .some(v => (v || '').toLowerCase().includes(q));
         });
-    }, [logs, category, kind, search, dateFilter]);
+    }, [logs, category, kind, search, dateFilter, period, todayKey]);
 
     const days = useMemo(() => {
         const out = [];
@@ -140,19 +163,31 @@ export default function LogsClient({ initialLogs = [] }) {
         return out;
     }, [filtered]);
 
+    const periodLogs = useMemo(() => {
+        return logs.filter(l => isInPeriod(parseDate(l.created_at), period, todayKey));
+    }, [logs, period, todayKey]);
+
     const stats = useMemo(() => {
-        const s = { total: logs.length, changes: 0, deletes: 0, access: 0 };
-        logs.forEach(l => {
+        const s = { total: periodLogs.length, changes: 0, deletes: 0, access: 0 };
+        periodLogs.forEach(l => {
             const g = groupOf(l.action);
             if (g === 'delete') s.deletes++;
             else if (g === 'access') s.access++;
             else s.changes++;
         });
         return s;
-    }, [logs]);
+    }, [periodLogs]);
 
-    const lastDate = parseDate(logs[0]?.created_at);
-    const hasFilters = Boolean(search || category !== 'ALL' || kind !== 'ALL' || dateFilter);
+    const lastPeriodDate = periodLogs[0] ? parseDate(periodLogs[0].created_at) : null;
+    const hasFilters = Boolean(search || category !== 'ALL' || kind !== 'ALL' || dateFilter || period !== '30d');
+
+    const resetFilters = () => {
+        setSearch('');
+        setCategory('ALL');
+        setKind('ALL');
+        setDateFilter('');
+        setPeriod('30d');
+    };
 
     const toggle = id => setExpanded(prev => {
         const next = new Set(prev);
@@ -219,27 +254,158 @@ export default function LogsClient({ initialLogs = [] }) {
                 </div>
             </header>
 
+            {/* Sélecteur de période pour les chiffres clés */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+                marginBottom: '0.85rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: 'var(--admin-text-subtle)'
+                    }}>
+                        Période des chiffres clés
+                    </span>
+                    <span style={{
+                        fontSize: '0.72rem',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        background: 'var(--admin-surface-hover)',
+                        color: 'var(--admin-gold-dark)',
+                        border: '1px solid var(--admin-border-soft)',
+                        fontWeight: 600
+                    }}>
+                        {PERIOD_LABELS[period]}
+                    </span>
+                </div>
+
+                <div style={{
+                    display: 'inline-flex',
+                    background: 'var(--admin-surface-hover)',
+                    padding: '3px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--admin-border)',
+                    gap: '2px',
+                    maxWidth: '100%',
+                    overflowX: 'auto'
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => setPeriod('today')}
+                        style={{
+                            border: 'none',
+                            background: period === 'today' ? 'var(--admin-surface)' : 'transparent',
+                            color: period === 'today' ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                            boxShadow: period === 'today' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                            borderRadius: '6px',
+                            padding: '4px 11px',
+                            fontSize: '0.78rem',
+                            fontWeight: period === 'today' ? 700 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        Aujourd&apos;hui
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setPeriod('7d')}
+                        style={{
+                            border: 'none',
+                            background: period === '7d' ? 'var(--admin-surface)' : 'transparent',
+                            color: period === '7d' ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                            boxShadow: period === '7d' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                            borderRadius: '6px',
+                            padding: '4px 11px',
+                            fontSize: '0.78rem',
+                            fontWeight: period === '7d' ? 700 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        7 jours
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setPeriod('30d')}
+                        style={{
+                            border: 'none',
+                            background: period === '30d' ? 'var(--admin-surface)' : 'transparent',
+                            color: period === '30d' ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                            boxShadow: period === '30d' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                            borderRadius: '6px',
+                            padding: '4px 11px',
+                            fontSize: '0.78rem',
+                            fontWeight: period === '30d' ? 700 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        30 jours (défaut)
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setPeriod('all')}
+                        style={{
+                            border: 'none',
+                            background: period === 'all' ? 'var(--admin-surface)' : 'transparent',
+                            color: period === 'all' ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                            boxShadow: period === 'all' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                            borderRadius: '6px',
+                            padding: '4px 11px',
+                            fontSize: '0.78rem',
+                            fontWeight: period === 'all' ? 700 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        Tout l&apos;historique ({logs.length})
+                    </button>
+                </div>
+            </div>
+
             {/* Chiffres clés */}
             <div className="admin-card admin-stat-strip">
                 <div className="admin-stat">
-                    <span className="admin-stat-label">Événements</span>
+                    <span className="admin-stat-label">
+                        Événements {period === '30d' ? '(30j)' : period === '7d' ? '(7j)' : period === 'today' ? '(jour)' : ''}
+                    </span>
                     <span className="admin-stat-value">{stats.total}</span>
-                    <span className="admin-stat-note">{lastDate ? `Dernier : ${formatRelativeTime(logs[0].created_at)}` : 'Aucun pour le moment'}</span>
+                    <span className="admin-stat-note">
+                        {lastPeriodDate ? `Dernier : ${formatRelativeTime(lastPeriodDate.toISOString())}` : 'Aucun sur la période'}
+                    </span>
                 </div>
                 <div className="admin-stat">
                     <span className="admin-stat-label">Ajouts &amp; modifications</span>
                     <span className="admin-stat-value">{stats.changes}</span>
-                    <span className="admin-stat-note">Contenus publiés ou mis à jour</span>
+                    <span className="admin-stat-note">
+                        {period === 'all' ? 'Contenus publiés ou mis à jour' : `Sur ${PERIOD_LABELS[period].toLowerCase()}`}
+                    </span>
                 </div>
                 <div className="admin-stat">
                     <span className="admin-stat-label">Suppressions</span>
                     <span className="admin-stat-value">{stats.deletes}</span>
-                    <span className="admin-stat-note">Éléments retirés du site</span>
+                    <span className="admin-stat-note">
+                        {period === 'all' ? 'Éléments retirés du site' : `Sur ${PERIOD_LABELS[period].toLowerCase()}`}
+                    </span>
                 </div>
                 <div className="admin-stat">
                     <span className="admin-stat-label">Connexions</span>
                     <span className="admin-stat-value">{stats.access}</span>
-                    <span className="admin-stat-note">Entrées, sorties et échecs</span>
+                    <span className="admin-stat-note">
+                        {period === 'all' ? 'Entrées, sorties et échecs' : `Sur ${PERIOD_LABELS[period].toLowerCase()}`}
+                    </span>
                 </div>
             </div>
 
@@ -354,7 +520,7 @@ export default function LogsClient({ initialLogs = [] }) {
                             <button
                                 type="button"
                                 className="admin-link-btn"
-                                onClick={() => { setSearch(''); setCategory('ALL'); setKind('ALL'); setDateFilter(''); }}
+                                onClick={resetFilters}
                             >
                                 Réinitialiser les filtres
                             </button>
@@ -387,7 +553,7 @@ export default function LogsClient({ initialLogs = [] }) {
                                     const open = expanded.has(log.id);
                                     return (
                                         <div key={log.id} className="admin-log-row">
-                                            <div className="admin-log-time" title={formatFullStamp(date)}>
+                                             <div className="admin-log-time" title={formatFullStamp(date)}>
                                                 {formatTime(date)}
                                                 <span className="admin-log-ago">{formatRelativeTime(log.created_at)}</span>
                                             </div>
@@ -419,6 +585,51 @@ export default function LogsClient({ initialLogs = [] }) {
                             </div>
                         </section>
                     ))}
+
+                    {/* Bannière d'accès à l'historique complet */}
+                    {period !== 'all' && !search && !dateFilter && logs.length > filtered.length && (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '1.75rem 1.5rem',
+                            background: 'var(--admin-surface)',
+                            border: '1px dashed var(--admin-border)',
+                            borderRadius: 'var(--admin-radius-sm)',
+                            marginTop: '0.5rem'
+                        }}>
+                            <p style={{ margin: '0 0 0.6rem', fontSize: '0.9rem', color: 'var(--admin-text-muted)' }}>
+                                Affichage concentré sur <strong>{PERIOD_LABELS[period].toLowerCase()}</strong> pour garder des chiffres lisibles ({filtered.length} événement{filtered.length > 1 ? 's' : ''} affiché{filtered.length > 1 ? 's' : ''} sur {logs.length} au total).
+                            </p>
+                            <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                onClick={() => setPeriod('all')}
+                                style={{ fontSize: '0.82rem' }}
+                            >
+                                Afficher tout l&apos;historique ({logs.length} événements)
+                            </button>
+                        </div>
+                    )}
+
+                    {period === 'all' && logs.length > 25 && (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '1.25rem',
+                            color: 'var(--admin-text-subtle)',
+                            fontSize: '0.82rem',
+                            marginTop: '0.5rem'
+                        }}>
+                            <span>Fin de l&apos;historique complet ({logs.length} événements).</span>
+                            {' '}
+                            <button
+                                type="button"
+                                className="admin-link-btn"
+                                onClick={() => setPeriod('30d')}
+                                style={{ marginLeft: '0.5rem', textDecoration: 'underline' }}
+                            >
+                                Revenir aux 30 derniers jours
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

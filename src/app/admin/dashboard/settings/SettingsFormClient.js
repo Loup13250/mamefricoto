@@ -1,13 +1,38 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
 import Image from 'next/image';
-import { updateSiteInfo, updateSiteLogo, updateSiteIcon, restoreDatabaseFromBackup } from '@/app/actions';
+import { updateSiteInfo, updateSiteLogo, updateSiteIcon, updateSiteBadgeColor, restoreDatabaseFromBackup } from '@/app/actions';
 import ImageCropperModal, { LOGO_CROP_TARGETS, FAVICON_CROP_TARGETS } from '@/components/admin/ImageCropper';
 import {
     Save, Image as ImageIcon, Mail, Phone, Globe,
     UploadCloud, CheckCircle2, Download, ShieldCheck,
-    AlertCircle, Loader2, Crop, RefreshCw, X
+    AlertCircle, Loader2, Crop, RefreshCw, X, Palette
 } from 'lucide-react';
+
+const COLOR_PRESETS = [
+    { label: 'Bleu Provence (Créatrice)', value: '#315B8C', gradient: 'linear-gradient(135deg, #3A669A 0%, #315B8C 50%, #244872 100%)' },
+    { label: 'Bleu Nuit Méditerranée', value: '#1D3557', gradient: 'linear-gradient(135deg, #2A476E 0%, #1D3557 100%)' },
+    { label: 'Terracotta Provençal', value: '#C2572D', gradient: 'linear-gradient(135deg, #D4693F 0%, #C2572D 100%)' },
+    { label: 'Brun Encre Bistre', value: '#26201B', gradient: 'linear-gradient(135deg, #362D26 0%, #26201B 100%)' },
+    { label: 'Blanc Épuré', value: '#FFFFFF', gradient: '#FFFFFF' },
+    { label: 'Transparent', value: 'transparent', gradient: 'transparent' },
+];
+
+function getBadgeBackground(colorValue) {
+    if (!colorValue || colorValue === '#315B8C') {
+        return 'linear-gradient(135deg, #3A669A 0%, #315B8C 50%, #244872 100%)';
+    }
+    if (colorValue === '#1D3557') {
+        return 'linear-gradient(135deg, #2A476E 0%, #1D3557 100%)';
+    }
+    if (colorValue === '#C2572D') {
+        return 'linear-gradient(135deg, #D4693F 0%, #C2572D 100%)';
+    }
+    if (colorValue === '#26201B') {
+        return 'linear-gradient(135deg, #362D26 0%, #26201B 100%)';
+    }
+    return colorValue;
+}
 
 export default function SettingsFormClient({ info }) {
     // --- Logo Principal (Barre de navigation) ---
@@ -17,6 +42,7 @@ export default function SettingsFormClient({ info }) {
     const [logoDragging, setLogoDragging] = useState(false);
     const [logoSaving, setLogoSaving] = useState(false);
     const [logoSaved, setLogoSaved] = useState(false);
+    const [logoBg, setLogoBg] = useState(info.logo_bg || '#315B8C');
 
     // --- Favicon / Icône Onglet Navigateur ---
     const initialSiteIcon = info.site_icon || info.logo || '/icon.svg';
@@ -25,6 +51,27 @@ export default function SettingsFormClient({ info }) {
     const [siteIconDragging, setSiteIconDragging] = useState(false);
     const [siteIconSaving, setSiteIconSaving] = useState(false);
     const [siteIconSaved, setSiteIconSaved] = useState(false);
+    const [siteIconBg, setSiteIconBg] = useState(info.site_icon_bg || '#315B8C');
+
+    const [colorSavingNotice, setColorSavingNotice] = useState('');
+
+    const handleLogoBgChange = async (val) => {
+        setLogoBg(val);
+        const res = await updateSiteBadgeColor('logo_bg', val);
+        if (res?.success) {
+            setColorSavingNotice('Couleur de fond du logo mise à jour !');
+            setTimeout(() => setColorSavingNotice(''), 3000);
+        }
+    };
+
+    const handleSiteIconBgChange = async (val) => {
+        setSiteIconBg(val);
+        const res = await updateSiteBadgeColor('site_icon_bg', val);
+        if (res?.success) {
+            setColorSavingNotice('Couleur de fond du favicon mise à jour !');
+            setTimeout(() => setColorSavingNotice(''), 3000);
+        }
+    };
 
     // --- Modal de recadrage ---
     const [cropper, setCropper] = useState(null); // { file, type: 'logo'|'favicon', targets, title }
@@ -177,6 +224,19 @@ export default function SettingsFormClient({ info }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <input type="hidden" name="logo_bg" value={logoBg} />
+                <input type="hidden" name="site_icon_bg" value={siteIconBg} />
+
+                {colorSavingNotice && (
+                    <div style={{
+                        padding: '0.85rem 1rem', background: 'rgba(59,130,246,0.1)',
+                        border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px',
+                        color: '#2563EB', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        fontSize: '0.88rem', fontWeight: '600'
+                    }}>
+                        <CheckCircle2 size={18} /> {colorSavingNotice}
+                    </div>
+                )}
 
                 {saved && (
                     <div style={{
@@ -217,12 +277,12 @@ export default function SettingsFormClient({ info }) {
                     }}>
                         {/* Simulateur barre de navigation */}
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-text-subtle)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     Aperçu en conditions réelles (sur la barre de navigation claire du site) :
                                 </span>
                                 <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: '600', background: 'rgba(22, 163, 74, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                                    ✓ Thème clair officiel
+                                    ✓ Badge Bleu Provence officiel
                                 </span>
                             </div>
                             <div style={{
@@ -236,14 +296,34 @@ export default function SettingsFormClient({ info }) {
                                 boxShadow: '0 4px 20px rgba(42, 30, 23, 0.08)'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', minHeight: '52px' }}>
-                                    <Image
-                                        src={logoPreview}
-                                        alt="Logo Mamé Fricoto"
-                                        width={180}
-                                        height={52}
-                                        style={{ height: '48px', width: 'auto', maxWidth: '180px', objectFit: 'contain', display: 'block' }}
-                                        unoptimized
-                                    />
+                                    <div style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        height: '50px',
+                                        padding: logoBg === 'transparent' ? '0' : '4px 18px',
+                                        borderRadius: '9999px',
+                                        background: getBadgeBackground(logoBg),
+                                        border: logoBg === 'transparent' ? 'none' : '1.5px solid rgba(234, 166, 32, 0.55)',
+                                        boxShadow: logoBg === 'transparent' ? 'none' : '0 4px 16px rgba(36, 72, 114, 0.28)',
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <Image
+                                            src={logoPreview}
+                                            alt="Logo Mamé Fricoto"
+                                            width={180}
+                                            height={52}
+                                            style={{
+                                                height: '40px',
+                                                width: 'auto',
+                                                maxWidth: '165px',
+                                                objectFit: 'contain',
+                                                display: 'block',
+                                                filter: logoBg === 'transparent' ? 'none' : 'drop-shadow(0 2px 6px rgba(20, 38, 61, 0.45))'
+                                            }}
+                                            unoptimized
+                                        />
+                                    </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '1.25rem', color: '#2A1E17', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                     <span style={{ color: '#C2572D' }}>Accueil</span>
@@ -251,6 +331,86 @@ export default function SettingsFormClient({ info }) {
                                     <span>Galerie</span>
                                     <span>À Propos</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Outil de choix de la couleur de fond du Logo */}
+                        <div style={{
+                            background: '#FFFFFF',
+                            border: '1px solid var(--admin-border-soft)',
+                            borderRadius: '8px',
+                            padding: '0.85rem 1.1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.6rem'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                <span style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--admin-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Palette size={15} style={{ color: 'var(--admin-gold)' }} />
+                                    Couleur de fond du badge Logo (Barre de navigation) :
+                                </span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-subtle)' }}>
+                                    Permet de faire ressortir les lettres claires du logo
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {COLOR_PRESETS.map((p) => {
+                                    const isSelected = logoBg === p.value;
+                                    return (
+                                        <button
+                                            key={p.value}
+                                            type="button"
+                                            onClick={() => handleLogoBgChange(p.value)}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                padding: '5px 12px',
+                                                borderRadius: '999px',
+                                                fontSize: '0.76rem',
+                                                fontWeight: isSelected ? '700' : '500',
+                                                cursor: 'pointer',
+                                                background: isSelected ? 'rgba(184, 139, 70, 0.15)' : '#FAF7F2',
+                                                border: isSelected ? '1.5px solid var(--admin-gold)' : '1px solid var(--admin-border)',
+                                                color: isSelected ? 'var(--admin-gold-dark)' : 'var(--admin-text)',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            <span style={{
+                                                width: '14px',
+                                                height: '14px',
+                                                borderRadius: '50%',
+                                                background: p.gradient,
+                                                border: '1px solid rgba(0,0,0,0.18)',
+                                                display: 'inline-block'
+                                            }} />
+                                            <span>{p.label}</span>
+                                        </button>
+                                    );
+                                })}
+
+                                <label style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '4px 10px',
+                                    borderRadius: '999px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    background: '#FAF7F2',
+                                    border: '1px solid var(--admin-border)',
+                                    color: 'var(--admin-text)'
+                                }}>
+                                    <input
+                                        type="color"
+                                        value={logoBg.startsWith('#') ? logoBg : '#315B8C'}
+                                        onChange={(e) => handleLogoBgChange(e.target.value)}
+                                        style={{ width: '18px', height: '18px', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                                    />
+                                    <span>Autre couleur...</span>
+                                </label>
                             </div>
                         </div>
 
@@ -364,13 +524,25 @@ export default function SettingsFormClient({ info }) {
                                     borderTop: '2px solid #C2572D',
                                     boxShadow: '0 -2px 6px rgba(42, 35, 29, 0.05)'
                                 }}>
-                                    <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                    <div style={{
+                                        width: '18px',
+                                        height: '18px',
+                                        borderRadius: '50%',
+                                        background: getBadgeBackground(siteIconBg),
+                                        border: siteIconBg === 'transparent' ? 'none' : '1px solid rgba(234, 166, 32, 0.65)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                                        flexShrink: 0
+                                    }}>
                                         <Image
                                             src={siteIconPreview}
                                             alt="Favicon"
                                             width={18}
                                             height={18}
-                                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                            style={{ width: '15px', height: '15px', objectFit: 'contain' }}
                                             unoptimized
                                         />
                                     </div>
@@ -379,6 +551,123 @@ export default function SettingsFormClient({ info }) {
                                     </span>
                                     <X size={12} style={{ color: '#8A7E71', marginLeft: '6px' }} />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Aperçu grand format en médaillon rond officiel */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1.25rem',
+                            padding: '0.9rem 1.1rem',
+                            background: '#FFFFFF',
+                            borderRadius: '8px',
+                            border: '1px solid var(--admin-border-soft)'
+                        }}>
+                            <div style={{
+                                width: '56px',
+                                height: '56px',
+                                borderRadius: '50%',
+                                background: getBadgeBackground(siteIconBg),
+                                border: siteIconBg === 'transparent' ? '1px dashed var(--admin-border)' : '2.5px solid #EAA620',
+                                boxShadow: siteIconBg === 'transparent' ? 'none' : '0 4px 16px rgba(36, 72, 114, 0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                            }}>
+                                <Image
+                                    src={siteIconPreview}
+                                    alt="Favicon Médaillon"
+                                    width={48}
+                                    height={48}
+                                    style={{ width: '44px', height: '44px', objectFit: 'contain' }}
+                                    unoptimized
+                                />
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', lineHeight: '1.5' }}>
+                                <strong style={{ color: 'var(--admin-text)', display: 'block', marginBottom: '2px', fontSize: '0.88rem' }}>
+                                    Médaillon circulaire officiel (Fond Bleu Provence &amp; liseré doré)
+                                </strong>
+                                C&apos;est la forme bleue officielle tout en haut du site : même si votre image d&apos;origine a un fond transparent, ce médaillon rond bleu et or assure que le logo et les textes clairs soient parfaitement visibles dans l&apos;onglet de chaque visiteur.
+                            </div>
+                        </div>
+
+                        {/* Outil de choix de la couleur de fond du Favicon */}
+                        <div style={{
+                            background: '#FFFFFF',
+                            border: '1px solid var(--admin-border-soft)',
+                            borderRadius: '8px',
+                            padding: '0.85rem 1.1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.6rem'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                <span style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--admin-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Palette size={15} style={{ color: '#2563EB' }} />
+                                    Couleur de fond du médaillon Favicon (Onglet navigateur) :
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {COLOR_PRESETS.map((p) => {
+                                    const isSelected = siteIconBg === p.value;
+                                    return (
+                                        <button
+                                            key={p.value}
+                                            type="button"
+                                            onClick={() => handleSiteIconBgChange(p.value)}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                padding: '5px 12px',
+                                                borderRadius: '999px',
+                                                fontSize: '0.76rem',
+                                                fontWeight: isSelected ? '700' : '500',
+                                                cursor: 'pointer',
+                                                background: isSelected ? 'rgba(37, 99, 235, 0.12)' : '#FAF7F2',
+                                                border: isSelected ? '1.5px solid #2563EB' : '1px solid var(--admin-border)',
+                                                color: isSelected ? '#1D4ED8' : 'var(--admin-text)',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            <span style={{
+                                                width: '14px',
+                                                height: '14px',
+                                                borderRadius: '50%',
+                                                background: p.gradient,
+                                                border: '1px solid rgba(0,0,0,0.18)',
+                                                display: 'inline-block'
+                                            }} />
+                                            <span>{p.label}</span>
+                                        </button>
+                                    );
+                                })}
+
+                                <label style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '4px 10px',
+                                    borderRadius: '999px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    background: '#FAF7F2',
+                                    border: '1px solid var(--admin-border)',
+                                    color: 'var(--admin-text)'
+                                }}>
+                                    <input
+                                        type="color"
+                                        value={siteIconBg.startsWith('#') ? siteIconBg : '#315B8C'}
+                                        onChange={(e) => handleSiteIconBgChange(e.target.value)}
+                                        style={{ width: '18px', height: '18px', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                                    />
+                                    <span>Autre couleur...</span>
+                                </label>
                             </div>
                         </div>
 

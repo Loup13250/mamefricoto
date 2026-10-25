@@ -210,15 +210,16 @@ export const LOGO_CROP_TARGETS = [
 export const FAVICON_CROP_TARGETS = [
     {
         key: 'favicon',
-        label: 'Icône d’onglet (Favicon)',
+        label: 'Médaillon d’onglet (Favicon)',
         shortLabel: 'Favicon',
-        ratioLabel: '1:1',
+        ratioLabel: 'Rond 1:1',
         aspect: 1,
-        icon: 'square',
+        round: true,
+        icon: 'circle',
         maxWidth: 512,
         quality: 0.95,
         optional: false,
-        hint: 'Format carré 1:1 net pour l’onglet du navigateur web',
+        hint: 'Médaillon circulaire officiel avec fond Bleu Provence et liseré doré pour l’onglet du navigateur web',
     },
 ];
 
@@ -301,22 +302,59 @@ async function renderCrop(source, target, crop, baseName) {
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(source.img, view.left, view.top, view.vw, view.vh, 0, 0, outW, outH);
+
+    if (target.key === 'favicon' || target.round) {
+        const radius = Math.min(outW, outH) / 2;
+        const cx = outW / 2;
+        const cy = outH / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Dégradé Bleu Provence signature officiel
+        const grad = ctx.createLinearGradient(0, 0, outW, outH);
+        grad.addColorStop(0, '#3A669A');
+        grad.addColorStop(0.5, '#315B8C');
+        grad.addColorStop(1, '#244872');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, outW, outH);
+
+        // Dessin de l'image de la créatrice au centre
+        ctx.drawImage(source.img, view.left, view.top, view.vw, view.vh, 0, 0, outW, outH);
+        ctx.restore();
+
+        // Liseré or chaud
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - Math.max(1.5, radius * 0.025), 0, Math.PI * 2);
+        const goldGrad = ctx.createLinearGradient(0, 0, outW, outH);
+        goldGrad.addColorStop(0, '#FCD565');
+        goldGrad.addColorStop(0.5, '#EAA620');
+        goldGrad.addColorStop(1, '#C58512');
+        ctx.strokeStyle = goldGrad;
+        ctx.lineWidth = Math.max(1.5, radius * 0.025);
+        ctx.stroke();
+        ctx.restore();
+    } else {
+        ctx.drawImage(source.img, view.left, view.top, view.vw, view.vh, 0, 0, outW, outH);
+    }
 
     let quality = target.quality;
-    let blob = await canvasToBlob(canvas, 'image/webp', quality);
-    // Safari ne sait pas encoder en WebP : il renvoie alors du PNG -> on bascule en JPEG
-    if (!blob || blob.type !== 'image/webp') {
-        blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+    const mime = (target.key === 'favicon' || target.round) ? 'image/png' : 'image/webp';
+    let blob = await canvasToBlob(canvas, mime, quality);
+    if (!blob || blob.type !== mime) {
+        blob = await canvasToBlob(canvas, 'image/png', quality);
     }
-    // Garde-fou : on baisse la qualité si le fichier reste trop lourd
     while (blob && blob.size > MAX_OUTPUT_BYTES && quality > 0.5) {
         quality -= 0.1;
         blob = await canvasToBlob(canvas, blob.type, quality);
     }
     if (!blob) throw new Error('Impossible de générer l’image recadrée.');
 
-    const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+    const ext = blob.type === 'image/webp' ? 'webp' : 'png';
     return new File([blob], `${baseName}-${target.key}.${ext}`, { type: blob.type, lastModified: Date.now() });
 }
 
@@ -491,11 +529,13 @@ function CropFrame({ source, target, crop, onChange, showOverlay }) {
 
     const view = getView(source, curAspect, crop);
     const portrait = curAspect < 1;
+    const isFavicon = target.key === 'favicon' || target.round;
+    const isLogo = target.key === 'logo';
 
     return (
         <div
             ref={frameRef}
-            className={`ic-frame ${dragging ? 'is-dragging' : ''} ${portrait ? 'is-portrait' : 'is-landscape'}`}
+            className={`ic-frame ${dragging ? 'is-dragging' : ''} ${portrait ? 'is-portrait' : 'is-landscape'} ${isFavicon ? 'is-round is-favicon' : ''} ${isLogo ? 'is-logo' : ''}`}
             style={{ '--ar': curAspect }}
             tabIndex={0}
             role="application"

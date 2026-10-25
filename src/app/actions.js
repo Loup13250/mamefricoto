@@ -183,7 +183,8 @@ export async function updateSiteInfo(formData) {
     const fields = [
         'contact_email', 'notification_email', 'phone', 'address', 'address_en', 'hours', 'hours_en',
         'instagram', 'facebook', 'google_reviews', 'about_text', 'about_text_en',
-        'tagline', 'tagline_en', 'formspree_url', 'smtp_pass', 'resend_api_key'
+        'tagline', 'tagline_en', 'formspree_url', 'smtp_pass', 'resend_api_key',
+        'logo_bg', 'site_icon_bg', 'site_icon_shape'
     ];
 
     const stmt = db.prepare(`
@@ -324,6 +325,35 @@ export async function updateSiteIcon(formData) {
     } catch (err) {
         console.error('updateSiteIcon error:', err);
         return { error: err.message || "Erreur lors de la mise à jour de l'icône." };
+    }
+}
+
+export async function updateSiteBadgeColor(key, value) {
+    try {
+        await requireAdminAuth();
+        if (key !== 'logo_bg' && key !== 'site_icon_bg' && key !== 'site_icon_shape') {
+            return { error: 'Clé non valide.' };
+        }
+        const db = getDb();
+        await db.prepare(`
+            INSERT INTO site_info (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `).run(key, value || '');
+
+        await logActivity({
+            action: 'update',
+            category: 'Logo & Paramètres',
+            summary: `Modification de la couleur de fond (${key === 'logo_bg' ? 'Logo' : 'Favicon'}) : ${value}`,
+            details: { key, value }
+        });
+
+        revalidatePath('/', 'layout');
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/settings');
+        return { success: true };
+    } catch (err) {
+        console.error('updateSiteBadgeColor error:', err);
+        return { error: err.message || 'Erreur lors de la mise à jour.' };
     }
 }
 

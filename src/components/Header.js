@@ -18,6 +18,30 @@ export default function Header({ siteInfo }) {
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
     const logoSrc = siteInfo?.logo || siteInfo?.site_icon || '/icon.svg';
+    const logoBg = siteInfo?.logo_bg ?? '#315B8C';
+
+    const logoBadgeStyle = (() => {
+        if (!logoBg || logoBg === '#315B8C') {
+            return {
+                background: 'linear-gradient(135deg, #3A669A 0%, #315B8C 50%, #244872 100%)',
+                borderColor: 'rgba(234, 166, 32, 0.55)',
+                boxShadow: '0 4px 16px rgba(36, 72, 114, 0.28)',
+            };
+        }
+        if (logoBg === 'transparent') {
+            return {
+                background: 'transparent',
+                border: 'none',
+                boxShadow: 'none',
+                padding: 0,
+            };
+        }
+        return {
+            background: logoBg,
+            borderColor: 'rgba(234, 166, 32, 0.55)',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.2)',
+        };
+    })();
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
@@ -68,14 +92,14 @@ export default function Header({ siteInfo }) {
         <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
             <div className="container header-inner">
                 <Link href="/" className="logo-link" aria-label={`Mamé Fricoto - ${t('nav.home')}`}>
-                    <div className="logo-brand-wrap">
+                    <div className="logo-brand-wrap" style={logoBadgeStyle}>
                         <Image
                             src={logoSrc}
                             alt="Mamé Fricoto"
                             width={160}
                             height={52}
                             className="logo-img"
-                            style={{ height: '48px', width: 'auto', maxWidth: '170px', objectFit: 'contain' }}
+                            style={{ height: '40px', width: 'auto', maxWidth: '165px', objectFit: 'contain' }}
                             priority
                             unoptimized
                         />

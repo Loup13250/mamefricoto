@@ -109,11 +109,11 @@ export default function Footer({ siteInfo }) {
                         <ul>
                             <li>
                                 <MapPin size={15} />
-                                <span>{trans(info, 'address') || (lang === 'en' ? 'Eyguières, Provence, France' : 'Eyguières, Bouches-du-Rhône')}</span>
+                                <span>{trans(info, 'address') || (lang === 'en' ? 'Eyguières, France' : 'Eyguières, Bouches-du-Rhône')}</span>
                             </li>
                             <li>
                                 <Phone size={15} />
-                                <a href={`tel:${phoneTel}`}>{phone}</a>
+                                <a href={`tel:${phoneTel}`} aria-label={`${t('nav.callUs')} ${phone}`}>{phone}</a>
                             </li>
                             <li>
                                 <Clock size={15} />
@@ -145,6 +145,7 @@ export default function Footer({ siteInfo }) {
                             rel="noopener noreferrer"
                             className="footer-dev-link"
                             title="JL-Développement - Création de sites web professionnels"
+                            aria-label="JL-Développement - Création de sites web professionnels"
                         >
                             {t('footer.credits')}
                         </a>

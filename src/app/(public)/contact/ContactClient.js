@@ -7,7 +7,7 @@ export default function ContactClient({ info }) {
     const { t, trans, lang } = useLanguage();
     const phone = info?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
-    const address = trans(info, 'address') || (lang === 'en' ? 'Eyguières, Provence, France' : 'Eyguières, Bouches-du-Rhône');
+    const address = trans(info, 'address') || (lang === 'en' ? 'Eyguières, France' : 'Eyguières, Bouches-du-Rhône');
     const hours = trans(info, 'hours') || t('contact.hoursVal');
 
     return (
@@ -66,7 +66,7 @@ export default function ContactClient({ info }) {
                                             <strong style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '0.35rem' }}>
                                                 {t('contact.directPhoneLabel')}
                                             </strong>
-                                            <a href={`tel:${phoneTel}`} style={{ color: 'var(--gold-light)', fontFamily: 'var(--font-body)', fontSize: '1.3rem', fontWeight: '700', letterSpacing: '0.04em' }}>
+                                            <a href={`tel:${phoneTel}`} aria-label={`${t('contact.directPhoneLabel')}: ${phone}`} style={{ color: 'var(--gold-light)', fontFamily: 'var(--font-body)', fontSize: '1.3rem', fontWeight: '700', letterSpacing: '0.04em' }}>
                                                 {phone}
                                             </a>
                                         </div>

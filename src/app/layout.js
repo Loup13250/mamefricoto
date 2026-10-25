@@ -66,8 +66,8 @@ export async function generateMetadata() {
       default: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
       template: "%s | Mamé Fricoto"
     },
-    description: "Mamé Fricoto : Traiteur artisanal & cuisine familiale préparée avec amour à Eyguières. Menus de la semaine, plats du jour mijotés, buffets et réceptions en Provence.",
-    keywords: ["traiteur Eyguières", "cuisine maison Eyguières", "plat du jour Provence", "buffet dînatoire Salon-de-Provence", "traiteur mariage Eyguières", "repas entreprise"],
+    description: "Mamé Fricoto : Traiteur artisanal & cuisine familiale préparée avec amour à Eyguières. Menus de la semaine, plats du jour mijotés, buffets et réceptions sur mesure.",
+    keywords: ["traiteur Eyguières", "cuisine maison Eyguières", "plat du jour fait maison", "buffet dînatoire", "traiteur mariage Eyguières", "repas entreprise", "traiteur événementiel"],
     authors: [{ name: "Mamé Fricoto" }],
     creator: "Mamé Fricoto",
     publisher: "Mamé Fricoto",
@@ -101,7 +101,7 @@ export async function generateMetadata() {
     twitter: {
       card: "summary_large_image",
       title: "Mamé Fricoto | Traiteur & Cuisine Maison à Eyguières",
-      description: "Cuisine maison et événements à Eyguières et en Provence.",
+      description: "Cuisine maison et événements à Eyguières et ses environs.",
       images: ["/og-image.png"],
     },
     icons: {
@@ -141,7 +141,7 @@ export default async function RootLayout({ children }) {
       latitude: 43.6958,
       longitude: 5.0319,
     },
-    servesCuisine: 'Cuisine provençale, Fait maison, Traiteur',
+    servesCuisine: 'Cuisine traditionnelle, Fait maison, Traiteur',
     priceRange: '€€',
   };
 

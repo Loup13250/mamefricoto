@@ -101,7 +101,7 @@ export default function Header({ siteInfo }) {
 
                 <div className="header-actions-right">
                     <div className="header-cta">
-                        <a href={`tel:${phoneTel}`} className="cta-phone-btn" title={`${t('nav.callUs')} ${phone}`}>
+                        <a href={`tel:${phoneTel}`} className="cta-phone-btn" title={`${t('nav.callUs')} ${phone}`} aria-label={`${t('nav.callUs')} ${phone}`}>
                             <Phone size={14} />
                             {phone}
                         </a>
@@ -131,7 +131,7 @@ export default function Header({ siteInfo }) {
                     className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}
                     role="dialog"
                     aria-modal="true"
-                    inert={!mobileMenuOpen}
+                    inert={!mobileMenuOpen ? '' : undefined}
                 >
                     {/* En-tête du menu */}
                     <div className="mobile-drawer-header">
@@ -172,7 +172,7 @@ export default function Header({ siteInfo }) {
                     <div className="mobile-drawer-footer">
                         <LanguageToggle showLabel className="drawer-theme-toggle" />
 
-                        <a href={`tel:${phoneTel}`} className="mobile-phone-cta">
+                        <a href={`tel:${phoneTel}`} className="mobile-phone-cta" aria-label={`${t('nav.callUs')} ${phone}`}>
                             <Phone size={16} />
                             <span>{phone}</span>
                         </a>

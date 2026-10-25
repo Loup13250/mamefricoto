@@ -15,7 +15,7 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
     const aboutText = trans(siteInfo, 'about_text');
-    const address = trans(siteInfo, 'address') || (lang === 'en' ? 'Eyguières, Provence, France' : 'Eyguières, Bouches-du-Rhône');
+    const address = trans(siteInfo, 'address') || (lang === 'en' ? 'Eyguières, France' : 'Eyguières, Bouches-du-Rhône');
 
     const rawHours = trans(siteInfo, 'hours') || (lang === 'en' ? 'Monday to Friday - Orders before 10 AM' : 'Du Lundi au Vendredi - Commandes avant 10h');
     let hoursDay = rawHours;
@@ -174,7 +174,7 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
                         {t('cta.desc')}
                     </p>
                     <div className="final-cta-actions">
-                        <a href={`tel:${phoneTel}`} className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }}>
+                        <a href={`tel:${phoneTel}`} className="btn-terra" style={{ fontSize: '1rem', padding: '18px 40px' }} aria-label={`Appeler le ${phone}`}>
                             <Phone size={18} />
                             {phone}
                         </a>

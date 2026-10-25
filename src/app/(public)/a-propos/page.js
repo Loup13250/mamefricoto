@@ -4,7 +4,7 @@ import AProposClient from './AProposClient';
 
 export const metadata = {
     title: 'À Propos',
-    description: "Découvrez l'histoire de Mamé Fricoto, traiteur artisanal et cuisine familiale à Eyguières. Produits frais de saison et recettes provençales préparées avec passion.",
+    description: "Découvrez l'histoire de Mamé Fricoto, traiteur artisanal et cuisine familiale à Eyguières. Produits frais de saison et recettes généreuses préparées avec passion.",
     alternates: {
         canonical: `${SITE_URL}/a-propos`,
     },

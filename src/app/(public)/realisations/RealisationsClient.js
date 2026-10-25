@@ -53,7 +53,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
             </section>
 
             {/* ===== SECTION APPEL À L'ACTION ===== */}
-            <section style={{ background: 'var(--bg-2)', padding: '6rem 0', borderTop: '1px solid var(--border)' }}>
+            <section style={{ background: 'var(--bg-2)', padding: '3.5rem 0', borderTop: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
                     <span className="label">{t('gallery.ctaBadge')}</span>
                     <h2 style={{
@@ -69,7 +69,7 @@ export default function RealisationsClient({ siteInfo, galleryPosts }) {
                         {t('gallery.ctaDesc')}
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <a href={`tel:${phoneTel}`} className="btn-terra" style={{ fontSize: '0.95rem', padding: '16px 36px' }}>
+                        <a href={`tel:${phoneTel}`} className="btn-terra" style={{ fontSize: '0.95rem', padding: '16px 36px' }} aria-label={`Appeler le ${phone}`}>
                             <Phone size={16} />
                             {phone}
                         </a>

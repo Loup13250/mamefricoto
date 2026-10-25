@@ -4,7 +4,7 @@ import TarifsClient from './TarifsClient';
 
 export const metadata = {
     title: 'Tarifs & Cartes Traiteur',
-    description: "Consultez les cartes et grilles tarifaires de nos repas faits maison, buffets dînatoires et formules traiteur à Eyguières et en Provence.",
+    description: "Consultez les cartes et grilles tarifaires de nos repas faits maison, buffets dînatoires et formules traiteur à Eyguières et ses environs.",
     alternates: {
         canonical: `${SITE_URL}/tarifs`,
     },

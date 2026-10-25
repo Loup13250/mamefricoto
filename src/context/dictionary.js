@@ -106,7 +106,7 @@ export const DICTIONARY = {
         'reviews.badge': 'Avis Clients Vérifiés',
         'reviews.title': 'Ce que nos clients',
         'reviews.titleItalic': 'aiment chez nous',
-        'reviews.subtitle': 'Retrouvez les retours authentiques de nos convives et habitués à Eyguières et en Provence.',
+        'reviews.subtitle': 'Retrouvez les retours authentiques de nos convives et habitués à Eyguières et ses environs.',
         'reviews.starsNote': '5.0 ★ sur Google (51 avis vérifiés)',
         'reviews.viewAll': 'Voir tous les avis sur Google',
 
@@ -223,7 +223,7 @@ export const DICTIONARY = {
         'strip.hours': 'Orders before 10 AM',
 
         // Bannière
-        'hero.eyebrow': 'Homemade Caterer · Eyguières, Provence',
+        'hero.eyebrow': 'Homemade Caterer · Eyguières',
         'hero.viewMenu': 'View Weekly Menu',
         'hero.viewTarifs': 'View Pricing',
         'hero.call': 'Call',
@@ -249,7 +249,7 @@ export const DICTIONARY = {
         'menu.nextDish': 'Next dish',
 
         // Section prestations
-        'services.badge': 'Your Caterer in Eyguières & Provence',
+        'services.badge': 'Your Caterer in Eyguières',
         'services.title': 'Our Catering Services',
         'services.aboutTitle': 'What We Offer',
 
@@ -297,7 +297,7 @@ export const DICTIONARY = {
         'about.avail': 'Availability',
         'about.availVal': 'Tuesday to Saturday',
         'about.loc': 'Location',
-        'about.locVal': 'Eyguières, Provence',
+        'about.locVal': 'Eyguières',
         'about.tasteTitle': 'Fancy a taste?',
         'about.tasteDesc': 'Call us to order your daily homemade meal or request a tailored quote for your receptions.',
 
@@ -307,7 +307,7 @@ export const DICTIONARY = {
         'reviews.badge': 'Verified Customer Reviews',
         'reviews.title': 'What our clients',
         'reviews.titleItalic': 'say about us',
-        'reviews.subtitle': 'Authentic feedback from our customers regarding our homemade cuisine and catering in Provence.',
+        'reviews.subtitle': 'Authentic feedback from our customers regarding our homemade cuisine and catering.',
         'reviews.starsNote': '5.0 ★ on Google (51 verified reviews)',
         'reviews.viewAll': 'Read all 51 reviews on Google',
 
@@ -375,12 +375,12 @@ export const DICTIONARY = {
 
         // Pied de page
         'footer.tagline': 'cuisine · homemade · sharing',
-        'footer.desc': 'Homemade caterer based in Eyguières, Provence. Carefully prepared meals crafted with fresh, local ingredients, delivered to you or picked up at our workshop.',
+        'footer.desc': 'Homemade caterer based in Eyguières. Carefully prepared meals crafted with fresh, local ingredients, delivered to you or picked up at our workshop.',
         'footer.navTitle': 'Navigation',
         'footer.servicesTitle': 'Services',
         'footer.contactTitle': 'Contact',
         'footer.copyright': 'Mamé Fricoto. All rights reserved.',
-        'footer.madeIn': 'Handcrafted in Eyguières, Provence',
+        'footer.madeIn': 'Handcrafted in Eyguières',
         'footer.legalNotice': 'Legal Notices',
         'footer.privacyPolicy': 'Privacy Policy',
         'footer.credits': 'Designed by JL-Développement',

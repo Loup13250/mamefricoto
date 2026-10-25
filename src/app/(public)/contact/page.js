@@ -4,7 +4,7 @@ import ContactClient from './ContactClient';
 
 export const metadata = {
     title: 'Contact & Devis',
-    description: "Contactez Mamé Fricoto pour vos commandes de plats du jour, buffets dînatoires ou événements privés et professionnels à Eyguières et en Provence.",
+    description: "Contactez Mamé Fricoto pour vos commandes de plats du jour, buffets dînatoires ou événements privés et professionnels à Eyguières et ses environs.",
     alternates: {
         canonical: `${SITE_URL}/contact`,
     },

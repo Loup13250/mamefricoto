@@ -23,17 +23,17 @@
   --admin-terracotta: #C85B3F;
   --admin-terra-light: #D96B4F;
 
-  --admin-border: rgba(184, 139, 70, 0.25);
-  --admin-border-soft: rgba(184, 139, 70, 0.12);
+  --admin-border: rgba(184, 139, 70, 0.18);
+  --admin-border-soft: rgba(184, 139, 70, 0.10);
 
-  --admin-radius-sm: 8px;
-  --admin-radius-md: 16px;
+  --admin-radius-sm: 10px;
+  --admin-radius-md: 18px;
   --admin-radius-lg: 24px;
   --admin-radius-pill: 9999px;
 
-  --admin-shadow: 0 10px 40px rgba(36, 30, 25, 0.08);
-  --admin-glow: 0 0 25px rgba(184, 139, 70, 0.12);
-  --admin-transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  --admin-shadow: 0 4px 20px -2px rgba(36, 30, 25, 0.05);
+  --admin-glow: 0 0 20px rgba(184, 139, 70, 0.08);
+  --admin-transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Ajustements spécifiques au mode clair */
@@ -485,11 +485,11 @@
 }
 
 .admin-nav-item.active {
-  background: linear-gradient(90deg, rgba(200, 169, 110, 0.16) 0%, rgba(200, 169, 110, 0.04) 100%);
+  background: rgba(184, 139, 70, 0.12);
   color: var(--admin-gold-dark);
-  border-color: rgba(200, 169, 110, 0.35);
+  border-color: rgba(184, 139, 70, 0.22);
   font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--admin-gold);
+  border-radius: 10px;
 }
 
 .admin-nav-item.active .admin-nav-item-icon {
@@ -501,7 +501,6 @@
   height: 6px;
   border-radius: 50%;
   background: var(--admin-gold);
-  box-shadow: 0 0 8px var(--admin-gold);
 }
 
 .admin-nav-badge-unread {
@@ -618,11 +617,11 @@
    ========================================================================== */
 .admin-card {
   background: var(--admin-card-bg);
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-border-soft);
   border-radius: var(--admin-radius-md);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  padding: 2rem;
-  margin-bottom: 1.75rem;
+  box-shadow: var(--admin-shadow);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
   transition: var(--admin-transition);
   position: relative;
   overflow: hidden;
@@ -632,15 +631,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--admin-border-soft);
 }
 
 .admin-card-title {
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.18rem;
+  font-weight: 650;
   color: var(--admin-text);
   letter-spacing: -0.01em;
 }
@@ -669,24 +668,24 @@
    ========================================================================== */
 .admin-label {
   display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--admin-gold);
-  margin-bottom: 0.5rem;
+  font-size: 0.84rem;
+  font-weight: 550;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--admin-text);
+  margin-bottom: 0.35rem;
 }
 
 .admin-input,
 .admin-textarea,
 .admin-select {
   width: 100%;
-  padding: 0.85rem 1.1rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-sm);
   background-color: var(--admin-surface);
   color: var(--admin-text);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-family: inherit;
   transition: var(--admin-transition);
   outline: none;
@@ -696,7 +695,7 @@
 .admin-textarea:focus,
 .admin-select:focus {
   border-color: var(--admin-gold);
-  box-shadow: var(--admin-glow);
+  box-shadow: 0 0 0 3px rgba(184, 139, 70, 0.12);
   background-color: rgba(36, 32, 25, 0.8);
 }
 
@@ -712,14 +711,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  padding: 0.8rem 1.75rem;
-  border-radius: 4px;
+  gap: 0.55rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: 10px;
   font-family: inherit;
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 550;
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  text-transform: none;
   transition: var(--admin-transition);
   cursor: pointer;
   border: 1px solid transparent;
@@ -729,25 +728,27 @@
 .admin-btn-primary {
   background: var(--admin-gold);
   color: #0E0D0C;
+  border-radius: 10px;
 }
 
 .admin-btn-primary:hover {
   background: var(--admin-gold-light);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(200, 169, 110, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(184, 139, 70, 0.25);
 }
 
 .admin-btn-secondary {
   background: transparent;
   border-color: var(--admin-border);
   color: var(--admin-text);
+  border-radius: 10px;
 }
 
 .admin-btn-secondary:hover {
   background: rgba(245, 240, 232, 0.06);
   border-color: var(--admin-gold);
   color: var(--admin-gold-light);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .admin-btn-danger {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getSiteInfo, getCurrentWeeklyMenu, getContactMessages, getUnreadMessageCount, getGalleryPosts } from '@/lib/data';
-import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, Clock, Phone, MapPin, MessageSquare, Image as ImageIcon, Sparkles, Receipt, Heart, Languages } from 'lucide-react';
+import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, Clock, Phone, MapPin, MessageSquare, Image as ImageIcon, Sparkles, Receipt, Heart, Languages, History } from 'lucide-react';
 
 
 export const dynamic = 'force-dynamic';
@@ -74,76 +74,76 @@ export default async function DashboardOverview() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
                 
                 {/* 1. Carte des messages - bleu */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', position: 'relative', borderLeft: '3px solid #0284C7' }}>
+                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px', position: 'relative' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: unreadCount > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(2, 132, 199, 0.12)', borderRadius: '12px', color: unreadCount > 0 ? '#ef4444' : '#0284C7' }}>
-                                <Mail size={24} />
+                            <div style={{ padding: '0.75rem', background: unreadCount > 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(2, 132, 199, 0.10)', borderRadius: '12px', color: unreadCount > 0 ? '#ef4444' : '#0284C7' }}>
+                                <Mail size={22} />
                             </div>
                             {unreadCount > 0 ? (
-                                <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.75rem', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}>
-                                    {unreadCount} NON LU{unreadCount > 1 ? 'S' : ''}
+                                <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
+                                    {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
                                 </span>
                             ) : (
-                                <span style={{ background: 'rgba(2, 132, 199, 0.12)', color: '#0284C7', fontSize: '0.72rem', fontWeight: '700', padding: '3px 9px', borderRadius: '20px' }}>
-                                    À JOUR
+                                <span style={{ background: 'rgba(2, 132, 199, 0.08)', color: '#0284C7', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
+                                    À jour
                                 </span>
                             )}
                         </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '0.2rem' }}>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
                             Messages &amp; Demandes
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
+                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
                             {messages.length} message{messages.length > 1 ? 's' : ''} reçus dans votre boîte de contact.
                         </p>
                     </div>
-                    <Link href="/admin/dashboard/messages" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#0284C7', textDecoration: 'none' }}>
+                    <Link href="/admin/dashboard/messages" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#0284C7', textDecoration: 'none' }}>
                         Accéder aux messages <ArrowRight size={14} />
                     </Link>
                 </div>
 
                 {/* 2. Carte du menu de la semaine - vert */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderLeft: '3px solid #059669' }}>
+                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: 'rgba(5, 150, 105, 0.12)', borderRadius: '12px', color: '#059669' }}>
-                                <CalendarDays size={24} />
+                            <div style={{ padding: '0.75rem', background: 'rgba(5, 150, 105, 0.10)', borderRadius: '12px', color: '#059669' }}>
+                                <CalendarDays size={22} />
                             </div>
-                            <span style={{ background: 'rgba(5, 150, 105, 0.15)', color: '#059669', fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px', borderRadius: '20px' }}>
-                                MENU EN LIGNE
+                            <span style={{ background: 'rgba(5, 150, 105, 0.10)', color: '#059669', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
+                                Menu en ligne
                             </span>
                         </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '0.2rem' }}>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
                             {currentMenu ? currentMenu.title : 'Aucun menu actif'}
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
+                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
                             {currentMenu?.week_dates ? `Période : ${currentMenu.week_dates}` : 'Mettez à jour le menu publié sur le site.'}
                         </p>
                     </div>
-                    <Link href="/admin/dashboard/menu-semaine" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#059669', textDecoration: 'none' }}>
+                    <Link href="/admin/dashboard/menu-semaine" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#059669', textDecoration: 'none' }}>
                         Gérer le menu de la semaine <ArrowRight size={14} />
                     </Link>
                 </div>
 
                 {/* 3. Carte de la galerie - rose */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderLeft: '3px solid #E11D48' }}>
+                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: 'rgba(225, 29, 72, 0.12)', borderRadius: '12px', color: '#E11D48' }}>
-                                <Camera size={24} />
+                            <div style={{ padding: '0.75rem', background: 'rgba(225, 29, 72, 0.10)', borderRadius: '12px', color: '#E11D48' }}>
+                                <Camera size={22} />
                             </div>
-                            <span style={{ background: 'rgba(225, 29, 72, 0.12)', color: '#E11D48', fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px', borderRadius: '20px' }}>
-                                {galleryPosts.length} MÉDIAS
+                            <span style={{ background: 'rgba(225, 29, 72, 0.10)', color: '#E11D48', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
+                                {galleryPosts.length} médias
                             </span>
                         </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '0.2rem' }}>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
                             Galerie &amp; Coulisses
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
+                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
                             Photos et vidéos publiées sur la page Galerie.
                         </p>
                     </div>
-                    <Link href="/admin/dashboard/galerie" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#E11D48', textDecoration: 'none' }}>
+                    <Link href="/admin/dashboard/galerie" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#E11D48', textDecoration: 'none' }}>
                         Gérer la galerie <ArrowRight size={14} />
                     </Link>
                 </div>
@@ -251,6 +251,18 @@ export default async function DashboardOverview() {
                             <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Téléphone, logo &amp; SEO</span>
                         </div>
                         <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#D97706' }} />
+                    </Link>
+
+                    {/* 9. Journal d'Activité / Logs - Vert émeraude */}
+                    <Link href="/admin/dashboard/logs" className="admin-shortcut-card" style={{ borderColor: 'rgba(5, 150, 105, 0.25)' }}>
+                        <div className="admin-shortcut-icon" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669' }}>
+                            <History size={22} />
+                        </div>
+                        <div>
+                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Journal d&apos;Activité</strong>
+                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Audit &amp; suivi des modifications</span>
+                        </div>
+                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#059669' }} />
                     </Link>
 
                 </div>

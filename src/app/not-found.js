@@ -2,7 +2,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import NotFoundView from '@/components/NotFoundView';
 import { getSiteInfo } from '@/lib/data';
-import './not-found.css';
 
 export const metadata = {
   title: 'Page non trouvée | Mamé Fricoto',

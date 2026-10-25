@@ -29,7 +29,65 @@ export default function InstagramGallery({ posts, siteInfo, showHeader = true })
         };
     }, [selectedIndex, handleKeyDown]);
 
-    if (!posts || posts.length === 0) return null;
+    if (!posts || posts.length === 0) {
+        return (
+            <div className="container" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
+                {showHeader && (
+                    <div className="gallery-header anim-up">
+                        <span className="label">{t('gallery.badge')}</span>
+                        <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
+                            {t('gallery.title')}<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>{t('gallery.titleItalic')}</em>
+                        </h2>
+                    </div>
+                )}
+                <div style={{
+                    maxWidth: '560px',
+                    margin: '1.5rem auto 0',
+                    padding: '2.5rem 1.75rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-soft)',
+                    borderRadius: 'var(--radius-md, 20px)',
+                    boxShadow: '0 8px 30px rgba(42, 30, 23, 0.05)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '1.25rem'
+                }}>
+                    <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: 'rgba(194, 87, 45, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--gold)'
+                    }}>
+                        <Instagram size={28} />
+                    </div>
+                    <div>
+                        <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.35rem', color: 'var(--text-1)', marginBottom: '0.5rem' }}>
+                            Nouvelles photos en cours de préparation
+                        </h3>
+                        <p style={{ color: 'var(--text-2)', fontSize: '0.92rem', lineHeight: '1.6', margin: 0 }}>
+                            Les photos de nos derniers plats faits maison et réceptions arrivent très vite. En attendant, découvrez nos actualités et réalisations sur Instagram !
+                        </p>
+                    </div>
+                    {siteInfo?.instagram && (
+                        <a
+                            href={siteInfo.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-gold"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}
+                        >
+                            <Instagram size={18} /> Voir notre Instagram
+                        </a>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     const selectedPost = selectedIndex !== null ? posts[selectedIndex] : null;
 

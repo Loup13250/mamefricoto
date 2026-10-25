@@ -20,7 +20,8 @@ import {
     Receipt,
     Sparkles,
     ChevronRight,
-    Languages
+    Languages,
+    History
 } from 'lucide-react';
 
 export default function AdminSidebarClient({ children, unreadCount = 0 }) {
@@ -42,6 +43,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
     const isMessagesActive = pathname === '/admin/dashboard/messages';
     const isSettingsActive = pathname === '/admin/dashboard/settings';
     const isTextesActive = pathname === '/admin/dashboard/textes';
+    const isLogsActive = pathname === '/admin/dashboard/logs';
 
     return (
         <div className="admin-dashboard-layout">
@@ -211,6 +213,18 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                         </div>
                         <span className="admin-nav-item-text">Textes du site</span>
                         {isTextesActive && <span className="admin-nav-active-pill" />}
+                    </Link>
+
+                    {/* 8. JOURNAL D'ACTIVITÉ / LOGS */}
+                    <Link
+                        href="/admin/dashboard/logs"
+                        className={`admin-nav-item nav-theme-emerald ${isLogsActive ? 'active' : ''}`}
+                    >
+                        <div className="admin-nav-item-icon">
+                            <History size={18} />
+                        </div>
+                        <span className="admin-nav-item-text">Journal d&apos;Activité</span>
+                        {isLogsActive && <span className="admin-nav-active-pill" />}
                     </Link>
                 </nav>
 

@@ -329,6 +329,7 @@ function AddSlidesFlow({ onCancel }) {
                 <ImageCropperModal
                     items={cropper.items}
                     targets={HERO_CROP_TARGETS}
+                    heroPreview={true}
                     title={cropper.mode === 'new' ? (cropper.items.length > 1 ? 'Cadrer vos photos' : 'Cadrer votre photo') : 'Modifier le cadrage'}
                     onCancel={() => setCropper(null)}
                     onConfirm={handleCropped}
@@ -601,6 +602,7 @@ function EditCarouselForm({ item, onCancel }) {
                 <ImageCropperModal
                     items={cropper.items}
                     targets={cropper.targets}
+                    heroPreview={true}
                     title={cropper.title}
                     onCancel={() => setCropper(null)}
                     onConfirm={handleCropped}

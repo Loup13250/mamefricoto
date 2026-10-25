@@ -183,6 +183,45 @@ export const ABOUT_CROP_TARGETS = [
     },
 ];
 
+/** Formats utilisés pour le logo principal du site (barre de navigation). */
+export const LOGO_CROP_TARGETS = [
+    {
+        key: 'logo',
+        label: 'Logo du site',
+        shortLabel: 'Logo',
+        ratioLabel: '3:1',
+        aspect: 3,
+        icon: 'image',
+        maxWidth: 1200,
+        quality: 0.92,
+        optional: false,
+        hint: 'Cadrage pour la barre de navigation et le haut du site',
+        aspectOptions: [
+            { label: 'Bandeau 3:1 (Idéal navigation)', shortLabel: '3:1', value: 3 },
+            { label: 'Rectangle 2:1', shortLabel: '2:1', value: 2 },
+            { label: 'Standard 16:9', shortLabel: '16:9', value: 16 / 9 },
+            { label: 'Standard 4:3', shortLabel: '4:3', value: 4 / 3 },
+            { label: 'Carré 1:1', shortLabel: '1:1', value: 1 },
+        ],
+    },
+];
+
+/** Formats utilisés pour le favicon / icône d'onglet navigateur. */
+export const FAVICON_CROP_TARGETS = [
+    {
+        key: 'favicon',
+        label: 'Icône d’onglet (Favicon)',
+        shortLabel: 'Favicon',
+        ratioLabel: '1:1',
+        aspect: 1,
+        icon: 'square',
+        maxWidth: 512,
+        quality: 0.95,
+        optional: false,
+        hint: 'Format carré 1:1 net pour l’onglet du navigateur web',
+    },
+];
+
 export const uid = () =>
     (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
@@ -496,7 +535,7 @@ export default function ImageCropperModal({
     targets = HERO_CROP_TARGETS,
     title = 'Cadrer vos photos',
     confirmLabel,
-    heroPreview = true,
+    heroPreview = false,
     onCancel,
     onConfirm,
     onComplete,

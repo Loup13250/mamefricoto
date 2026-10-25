@@ -17,7 +17,7 @@ export default function Header({ siteInfo }) {
 
     const phone = siteInfo?.phone || '07 43 64 64 11';
     const phoneTel = phone.replace(/\s+/g, '');
-    const logoSrc = siteInfo?.site_icon || siteInfo?.logo || '/icon.svg';
+    const logoSrc = siteInfo?.logo || siteInfo?.site_icon || '/icon.svg';
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
@@ -68,14 +68,14 @@ export default function Header({ siteInfo }) {
         <header className={`site-header ${isTop ? 'header--hero' : 'header--solid'}`}>
             <div className="container header-inner">
                 <Link href="/" className="logo-link" aria-label={`Mamé Fricoto - ${t('nav.home')}`}>
-                    <div className="logo-round-wrap">
+                    <div className="logo-brand-wrap">
                         <Image
                             src={logoSrc}
                             alt="Mamé Fricoto"
-                            width={48}
-                            height={48}
+                            width={160}
+                            height={52}
                             className="logo-img"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ height: '48px', width: 'auto', maxWidth: '170px', objectFit: 'contain' }}
                             priority
                             unoptimized
                         />

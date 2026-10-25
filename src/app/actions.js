@@ -24,6 +24,7 @@ import {
     parseCustomTexts,
     isEditableTextKey,
 } from '@/lib/siteTexts';
+import { logActivity } from '@/lib/logs';
 
 // --- OUTIL D'AUTHENTIFICATION ---
 export async function verifyAdminAuth() {
@@ -78,6 +79,14 @@ export async function changeAdminPassword(currentPassword, newPassword) {
 
     const newHashed = await hashPassword(newPassword);
     await db.prepare('UPDATE admin_users SET password = ? WHERE username = ?').run(newHashed, username);
+
+    await logActivity({
+        action: 'security',
+        category: 'Administration',
+        summary: `Modification du mot de passe administrateur pour "${username}"`,
+        username
+    });
+
     return { success: true, message: 'Mot de passe mis à jour avec succès.' };
 }
 
@@ -165,7 +174,7 @@ export async function updateSiteInfo(formData) {
     const fields = [
         'contact_email', 'notification_email', 'phone', 'address', 'address_en', 'hours', 'hours_en',
         'instagram', 'facebook', 'google_reviews', 'about_text', 'about_text_en',
-        'tagline', 'tagline_en', 'site_icon', 'formspree_url', 'smtp_pass', 'resend_api_key'
+        'tagline', 'tagline_en', 'formspree_url', 'smtp_pass', 'resend_api_key'
     ];
 
     const stmt = db.prepare(`
@@ -173,35 +182,214 @@ export async function updateSiteInfo(formData) {
         ON CONFLICT(key) DO UPDATE SET value = excluded.value
     `);
 
+    const updatedKeys = [];
     for (const field of fields) {
         const val = formData.get(field);
         if (val !== null && val !== undefined) {
             await stmt.run(field, val.toString().trim());
+            updatedKeys.push(field);
         }
     }
 
-    const logoFile = formData.get('logo_file') || formData.get('site_icon_file');
+    const logoFile = formData.get('logo_file');
+    const siteIconFile = formData.get('site_icon_file');
     const aboutFile = formData.get('about_file');
 
     if (logoFile && logoFile.size > 0) {
         const logoUrl = await saveUploadedFile(logoFile);
         if (logoUrl) {
             await stmt.run('logo', logoUrl);
-            await stmt.run('site_icon', logoUrl);
+            await logActivity({
+                action: 'update',
+                category: 'Logo & Paramètres',
+                summary: 'Mise à jour du logo principal (barre de navigation)',
+                details: { url: logoUrl, fileName: logoFile.name }
+            });
+        }
+    }
+
+    if (siteIconFile && siteIconFile.size > 0) {
+        const iconUrl = await saveUploadedFile(siteIconFile);
+        if (iconUrl) {
+            await stmt.run('site_icon', iconUrl);
+            await logActivity({
+                action: 'update',
+                category: 'Logo & Paramètres',
+                summary: "Mise à jour du favicon / icône d'onglet navigateur",
+                details: { url: iconUrl, fileName: siteIconFile.name }
+            });
         }
     }
 
     if (aboutFile && aboutFile.size > 0) {
         const aboutUrl = await saveUploadedFile(aboutFile);
-        if (aboutUrl) await stmt.run('about_image', aboutUrl);
+        if (aboutUrl) {
+            await stmt.run('about_image', aboutUrl);
+            await logActivity({
+                action: 'update',
+                category: 'À Propos',
+                summary: 'Changement de la photo principale À Propos',
+                details: { url: aboutUrl }
+            });
+        }
     }
 
+    if (updatedKeys.length > 0) {
+        await logActivity({
+            action: 'update',
+            category: 'Logo & Paramètres',
+            summary: `Mise à jour des coordonnées et paramètres (${updatedKeys.length} champs)`,
+            details: { fields: updatedKeys }
+        });
+    }
+
+    revalidatePath('/', 'layout');
     revalidatePath('/');
     revalidatePath('/contact');
     revalidatePath('/a-propos');
+    revalidatePath('/tarifs');
+    revalidatePath('/galerie');
     revalidatePath('/realisations');
     revalidatePath('/admin/dashboard/settings');
     return { success: true };
+}
+
+export async function updateSiteLogo(formData) {
+    try {
+        await requireAdminAuth();
+        const file = formData.get('logo_file');
+        if (!file || file.size === 0) return { error: 'Aucun fichier de logo fourni.' };
+
+        const db = getDb();
+        const logoUrl = await saveUploadedFile(file);
+        if (!logoUrl) return { error: "Erreur lors de l'enregistrement du logo." };
+
+        await db.prepare(`
+            INSERT INTO site_info (key, value) VALUES ('logo', ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `).run(logoUrl);
+
+        await logActivity({
+            action: 'update',
+            category: 'Logo & Paramètres',
+            summary: 'Changement du logo principal de navigation',
+            details: { url: logoUrl, fileName: file.name, size: file.size }
+        });
+
+        revalidatePath('/', 'layout');
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/settings');
+        return { success: true, url: logoUrl };
+    } catch (err) {
+        console.error('updateSiteLogo error:', err);
+        return { error: err.message || 'Erreur lors de la mise à jour du logo.' };
+    }
+}
+
+export async function updateSiteIcon(formData) {
+    try {
+        await requireAdminAuth();
+        const file = formData.get('site_icon_file');
+        if (!file || file.size === 0) return { error: "Aucun fichier d'icône fourni." };
+
+        const db = getDb();
+        const iconUrl = await saveUploadedFile(file);
+        if (!iconUrl) return { error: "Erreur lors de l'enregistrement de l'icône." };
+
+        await db.prepare(`
+            INSERT INTO site_info (key, value) VALUES ('site_icon', ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `).run(iconUrl);
+
+        await logActivity({
+            action: 'update',
+            category: 'Logo & Paramètres',
+            summary: "Changement de l'icône d'onglet navigateur (favicon)",
+            details: { url: iconUrl, fileName: file.name, size: file.size }
+        });
+
+        revalidatePath('/', 'layout');
+        revalidatePath('/');
+        revalidatePath('/admin/dashboard/settings');
+        return { success: true, url: iconUrl };
+    } catch (err) {
+        console.error('updateSiteIcon error:', err);
+        return { error: err.message || "Erreur lors de la mise à jour de l'icône." };
+    }
+}
+
+export async function clearActivityLogs() {
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+        await db.prepare('DELETE FROM activity_logs').run();
+        await logActivity({
+            action: 'delete',
+            category: 'Administration',
+            summary: "Réinitialisation complète du journal d'activité",
+        });
+        revalidatePath('/admin/dashboard/logs');
+        return { success: true };
+    } catch (err) {
+        console.error('clearActivityLogs error:', err);
+        return { error: err.message || 'Erreur lors de la suppression des logs.' };
+    }
+}
+
+export async function seedSampleGalleryPosts() {
+    try {
+        await requireAdminAuth();
+        const db = getDb();
+
+        const samples = [
+            {
+                title: 'Buffet Cocktail Événementiel',
+                title_en: 'Event Cocktail Buffet',
+                caption: 'Assortiment de bouchées salées, navettes provençales et verrines fraîches préparées avec passion.',
+                caption_en: 'Assortment of savory bites, Provençal navettes, and fresh verrines crafted with passion.',
+                image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop',
+                display_order: 1,
+            },
+            {
+                title: 'Plat Mijoté Traditionnel',
+                title_en: 'Traditional Slow-Cooked Dish',
+                caption: 'Nos plats du jour mijotent doucement dès le matin avec des produits frais du terroir provençal.',
+                caption_en: 'Our daily specials simmer gently from dawn with fresh local ingredients from Provence.',
+                image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop',
+                display_order: 2,
+            },
+            {
+                title: 'Douceurs & Desserts Maison',
+                title_en: 'Homemade Sweets & Desserts',
+                caption: 'Tartes de saison, gâteaux au citron et créations gourmandes pour sublimer vos réceptions.',
+                caption_en: 'Seasonal tarts, lemon cakes, and gourmet creations to enhance your celebrations.',
+                image_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200&auto=format&fit=crop',
+                display_order: 3,
+            }
+        ];
+
+        for (const post of samples) {
+            await db.prepare(`
+                INSERT INTO gallery_posts (title, title_en, caption, caption_en, image_url, thumbnail_url, media_type, display_order)
+                VALUES (?, ?, ?, ?, ?, ?, 'image', ?)
+            `).run(post.title, post.title_en, post.caption, post.caption_en, post.image_url, post.image_url, post.display_order);
+        }
+
+        await logActivity({
+            action: 'add',
+            category: 'Galerie',
+            summary: "Restauration de 3 photos culinaires d'exemple dans la galerie",
+            details: { count: samples.length }
+        });
+
+        revalidatePath('/galerie');
+        revalidatePath('/realisations');
+        revalidatePath('/admin/dashboard/galerie');
+        return { success: true };
+    } catch (err) {
+        console.error('seedSampleGalleryPosts error:', err);
+        return { error: err.message || "Erreur lors de l'ajout des photos d'exemple." };
+    }
 }
 
 // --- TEXTES DU SITE (FR / EN) ---
@@ -248,6 +436,12 @@ export async function saveSiteTexts(updates) {
             const newTaglineEn = updates.en['about.pageTagline'] ?? updates.en['footer.tagline'];
             if (newTaglineEn) await stmtInfo.run('tagline_en', newTaglineEn);
         }
+
+        await logActivity({
+            action: 'update',
+            category: 'Textes du site',
+            summary: 'Mise à jour des textes édités du site (FR / EN)',
+        });
 
         revalidatePath('/', 'layout');
         revalidatePath('/');
@@ -332,6 +526,14 @@ export async function addWeeklyMenu(formData) {
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/menu-semaine');
+
+        await logActivity({
+            action: 'add',
+            category: 'Menu Semaine',
+            summary: `Ajout du menu de la semaine : "${title}"`,
+            details: { title, is_current }
+        });
+
         return { success: true };
     } catch (err) {
         console.error('[addWeeklyMenu Error]:', err);
@@ -424,6 +626,13 @@ export async function editWeeklyMenu(formData) {
             title, title_en, description, description_en, mainImageUrl, mainImageUrlEn, is_current, id
         );
 
+        await logActivity({
+            action: 'update',
+            category: 'Menu Semaine',
+            summary: `Modification du menu : "${title}" (ID #${id})`,
+            details: { id, title, is_current }
+        });
+
         revalidatePath('/');
         revalidatePath('/admin/dashboard/menu-semaine');
         return { success: true };
@@ -440,11 +649,19 @@ export async function deleteWeeklyMenu(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
+        const menu = await db.prepare('SELECT title FROM weekly_menus WHERE id = ?').get(id);
         const images = await db.prepare('SELECT image_url FROM weekly_menu_images WHERE menu_id = ?').all(id);
         images.forEach(img => deleteLocalFileIfPresent(img.image_url));
 
         await db.prepare('DELETE FROM weekly_menu_images WHERE menu_id = ?').run(id);
         await db.prepare('DELETE FROM weekly_menus WHERE id = ?').run(id);
+
+        await logActivity({
+            action: 'delete',
+            category: 'Menu Semaine',
+            summary: `Suppression du menu de la semaine : "${menu?.title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title: menu?.title }
+        });
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/menu-semaine');
@@ -462,8 +679,17 @@ export async function toggleWeeklyMenuCurrent(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
+        const menu = await db.prepare('SELECT title FROM weekly_menus WHERE id = ?').get(id);
         await db.prepare('UPDATE weekly_menus SET is_current = 0').run();
         await db.prepare('UPDATE weekly_menus SET is_current = 1 WHERE id = ?').run(id);
+
+        await logActivity({
+            action: 'toggle',
+            category: 'Menu Semaine',
+            summary: `Mise en avant du menu : "${menu?.title || 'Sans titre'}" comme menu actif`,
+            details: { id, title: menu?.title }
+        });
+
         revalidatePath('/');
         revalidatePath('/admin/dashboard/menu-semaine');
         return { success: true };
@@ -512,6 +738,14 @@ export async function addCarouselImage(formData) {
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
+
+        await logActivity({
+            action: 'add',
+            category: 'Carrousel Bannière',
+            summary: `Ajout d'une diapositive au carrousel : "${title || 'Sans titre'}"`,
+            details: { title, fit_mode, image_url }
+        });
+
         return { success: true };
     } catch (err) {
         console.error('addCarouselImage error:', err);
@@ -526,13 +760,21 @@ export async function deleteCarouselImage(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
-        const img = await db.prepare('SELECT image_url, mobile_image_url FROM carousel_images WHERE id = ?').get(id);
+        const img = await db.prepare('SELECT title, image_url, mobile_image_url FROM carousel_images WHERE id = ?').get(id);
         if (img) {
             deleteLocalFileIfPresent(img.image_url);
             deleteLocalFileIfPresent(img.mobile_image_url);
         }
 
         await db.prepare('DELETE FROM carousel_images WHERE id = ?').run(id);
+
+        await logActivity({
+            action: 'delete',
+            category: 'Carrousel Bannière',
+            summary: `Suppression de la diapositive : "${img?.title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title: img?.title }
+        });
+
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
         return { success: true };
@@ -589,6 +831,13 @@ export async function editCarouselImage(formData) {
             SET title = ?, title_en = ?, subtitle = ?, subtitle_en = ?, image_url = ?, mobile_image_url = ?, fit_mode = ?, display_order = ?
             WHERE id = ?
         `).run(title, title_en, subtitle, subtitle_en, image_url, mobile_image_url, fit_mode, display_order, id);
+
+        await logActivity({
+            action: 'update',
+            category: 'Carrousel Bannière',
+            summary: `Modification de la diapositive : "${title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title, fit_mode }
+        });
 
         revalidatePath('/');
         revalidatePath('/admin/dashboard/carousel');
@@ -686,6 +935,14 @@ export async function addGalleryPost(formData) {
         revalidatePath('/realisations');
         revalidatePath('/galerie');
         revalidatePath('/admin/dashboard/galerie');
+
+        await logActivity({
+            action: 'add',
+            category: 'Galerie',
+            summary: `Ajout d'une ${media_type === 'video' ? 'vidéo' : 'photo'} dans la galerie : "${title || 'Sans titre'}"`,
+            details: { title, media_type, image_url }
+        });
+
         return { success: true };
     } catch (err) {
         console.error('[Gallery] Erreur :', err);
@@ -738,6 +995,13 @@ export async function editGalleryPost(formData) {
             );
         }
 
+        await logActivity({
+            action: 'update',
+            category: 'Galerie',
+            summary: `Modification d'une publication de la galerie : "${title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title, newImageUrl: Boolean(newImageUrl), newThumbUrl: Boolean(newThumbUrl) }
+        });
+
         revalidatePath('/');
         revalidatePath('/realisations');
         revalidatePath('/galerie');
@@ -755,7 +1019,7 @@ export async function deleteGalleryPost(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
-    const post = await db.prepare('SELECT image_url, thumbnail_url FROM gallery_posts WHERE id = ?').get(id);
+    const post = await db.prepare('SELECT title, image_url, thumbnail_url FROM gallery_posts WHERE id = ?').get(id);
     if (post) {
         deleteLocalFileIfPresent(post.image_url);
         if (post.thumbnail_url && post.thumbnail_url !== post.image_url) {
@@ -764,6 +1028,14 @@ export async function deleteGalleryPost(idOrFormData) {
     }
 
     await db.prepare('DELETE FROM gallery_posts WHERE id = ?').run(id);
+
+    await logActivity({
+        action: 'delete',
+        category: 'Galerie',
+        summary: `Suppression d'une photo/vidéo de la galerie : "${post?.title || 'Sans titre'}" (ID #${id})`,
+        details: { id, title: post?.title, image_url: post?.image_url }
+    });
+
     revalidatePath('/');
     revalidatePath('/realisations');
     revalidatePath('/galerie');
@@ -1170,6 +1442,14 @@ export async function addService(formData) {
         revalidatePath('/tarifs');
         revalidatePath('/admin/dashboard/a-propos');
         revalidatePath('/admin/dashboard/prestations');
+
+        await logActivity({
+            action: 'add',
+            category: 'Prestations',
+            summary: `Ajout d'une prestation : "${title}"`,
+            details: { title, num: formattedNum, badge }
+        });
+
         return { success: true };
     } catch (err) {
         console.error('[addService Error]:', err);
@@ -1200,6 +1480,13 @@ export async function editService(formData) {
             num, title, title_en, description, description_en, badge, badge_en, id
         );
 
+        await logActivity({
+            action: 'update',
+            category: 'Prestations',
+            summary: `Modification de la prestation : "${title}" (ID #${id})`,
+            details: { id, title, num }
+        });
+
         revalidatePath('/');
         revalidatePath('/a-propos');
         revalidatePath('/tarifs');
@@ -1219,7 +1506,15 @@ export async function deleteService(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
+        const srv = await db.prepare('SELECT title FROM services WHERE id = ?').get(id);
         await db.prepare('DELETE FROM services WHERE id = ?').run(id);
+
+        await logActivity({
+            action: 'delete',
+            category: 'Prestations',
+            summary: `Suppression de la prestation : "${srv?.title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title: srv?.title }
+        });
 
         revalidatePath('/');
         revalidatePath('/a-propos');
@@ -1318,6 +1613,13 @@ export async function updateAboutInfo(formData) {
             if (aboutUrl) await stmt.run('about_image', aboutUrl);
         }
 
+        await logActivity({
+            action: 'update',
+            category: 'À Propos',
+            summary: "Mise à jour des textes et de la photo de la page À Propos",
+            details: { hasNewImage: Boolean(aboutFile && aboutFile.size > 0) }
+        });
+
         revalidatePath('/', 'layout');
         revalidatePath('/');
         revalidatePath('/a-propos');
@@ -1413,6 +1715,14 @@ export async function addPricingDocument(formData) {
         revalidatePath('/tarifs');
         revalidatePath('/admin/dashboard/tarifs');
         revalidatePath('/admin/dashboard/prestations');
+
+        await logActivity({
+            action: 'add',
+            category: 'Tarifs & Cartes',
+            summary: `Ajout d'une carte/tarif : "${title}" (${file_type === 'pdf' ? 'PDF' : 'Images'})`,
+            details: { title, file_type }
+        });
+
         return { success: true };
     } catch (err) {
         console.error('[addPricingDocument Error]:', err);
@@ -1516,6 +1826,13 @@ export async function editPricingDocument(formData) {
             WHERE id = ?
         `).run(title, title_en, description, description_en, mainFileUrl, mainFileUrlEn, id);
 
+        await logActivity({
+            action: 'update',
+            category: 'Tarifs & Cartes',
+            summary: `Modification d'une carte/tarif : "${title}" (ID #${id})`,
+            details: { id, title }
+        });
+
         revalidatePath('/tarifs');
         revalidatePath('/admin/dashboard/tarifs');
         revalidatePath('/admin/dashboard/prestations');
@@ -1533,6 +1850,7 @@ export async function deletePricingDocument(idOrFormData) {
         if (!id) return { error: 'ID invalide' };
 
         const db = getDb();
+        const doc = await db.prepare('SELECT title FROM pricing_documents WHERE id = ?').get(id);
         try {
             const subImages = await db.prepare('SELECT image_url FROM pricing_document_images WHERE doc_id = ?').all(id);
             subImages.forEach(img => deleteLocalFileIfPresent(img.image_url));
@@ -1540,6 +1858,13 @@ export async function deletePricingDocument(idOrFormData) {
         } catch {}
 
         await db.prepare('DELETE FROM pricing_documents WHERE id = ?').run(id);
+
+        await logActivity({
+            action: 'delete',
+            category: 'Tarifs & Cartes',
+            summary: `Suppression de la carte/tarif : "${doc?.title || 'Sans titre'}" (ID #${id})`,
+            details: { id, title: doc?.title }
+        });
 
         revalidatePath('/tarifs');
         revalidatePath('/admin/dashboard/tarifs');
@@ -1837,6 +2162,13 @@ export async function addFixedPrice(formData) {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(name, name_en, price, price_en || price, details, details_en, badge, badge_en, category, category_en, nextOrder);
 
+    await logActivity({
+        action: 'add',
+        category: 'Tarifs Repas',
+        summary: `Ajout du tarif repas : "${name}" (${price})`,
+        details: { name, price, category }
+    });
+
     revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
@@ -1869,6 +2201,13 @@ export async function editFixedPrice(formData) {
         WHERE id = ?
     `).run(name, name_en, price, price_en || price, details, details_en, badge, badge_en, category, category_en, id);
 
+    await logActivity({
+        action: 'update',
+        category: 'Tarifs Repas',
+        summary: `Modification du tarif repas : "${name}" (ID #${id})`,
+        details: { id, name, price }
+    });
+
     revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
     return { success: true };
@@ -1880,7 +2219,15 @@ export async function deleteFixedPrice(idOrFormData) {
     if (!id) return { error: 'ID invalide' };
 
     const db = getDb();
+    const priceRow = await db.prepare('SELECT name FROM fixed_prices WHERE id = ?').get(id);
     await db.prepare('DELETE FROM fixed_prices WHERE id = ?').run(id);
+
+    await logActivity({
+        action: 'delete',
+        category: 'Tarifs Repas',
+        summary: `Suppression du tarif repas : "${priceRow?.name || 'Sans nom'}" (ID #${id})`,
+        details: { id, name: priceRow?.name }
+    });
 
     revalidatePath('/tarifs');
     revalidatePath('/admin/dashboard/prestations');
@@ -1991,6 +2338,14 @@ export async function restoreDatabaseFromBackup(formData) {
             }
         }
 
+        await logActivity({
+            action: 'restore',
+            category: 'Administration',
+            summary: "Restauration complète de la base de données depuis une sauvegarde",
+            details: { fileName: backupFile.name, size: backupFile.size }
+        });
+
+        revalidatePath('/', 'layout');
         revalidatePath('/');
         revalidatePath('/a-propos');
         revalidatePath('/contact');
@@ -2007,3 +2362,4 @@ export async function restoreDatabaseFromBackup(formData) {
         return { error: 'Erreur lors de la restauration: ' + err.message };
     }
 }
+

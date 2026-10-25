@@ -1,11 +1,12 @@
 'use client';
 import { useState, useRef, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost, moveGalleryPostPosition } from '@/app/actions';
+import { addGalleryPost, editGalleryPost, deleteGalleryPost, reorderGalleryPost, moveGalleryPostPosition, seedSampleGalleryPosts } from '@/app/actions';
 import ImageCropperModal, { GALLERY_CROP_TARGETS, uid } from '@/components/admin/ImageCropper';
 import {
     Plus, Trash2, Pencil, X, Film, UploadCloud, Loader2,
-    CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight, Crop
+    CheckCircle2, AlertCircle, Play, ArrowLeft, ArrowRight, Crop, Sparkles, Camera
 } from 'lucide-react';
 
 /* =====================================================
@@ -188,6 +189,25 @@ export default function GalleryClient({ posts }) {
     const [isDeleting, startDeleteTransition] = useTransition();
     const inputRef = useRef(null);
     const formRef = useRef(null);
+    const router = useRouter();
+    const [isSeeding, setIsSeeding] = useState(false);
+
+    const handleSeed = async () => {
+        if (!confirm("Voulez-vous restaurer 3 exemples de réalisations culinaires dans la galerie ?")) return;
+        setIsSeeding(true);
+        try {
+            const res = await seedSampleGalleryPosts();
+            if (res?.error) {
+                alert(res.error);
+            } else {
+                router.refresh();
+            }
+        } catch (e) {
+            alert("Erreur lors de la restauration : " + e.message);
+        } finally {
+            setIsSeeding(false);
+        }
+    };
 
     const handleFilesSelect = (fileList) => {
         const all = Array.from(fileList || []);
@@ -958,8 +978,55 @@ export default function GalleryClient({ posts }) {
                 </div>
 
                 {items.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '6px', color: 'var(--admin-text-muted)' }}>
-                        Aucune publication pour le moment.
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '3.5rem 2rem',
+                        background: 'linear-gradient(180deg, rgba(30, 27, 24, 0.9) 0%, rgba(20, 18, 16, 0.95) 100%)',
+                        border: '1px dashed rgba(200, 169, 110, 0.35)',
+                        borderRadius: '12px',
+                        color: 'var(--admin-text-muted)'
+                    }}>
+                        <div style={{
+                            width: '56px',
+                            height: '56px',
+                            margin: '0 auto 1.25rem',
+                            borderRadius: '50%',
+                            background: 'rgba(200, 169, 110, 0.12)',
+                            color: 'var(--admin-gold)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Camera size={28} />
+                        </div>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '0.4rem' }}>
+                            Aucune photo publiée pour le moment
+                        </h3>
+                        <p style={{ fontSize: '0.88rem', color: 'var(--admin-text-muted)', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: '1.5' }}>
+                            La galerie en ligne est actuellement vide (peut-être après une session de test ou de suppression). Vous pouvez ajouter vos nouvelles photos ci-dessus, ou restaurer 3 exemples culinaires en 1 clic.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleSeed}
+                            disabled={isSeeding}
+                            className="admin-btn admin-btn-secondary"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.6rem',
+                                padding: '10px 20px',
+                                background: 'rgba(200, 169, 110, 0.15)',
+                                borderColor: 'var(--admin-gold)',
+                                color: 'var(--admin-gold)',
+                                fontWeight: '600'
+                            }}
+                        >
+                            {isSeeding ? (
+                                <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Restauration en cours...</>
+                            ) : (
+                                <><Sparkles size={16} /> Restaurer 3 exemples culinaires</>
+                            )}
+                        </button>
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>

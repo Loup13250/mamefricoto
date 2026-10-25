@@ -10,7 +10,6 @@ import {
     Image as ImageIcon, 
     Settings, 
     LogOut, 
-    ChefHat, 
     Mail, 
     Camera, 
     Menu as MenuIcon, 
@@ -18,8 +17,6 @@ import {
     ExternalLink,
     Heart,
     Receipt,
-    Sparkles,
-    ChevronRight,
     Languages,
     History
 } from 'lucide-react';
@@ -50,20 +47,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
             {/* Header Mobile */}
             <header className="admin-mobile-header">
                 <a href="/" target="_blank" rel="noopener noreferrer" className="brand-title">
-                    <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #C8A96E, #9C7232)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#0E0D0C',
-                        boxShadow: '0 2px 8px rgba(200, 169, 110, 0.3)'
-                    }}>
-                        <ChefHat size={18} />
-                    </div>
-                    <span style={{ fontWeight: '600', letterSpacing: '0.02em' }}>Mamé Fricoto</span>
+                    <span>Mamé Fricoto</span>
                 </a>
                 <button
                     className="admin-mobile-toggle"
@@ -85,13 +69,8 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                 {/* En-tête de marque */}
                 <div className="admin-brand-header">
                     <a href="/" target="_blank" rel="noopener noreferrer" className="admin-brand-link" title="Voir le site public">
-                        <div className="admin-brand-icon">
-                            <ChefHat size={22} />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span className="admin-brand-title">Mamé Fricoto</span>
-                            <span className="admin-brand-sub">Administration Traiteur</span>
-                        </div>
+                        <span className="admin-brand-title">Mamé Fricoto</span>
+                        <span className="admin-brand-sub">Administration</span>
                     </a>
                 </div>
 
@@ -121,14 +100,14 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                                 href="/admin/dashboard/menu-semaine"
                                 className={`admin-nav-subitem ${isMenuSemaineActive ? 'active' : ''}`}
                             >
-                                <CalendarDays size={14} style={{ color: '#059669' }} />
+                                <CalendarDays size={14} />
                                 <span>Menu de la Semaine</span>
                             </Link>
                             <Link
                                 href="/admin/dashboard/carousel"
                                 className={`admin-nav-subitem ${isCarouselActive ? 'active' : ''}`}
                             >
-                                <ImageIcon size={14} style={{ color: '#7C3AED' }} />
+                                <ImageIcon size={14} />
                                 <span>Carrousel Bannière</span>
                             </Link>
                         </div>
@@ -187,7 +166,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                     </Link>
 
                     {/* SECTION: SYSTÈME */}
-                    <div className="admin-nav-section-title" style={{ marginTop: '1.25rem' }}>
+                    <div className="admin-nav-section-title" style={{ marginTop: '0.6rem' }}>
                         <span>PARAMÈTRES</span>
                     </div>
 
@@ -241,7 +220,7 @@ export default function AdminSidebarClient({ children, unreadCount = 0 }) {
                         <span>Voir le site public</span>
                     </a>
 
-                    <form action={adminLogout} style={{ marginTop: '0.5rem' }}>
+                    <form action={adminLogout}>
                         <button
                             type="submit"
                             className="admin-sidebar-logout-btn"

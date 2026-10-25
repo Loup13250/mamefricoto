@@ -9,8 +9,9 @@ import { getDb } from './db';
  * @param {string} entry.summary - Résumé en français clair et explicite (ex: "Suppression de la photo 'Paëlla'")
  * @param {Object|string|null} [entry.details] - Informations complémentaires ou objet JSON
  * @param {string} [entry.username] - Identifiant de l'auteur (défaut: 'Admin')
+ * @param {string|null} [entry.ip] - Adresse IP du client (utile pour les connexions)
  */
-export async function logActivity({ action, category, summary, details = null, username = 'Admin' }) {
+export async function logActivity({ action, category, summary, details = null, username = 'Admin', ip = null }) {
     try {
         const db = getDb();
         const detailsStr = details && typeof details === 'object'
@@ -19,9 +20,9 @@ export async function logActivity({ action, category, summary, details = null, u
 
         const nowIso = new Date().toISOString();
         await db.prepare(`
-            INSERT INTO activity_logs (created_at, action, category, summary, details, username)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `).run(nowIso, action, category, summary, detailsStr, username);
+            INSERT INTO activity_logs (created_at, action, category, summary, details, username, ip)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(nowIso, action, category, summary, detailsStr, username, ip);
     } catch (err) {
         console.error('[logActivity Error]:', err);
     }
@@ -37,7 +38,7 @@ export async function getActivityLogs(limit = 150) {
     try {
         const db = getDb();
         const rows = await db.prepare(`
-            SELECT id, created_at, action, category, summary, details, username
+            SELECT id, created_at, action, category, summary, details, username, ip
             FROM activity_logs
             ORDER BY created_at DESC, id DESC
             LIMIT ?

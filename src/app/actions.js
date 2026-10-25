@@ -52,6 +52,15 @@ export async function adminLogout() {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE)?.value;
     if (token) {
+        const user = await getSessionUser(token).catch(() => null);
+        const reqHeaders = await headers();
+        await logActivity({
+            action: 'logout',
+            category: 'Connexions',
+            summary: `Déconnexion de l'administration (${user || 'Admin'})`,
+            username: user || 'Admin',
+            ip: clientIp(reqHeaders),
+        });
         await destroySession(token).catch(() => {});
     }
     cookieStore.delete(SESSION_COOKIE);

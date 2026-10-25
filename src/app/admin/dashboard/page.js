@@ -1,17 +1,39 @@
 import Link from 'next/link';
-import { getSiteInfo, getCurrentWeeklyMenu, getContactMessages, getUnreadMessageCount, getGalleryPosts } from '@/lib/data';
-import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, Clock, Phone, MapPin, MessageSquare, Image as ImageIcon, Sparkles, Receipt, Heart, Languages, History } from 'lucide-react';
-
+import { getCurrentWeeklyMenu, getContactMessages, getUnreadMessageCount, getGalleryPosts } from '@/lib/data';
+import { CalendarDays, Mail, Camera, Settings, ExternalLink, ArrowRight, MessageSquare, Image as ImageIcon, Receipt, Heart, Languages, History } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Dashboard | Admin Mamé Fricoto',
+    title: 'Tableau de bord | Admin Mamé Fricoto',
 };
 
+const SHORTCUTS = [
+    { href: '/admin/dashboard/menu-semaine', icon: CalendarDays, title: 'Menu de la semaine', text: 'Mettre à jour la carte' },
+    { href: '/admin/dashboard/carousel', icon: ImageIcon, title: 'Carrousel d\u2019accueil', text: 'Photos plein écran' },
+    { href: '/admin/dashboard/tarifs', icon: Receipt, title: 'Tarifs & cartes', text: 'Formules et cartes PDF' },
+    { href: '/admin/dashboard/galerie', icon: Camera, title: 'Galerie photos', text: 'Coulisses et plats' },
+    { href: '/admin/dashboard/a-propos', icon: Heart, title: 'À propos', text: 'Photo officielle et histoire' },
+    { href: '/admin/dashboard/messages', icon: MessageSquare, title: 'Contact & devis', text: 'Boîte de réception' },
+    { href: '/admin/dashboard/textes', icon: Languages, title: 'Textes du site', text: 'Éditeur bilingue FR / EN' },
+    { href: '/admin/dashboard/settings', icon: Settings, title: 'Infos & réglages', text: 'Téléphone, logo et favicon' },
+    { href: '/admin/dashboard/logs', icon: History, title: 'Journal d\u2019activité', text: 'Modifications et connexions' },
+];
+
+function frenchToday() {
+    const now = new Date();
+    const hour = Number(new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', hour12: false, timeZone: 'Europe/Paris' }).format(now));
+    const date = new Intl.DateTimeFormat('fr-FR', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris',
+    }).format(now);
+    return {
+        greeting: hour >= 18 || hour < 5 ? 'Bonsoir' : 'Bonjour',
+        date: date.charAt(0).toUpperCase() + date.slice(1),
+    };
+}
+
 export default async function DashboardOverview() {
-    const [info, currentMenu, messages, unreadCount, galleryPosts] = await Promise.all([
-        getSiteInfo(),
+    const [currentMenu, messages, unreadCount, galleryPosts] = await Promise.all([
         getCurrentWeeklyMenu(),
         getContactMessages(),
         getUnreadMessageCount(),
@@ -19,25 +41,30 @@ export default async function DashboardOverview() {
     ]);
 
     const recentMessages = messages.slice(0, 3);
+    const { greeting, date } = frenchToday();
 
     return (
         <div className="anim-fade" style={{ width: '100%' }}>
-            {/* En-tête avec lien vers le site */}
-            <div style={{
+            {/* En-tête */}
+            <header style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'flex-start',
+                alignItems: 'flex-end',
                 flexWrap: 'wrap',
                 gap: '1rem',
-                marginBottom: '2rem'
+                marginBottom: '2.25rem',
+                paddingBottom: '1.5rem',
+                borderBottom: '1px solid var(--admin-border)',
             }}>
                 <div>
-                    <span className="label" style={{ display: 'block', marginBottom: '0.4rem' }}>Tableau de bord</span>
-                    <h1 className="title-md" style={{ color: 'var(--admin-text)', marginBottom: '0.3rem' }}>
-                        Bienvenue, Mamé Fricoto 👋
+                    <span style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--admin-gold-dark)' }}>
+                        {date}
+                    </span>
+                    <h1 style={{ fontSize: '2.6rem', lineHeight: 1.05, color: 'var(--admin-text)', margin: 0 }}>
+                        {greeting}, Mamé Fricoto
                     </h1>
-                    <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.95rem' }}>
-                        Gérez vos menus, messages et visuels en toute simplicité.
+                    <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.95rem', margin: '0.6rem 0 0' }}>
+                        Menus, messages et visuels du site, au même endroit.
                     </p>
                 </div>
                 <a
@@ -45,290 +72,129 @@ export default async function DashboardOverview() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="admin-btn admin-btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '10px 18px', fontSize: '0.85rem' }}
                 >
-                    <ExternalLink size={16} /> Voir le site public
+                    <ExternalLink size={15} /> Voir le site public
                 </a>
-            </div>
+            </header>
 
-            {/* Information Persistance Cloud Vercel */}
+            {/* Information de persistance (uniquement si la base cloud n'est pas liée) */}
             {!process.env.TURSO_DATABASE_URL && (
                 <div style={{
-                    background: 'rgba(200, 169, 110, 0.1)',
-                    border: '1px solid rgba(200, 169, 110, 0.3)',
-                    borderRadius: '8px',
-                    padding: '1.25rem 1.5rem',
+                    border: '1px solid var(--admin-border)',
+                    borderRadius: 'var(--admin-radius-md)',
+                    padding: '1rem 1.25rem',
                     marginBottom: '2rem',
-                    color: 'var(--admin-text)',
-                    fontSize: '0.9rem',
-                    lineHeight: '1.6'
+                    color: 'var(--admin-text-muted)',
+                    fontSize: '0.88rem',
+                    lineHeight: 1.6,
+                    background: 'var(--admin-card-bg)',
                 }}>
-                    <strong style={{ color: 'var(--admin-gold)', display: 'block', fontSize: '1rem', marginBottom: '0.3rem' }}>
-                        ℹ️ Astuce Persistance Permanente (Vercel Serverless)
-                    </strong>
-                    Sur Vercel, les conteneurs de serveur sont éphémères. Pour que l&apos;intégralité de vos ajouts et suppressions (carrousel, galerie, menus) soient sauvegardés à 100% pour toujours, il suffit de lier les 2 variables d&apos;environnement gratuites <code>TURSO_DATABASE_URL</code> et <code>TURSO_AUTH_TOKEN</code> dans Vercel (Settings ➔ Environment Variables).
+                    <strong style={{ color: 'var(--admin-text)' }}>Astuce persistance (Vercel).</strong>{' '}
+                    Les conteneurs Vercel sont éphémères : pour conserver à 100 % vos ajouts et suppressions, liez les variables d&apos;environnement <code>TURSO_DATABASE_URL</code> et <code>TURSO_AUTH_TOKEN</code> (Settings ➔ Environment Variables).
                 </div>
             )}
 
-            {/* Cartes de notifications et de statut */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
-                
-                {/* 1. Carte des messages - bleu */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px', position: 'relative' }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: unreadCount > 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(2, 132, 199, 0.10)', borderRadius: '12px', color: unreadCount > 0 ? '#ef4444' : '#0284C7' }}>
-                                <Mail size={22} />
-                            </div>
-                            {unreadCount > 0 ? (
-                                <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
-                                    {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
-                                </span>
-                            ) : (
-                                <span style={{ background: 'rgba(2, 132, 199, 0.08)', color: '#0284C7', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
-                                    À jour
-                                </span>
-                            )}
-                        </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
-                            Messages &amp; Demandes
-                        </h3>
-                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
-                            {messages.length} message{messages.length > 1 ? 's' : ''} reçus dans votre boîte de contact.
-                        </p>
+            {/* Trois tuiles d'état : entièrement cliquables */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.1rem', marginBottom: '3rem' }}>
+                <Link href="/admin/dashboard/messages" className="admin-tile">
+                    <div className="admin-tile-top">
+                        <span className="admin-tile-eyebrow"><Mail size={14} /> Messages</span>
+                        <span className={`admin-tile-status ${unreadCount > 0 ? 'is-alert' : ''}`}>
+                            {unreadCount > 0 ? `${unreadCount} non lu${unreadCount > 1 ? 's' : ''}` : 'À jour'}
+                        </span>
                     </div>
-                    <Link href="/admin/dashboard/messages" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#0284C7', textDecoration: 'none' }}>
-                        Accéder aux messages <ArrowRight size={14} />
-                    </Link>
-                </div>
+                    <h2 className="admin-tile-title">Messages &amp; demandes</h2>
+                    <p className="admin-tile-text">
+                        {messages.length} message{messages.length > 1 ? 's' : ''} reçu{messages.length > 1 ? 's' : ''} dans votre boîte de contact.
+                    </p>
+                    <span className="admin-tile-go">Accéder aux messages <ArrowRight size={15} /></span>
+                </Link>
 
-                {/* 2. Carte du menu de la semaine - vert */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px' }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: 'rgba(5, 150, 105, 0.10)', borderRadius: '12px', color: '#059669' }}>
-                                <CalendarDays size={22} />
-                            </div>
-                            <span style={{ background: 'rgba(5, 150, 105, 0.10)', color: '#059669', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
-                                Menu en ligne
-                            </span>
-                        </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
-                            {currentMenu ? currentMenu.title : 'Aucun menu actif'}
-                        </h3>
-                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
-                            {currentMenu?.week_dates ? `Période : ${currentMenu.week_dates}` : 'Mettez à jour le menu publié sur le site.'}
-                        </p>
+                <Link href="/admin/dashboard/menu-semaine" className="admin-tile">
+                    <div className="admin-tile-top">
+                        <span className="admin-tile-eyebrow"><CalendarDays size={14} /> Menu de la semaine</span>
+                        <span className={`admin-tile-status ${currentMenu ? '' : 'is-neutral'}`}>
+                            {currentMenu ? 'En ligne' : 'Aucun menu'}
+                        </span>
                     </div>
-                    <Link href="/admin/dashboard/menu-semaine" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#059669', textDecoration: 'none' }}>
-                        Gérer le menu de la semaine <ArrowRight size={14} />
-                    </Link>
-                </div>
+                    <h2 className="admin-tile-title">{currentMenu ? currentMenu.title : 'Aucun menu actif'}</h2>
+                    <p className="admin-tile-text">
+                        {currentMenu?.week_dates ? `Période : ${currentMenu.week_dates}` : 'Mettez à jour le menu publié sur le site.'}
+                    </p>
+                    <span className="admin-tile-go">Gérer le menu <ArrowRight size={15} /></span>
+                </Link>
 
-                {/* 3. Carte de la galerie - rose */}
-                <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '16px' }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.75rem', background: 'rgba(225, 29, 72, 0.10)', borderRadius: '12px', color: '#E11D48' }}>
-                                <Camera size={22} />
-                            </div>
-                            <span style={{ background: 'rgba(225, 29, 72, 0.10)', color: '#E11D48', fontSize: '0.75rem', fontWeight: '600', padding: '3px 10px', borderRadius: '20px' }}>
-                                {galleryPosts.length} médias
-                            </span>
-                        </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: '650', color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
-                            Galerie &amp; Coulisses
-                        </h3>
-                        <p style={{ fontSize: '0.86rem', color: 'var(--admin-text-muted)', lineHeight: '1.45' }}>
-                            Photos et vidéos publiées sur la page Galerie.
-                        </p>
+                <Link href="/admin/dashboard/galerie" className="admin-tile">
+                    <div className="admin-tile-top">
+                        <span className="admin-tile-eyebrow"><Camera size={14} /> Galerie</span>
+                        <span className={`admin-tile-status ${galleryPosts.length > 0 ? '' : 'is-neutral'}`}>
+                            {galleryPosts.length > 0 ? `${galleryPosts.length} média${galleryPosts.length > 1 ? 's' : ''}` : 'Vide'}
+                        </span>
                     </div>
-                    <Link href="/admin/dashboard/galerie" style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '550', color: '#E11D48', textDecoration: 'none' }}>
-                        Gérer la galerie <ArrowRight size={14} />
-                    </Link>
-                </div>
-
+                    <h2 className="admin-tile-title">Galerie &amp; coulisses</h2>
+                    <p className="admin-tile-text">Photos et vidéos publiées sur la page Galerie.</p>
+                    <span className="admin-tile-go">Gérer la galerie <ArrowRight size={15} /></span>
+                </Link>
             </div>
 
-            {/* Grille de raccourcis (8 raccourcis colorés) */}
-            <div style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Sparkles size={18} style={{ color: 'var(--admin-gold)' }} /> Raccourcis de Gestion
-                </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-                    
-                    {/* 1. Menu de la semaine - Vert émeraude */}
-                    <Link href="/admin/dashboard/menu-semaine" className="admin-shortcut-card" style={{ borderColor: 'rgba(5, 150, 105, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669' }}>
-                            <CalendarDays size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Menu Semaine</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Mettre à jour la carte</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#059669' }} />
-                    </Link>
-
-                    {/* 2. Carrousel Bannière - Violet */}
-                    <Link href="/admin/dashboard/carousel" className="admin-shortcut-card" style={{ borderColor: 'rgba(124, 58, 237, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(124, 58, 237, 0.12)', color: '#7C3AED' }}>
-                            <ImageIcon size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Carrousel Accueil</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Photos plein écran</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#7C3AED' }} />
-                    </Link>
-
-                    {/* 3. Tarifs & Cartes - Terracotta */}
-                    <Link href="/admin/dashboard/tarifs" className="admin-shortcut-card" style={{ borderColor: 'rgba(194, 65, 12, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(194, 65, 12, 0.12)', color: '#C2410C' }}>
-                            <Receipt size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Tarifs &amp; Cartes</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Formules &amp; Cartes PDF</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#C2410C' }} />
-                    </Link>
-
-                    {/* 4. Galerie - Rose corail */}
-                    <Link href="/admin/dashboard/galerie" className="admin-shortcut-card" style={{ borderColor: 'rgba(225, 29, 72, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(225, 29, 72, 0.12)', color: '#E11D48' }}>
-                            <Camera size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Galerie Photos</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Coulisses &amp; plats</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#E11D48' }} />
-                    </Link>
-
-                    {/* 5. À Propos - Prune / Vin */}
-                    <Link href="/admin/dashboard/a-propos" className="admin-shortcut-card" style={{ borderColor: 'rgba(190, 24, 93, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(190, 24, 93, 0.12)', color: '#BE185D' }}>
-                            <Heart size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>À Propos</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Photo officielle &amp; histoire</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#BE185D' }} />
-                    </Link>
-
-                    {/* 6. Messages & Devis - Bleu Océan */}
-                    <Link href="/admin/dashboard/messages" className="admin-shortcut-card" style={{ borderColor: 'rgba(2, 132, 199, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(2, 132, 199, 0.12)', color: '#0284C7' }}>
-                            <MessageSquare size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Contact &amp; Devis</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{unreadCount > 0 ? `${unreadCount} nouveau(x)` : 'Boîte de réception'}</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#0284C7' }} />
-                    </Link>
-
-                    {/* 7. Textes du site - Indigo */}
-                    <Link href="/admin/dashboard/textes" className="admin-shortcut-card" style={{ borderColor: 'rgba(79, 70, 229, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(79, 70, 229, 0.12)', color: '#4F46E5' }}>
-                            <Languages size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Textes du site</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Éditeur bilingue FR / EN</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#4F46E5' }} />
-                    </Link>
-
-                    {/* 8. Informations du site - Ambre / Or */}
-                    <Link href="/admin/dashboard/settings" className="admin-shortcut-card" style={{ borderColor: 'rgba(217, 119, 6, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(217, 119, 6, 0.12)', color: '#D97706' }}>
-                            <Settings size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Infos &amp; Réglages</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Téléphone, logo &amp; SEO</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#D97706' }} />
-                    </Link>
-
-                    {/* 9. Journal d'Activité / Logs - Vert émeraude */}
-                    <Link href="/admin/dashboard/logs" className="admin-shortcut-card" style={{ borderColor: 'rgba(5, 150, 105, 0.25)' }}>
-                        <div className="admin-shortcut-icon" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669' }}>
-                            <History size={22} />
-                        </div>
-                        <div>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--admin-text)' }}>Journal d&apos;Activité</strong>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Audit &amp; suivi des modifications</span>
-                        </div>
-                        <ArrowRight size={15} className="admin-shortcut-arrow" style={{ color: '#059669' }} />
-                    </Link>
-
+            {/* Raccourcis de gestion */}
+            <section style={{ marginBottom: '3rem' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1.1rem' }}>
+                    <h2 style={{ fontSize: '1.6rem', margin: 0, color: 'var(--admin-text)', whiteSpace: 'nowrap' }}>Raccourcis de gestion</h2>
+                    <span style={{ flex: 1, height: '1px', background: 'var(--admin-border)' }} />
                 </div>
-
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.9rem' }}>
+                    {SHORTCUTS.map(({ href, icon: Icon, title, text }) => (
+                        <Link key={href} href={href} className="admin-tile admin-tile--compact">
+                            <span className="admin-tile-icon"><Icon size={19} strokeWidth={1.7} /></span>
+                            <span style={{ minWidth: 0 }}>
+                                <strong className="admin-tile-title" style={{ display: 'block' }}>{title}</strong>
+                                <span className="admin-tile-text" style={{ display: 'block' }}>{text}</span>
+                            </span>
+                            <ArrowRight size={16} className="admin-tile-arrow" />
+                        </Link>
+                    ))}
+                </div>
+            </section>
 
             {/* Derniers messages */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
-                <div className="admin-card">
-                    <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Mail size={18} style={{ color: 'var(--admin-gold)' }} /> Derniers messages reçus
-                        </h2>
-                        <Link href="/admin/dashboard/messages" style={{ fontSize: '0.85rem', color: 'var(--admin-gold)', textDecoration: 'none', fontWeight: '600' }}>
-                            Tout voir →
-                        </Link>
-                    </div>
-
-                    {recentMessages.length === 0 ? (
-                        <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.9rem', padding: '1rem 0' }}>
-                            Aucun message reçu pour le moment.
-                        </p>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {recentMessages.map(msg => (
-                                <div key={msg.id} style={{
-                                    padding: '1rem',
-                                    borderRadius: '8px',
-                                    background: msg.is_read ? 'var(--admin-surface)' : 'rgba(200,169,110,0.08)',
-                                    border: `1px solid ${msg.is_read ? 'var(--admin-border)' : 'rgba(200,169,110,0.25)'}`,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    flexWrap: 'wrap',
-                                    gap: '0.75rem',
-                                    width: '100%',
-                                    minWidth: 0,
-                                    boxSizing: 'border-box'
-                                }}>
-                                    <div style={{ minWidth: 0, flex: '1 1 200px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                                            <strong style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--admin-text)', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
-                                                {msg.name}
-                                            </strong>
-                                            {msg.event_type && (
-                                                <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(196,89,58,0.2)', color: '#E06D53', borderRadius: '4px', textTransform: 'uppercase', fontWeight: '700' }}>
-                                                    {msg.event_type}
-                                                </span>
-                                            )}
-                                            {!msg.is_read && (
-                                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C4593A', flexShrink: 0 }}></span>
-                                            )}
-                                        </div>
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', maxWidth: '100%' }}>
-                                            {msg.message}
-                                        </p>
-                                    </div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                                        {msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR') : ''}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+            <section>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1.1rem' }}>
+                    <h2 style={{ fontSize: '1.6rem', margin: 0, color: 'var(--admin-text)', whiteSpace: 'nowrap' }}>Derniers messages</h2>
+                    <span style={{ flex: 1, height: '1px', background: 'var(--admin-border)' }} />
+                    <Link href="/admin/dashboard/messages" className="admin-link-btn" style={{ textDecoration: 'none' }}>
+                        Tout voir →
+                    </Link>
                 </div>
-            </div>
+
+                {recentMessages.length === 0 ? (
+                    <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.92rem' }}>
+                        Aucun message reçu pour le moment.
+                    </p>
+                ) : (
+                    <div className="admin-log-list">
+                        {recentMessages.map(msg => (
+                            <Link key={msg.id} href="/admin/dashboard/messages" className="admin-msg-row">
+                                <span className="admin-msg-dot" data-unread={!msg.is_read} aria-hidden="true" />
+                                <span style={{ minWidth: 0, flex: 1 }}>
+                                    <span style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                        <strong style={{ fontSize: '0.95rem', fontWeight: msg.is_read ? 550 : 700, color: 'var(--admin-text)' }}>{msg.name}</strong>
+                                        {msg.event_type && (
+                                            <span style={{ fontSize: '0.74rem', color: 'var(--admin-gold-dark)', fontStyle: 'italic' }}>{msg.event_type}</span>
+                                        )}
+                                    </span>
+                                    <span style={{ display: 'block', fontSize: '0.86rem', color: 'var(--admin-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {msg.message}
+                                    </span>
+                                </span>
+                                <span style={{ fontSize: '0.76rem', color: 'var(--admin-text-subtle)', whiteSpace: 'nowrap' }}>
+                                    {msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }) : ''}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </section>
         </div>
     );
 }

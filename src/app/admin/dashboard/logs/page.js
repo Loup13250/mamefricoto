@@ -10,6 +10,6 @@ export const metadata = {
 };
 
 export default async function ActivityLogsPage() {
-    const logs = await getActivityLogs(200);
+    const logs = await getActivityLogs(400);
     return <LogsClient initialLogs={logs} />;
 }

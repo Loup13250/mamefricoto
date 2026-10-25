@@ -480,14 +480,13 @@ export default function TarifsClient({ siteInfo, pricingDocuments = [] }) {
             </section>
 
             {/* ===== SECTION APPEL À L'ACTION ===== */}
-            <section style={{ background: 'var(--bg-2)', padding: '6rem 0', borderTop: '1px solid var(--border)' }}>
+            <section style={{ background: 'var(--bg-2)', padding: '4rem 0', borderTop: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
-                    <span className="label">{t('cta.badge')}</span>
                     <h2 style={{
                         fontFamily: 'var(--font-heading)',
                         fontSize: 'clamp(2rem, 4vw, 3.5rem)',
                         fontWeight: '400',
-                        marginTop: '1rem',
+                        marginTop: '0',
                         marginBottom: '1rem',
                     }}>
                         {t('tarifs.ctaTitle')}

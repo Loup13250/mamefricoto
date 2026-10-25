@@ -120,7 +120,6 @@ export default function AProposClient({ info, services }) {
                             const badge = trans(s, 'badge');
                             return (
                                 <div key={s.id || s.title || idx} className="service-card">
-                                    <div className="service-num" aria-hidden="true">{s.num || `0${idx + 1}`}</div>
                                     {badge && <span className="service-badge">{badge}</span>}
                                     <h3>{trans(s, 'title')}</h3>
                                     <p>{trans(s, 'description')}</p>
@@ -132,14 +131,13 @@ export default function AProposClient({ info, services }) {
             </section>
 
             {/* ===== APPEL À L'ACTION ===== */}
-            <section style={{ background: 'var(--bg)', padding: '7rem 0', borderBottom: '1px solid var(--border)' }}>
+            <section style={{ background: 'var(--bg)', padding: '4rem 0', borderBottom: '1px solid var(--border)' }}>
                 <div className="container text-center anim-up">
-                    <span className="label">{t('cta.badge')}</span>
                     <h2 style={{
                         fontFamily: 'var(--font-heading)',
-                        fontSize: 'clamp(2rem, 4vw, 3.5rem)',
+                        fontSize: 'clamp(2rem, 4vw, 3.2rem)',
                         fontWeight: '400',
-                        marginTop: '1rem',
+                        marginTop: '0',
                         marginBottom: '1rem',
                     }}>{t('about.tasteTitle')}</h2>
                     <p style={{ color: 'var(--text-2)', maxWidth: '430px', margin: '0 auto 2.5rem', fontSize: '0.95rem', lineHeight: '1.7' }}>

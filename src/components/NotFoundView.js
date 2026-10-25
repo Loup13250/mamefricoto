@@ -8,8 +8,8 @@ import {
     Calendar, 
     BookOpen, 
     Image as ImageIcon, 
-    Sparkles, 
     UtensilsCrossed, 
+    Heart,
     ArrowRight 
 } from 'lucide-react';
 
@@ -23,12 +23,6 @@ export default function NotFoundView({ siteInfo }) {
             <div className="not-found-bg-glow" aria-hidden="true" />
 
             <div className="not-found-content">
-                {/* Badge d'en-tête */}
-                <div className="not-found-badge">
-                    <Sparkles size={14} />
-                    <span>{t('404.badge')}</span>
-                </div>
-
                 {/* Chiffre 404 avec assiette et couverts animés */}
                 <div className="not-found-digits" aria-hidden="true">
                     <span className="not-found-num">4</span>
@@ -111,7 +105,7 @@ export default function NotFoundView({ siteInfo }) {
 
                         <Link href="/a-propos" className="not-found-card">
                             <div className="not-found-card-icon">
-                                <Sparkles size={22} />
+                                <Heart size={22} />
                             </div>
                             <h3>
                                 <span>{t('404.aboutTitle')}</span>

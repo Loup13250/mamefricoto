@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Trash2, Download, RefreshCw, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, Trash2, Download, RefreshCw, X, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import { clearActivityLogs } from '@/app/actions';
 
 const TZ = 'Europe/Paris';
@@ -92,9 +92,13 @@ export default function LogsClient({ initialLogs = [] }) {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('ALL');
     const [kind, setKind] = useState('ALL');
+    const [dateFilter, setDateFilter] = useState('');
     const [expanded, setExpanded] = useState(() => new Set());
     const [refreshing, setRefreshing] = useState(false);
     const [clearing, startClear] = useTransition();
+
+    const todayKey = dayKeyOf(new Date());
+    const yesterdayKey = dayKeyOf(new Date(Date.now() - 86400000));
 
     const categories = useMemo(
         () => Array.from(new Set(logs.map(l => l.category).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'fr')),
@@ -104,13 +108,22 @@ export default function LogsClient({ initialLogs = [] }) {
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
         return logs.filter(l => {
+            const d = parseDate(l.created_at);
+            const dayKey = dayKeyOf(d);
+
+            if (dateFilter && dayKey !== dateFilter) return false;
             if (category !== 'ALL' && l.category !== category) return false;
             if (kind !== 'ALL' && groupOf(l.action) !== kind) return false;
             if (!q) return true;
-            return [l.summary, l.category, l.action, l.username, l.details, l.ip]
+
+            const dateShort = d ? d.toLocaleDateString('fr-FR', { timeZone: TZ }) : '';
+            const dateLong = d ? d.toLocaleDateString('fr-FR', { timeZone: TZ, day: 'numeric', month: 'long', year: 'numeric' }) : '';
+            const weekday = d ? d.toLocaleDateString('fr-FR', { timeZone: TZ, weekday: 'long' }) : '';
+
+            return [l.summary, l.category, l.action, l.username, l.details, l.ip, dayKey, dateShort, dateLong, weekday]
                 .some(v => (v || '').toLowerCase().includes(q));
         });
-    }, [logs, category, kind, search]);
+    }, [logs, category, kind, search, dateFilter]);
 
     const days = useMemo(() => {
         const out = [];
@@ -139,7 +152,7 @@ export default function LogsClient({ initialLogs = [] }) {
     }, [logs]);
 
     const lastDate = parseDate(logs[0]?.created_at);
-    const hasFilters = search || category !== 'ALL' || kind !== 'ALL';
+    const hasFilters = Boolean(search || category !== 'ALL' || kind !== 'ALL' || dateFilter);
 
     const toggle = id => setExpanded(prev => {
         const next = new Set(prev);
@@ -231,15 +244,16 @@ export default function LogsClient({ initialLogs = [] }) {
             </div>
 
             {/* Filtres */}
-            <div className="admin-card" style={{ padding: '1rem 1.25rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto auto', gap: '0.75rem', alignItems: 'center' }}>
+            <div className="admin-card" style={{ padding: '1.1rem 1.25rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1.4fr) auto auto auto', gap: '0.75rem', alignItems: 'center' }}>
+                    {/* Recherche texte & date */}
                     <div style={{ position: 'relative' }}>
                         <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-subtle)' }} />
                         <input
                             type="text"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            placeholder="Rechercher (menu, logo, adresse IP, identifiant…)"
+                            placeholder="Rechercher (mot-clé, date 25/10, IP, admin…)"
                             className="admin-input"
                             style={{ paddingLeft: '36px' }}
                         />
@@ -250,26 +264,103 @@ export default function LogsClient({ initialLogs = [] }) {
                             </button>
                         )}
                     </div>
-                    <select value={category} onChange={e => setCategory(e.target.value)} className="admin-select" style={{ minWidth: '180px' }}>
+
+                    {/* Sélecteur de date calendaire */}
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <Calendar size={14} style={{ position: 'absolute', left: '10px', color: 'var(--admin-text-subtle)', pointerEvents: 'none' }} />
+                        <input
+                            type="date"
+                            value={dateFilter}
+                            onChange={e => setDateFilter(e.target.value)}
+                            className="admin-input"
+                            style={{ paddingLeft: '32px', paddingRight: dateFilter ? '28px' : '10px', fontSize: '0.85rem', minWidth: '150px' }}
+                            title="Filtrer par date précise"
+                        />
+                        {dateFilter && (
+                            <button
+                                type="button"
+                                onClick={() => setDateFilter('')}
+                                aria-label="Effacer le filtre par date"
+                                style={{ position: 'absolute', right: '6px', background: 'none', border: 'none', color: 'var(--admin-text-subtle)', cursor: 'pointer', padding: '3px', display: 'flex' }}
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Section */}
+                    <select value={category} onChange={e => setCategory(e.target.value)} className="admin-select" style={{ minWidth: '160px' }}>
                         <option value="ALL">Toutes les sections</option>
                         {categories.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <select value={kind} onChange={e => setKind(e.target.value)} className="admin-select" style={{ minWidth: '170px' }}>
+
+                    {/* Type d'action */}
+                    <select value={kind} onChange={e => setKind(e.target.value)} className="admin-select" style={{ minWidth: '150px' }}>
                         <option value="ALL">Tous les types</option>
                         <option value="add">Ajouts</option>
                         <option value="update">Modifications</option>
                         <option value="delete">Suppressions</option>
-                        <option value="access">Connexions et sécurité</option>
+                        <option value="access">Connexions</option>
                     </select>
                 </div>
-                {hasFilters && (
-                    <div style={{ marginTop: '0.8rem', paddingTop: '0.7rem', borderTop: '1px solid var(--admin-border-soft)', display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>
-                        <span><strong>{filtered.length}</strong> résultat{filtered.length > 1 ? 's' : ''}</span>
-                        <button type="button" className="admin-link-btn" onClick={() => { setSearch(''); setCategory('ALL'); setKind('ALL'); }}>
-                            Réinitialiser les filtres
+
+                {/* Raccourcis date rapides & récapitulatif */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.75rem', paddingTop: '0.7rem', borderTop: '1px solid var(--admin-border-soft)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.8rem' }}>
+                        <span style={{ color: 'var(--admin-text-subtle)', fontWeight: 600, marginRight: '4px' }}>Date rapide :</span>
+                        <button
+                            type="button"
+                            onClick={() => setDateFilter('')}
+                            style={{
+                                border: '1px solid var(--admin-border)',
+                                background: !dateFilter ? 'var(--admin-surface-hover)' : 'transparent',
+                                color: !dateFilter ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                                padding: '3px 9px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: !dateFilter ? 700 : 500
+                            }}
+                        >
+                            Toutes
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setDateFilter(todayKey)}
+                            style={{
+                                border: '1px solid var(--admin-border)',
+                                background: dateFilter === todayKey ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                                color: dateFilter === todayKey ? '#2563EB' : 'var(--admin-text-muted)',
+                                borderColor: dateFilter === todayKey ? 'rgba(37, 99, 235, 0.4)' : 'var(--admin-border)',
+                                padding: '3px 9px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: dateFilter === todayKey ? 700 : 500
+                            }}
+                        >
+                            Aujourd&apos;hui
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setDateFilter(yesterdayKey)}
+                            style={{
+                                border: '1px solid var(--admin-border)',
+                                background: dateFilter === yesterdayKey ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                                color: dateFilter === yesterdayKey ? '#2563EB' : 'var(--admin-text-muted)',
+                                borderColor: dateFilter === yesterdayKey ? 'rgba(37, 99, 235, 0.4)' : 'var(--admin-border)',
+                                padding: '3px 9px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: dateFilter === yesterdayKey ? 700 : 500
+                            }}
+                        >
+                            Hier
                         </button>
                     </div>
-                )}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>
+                        <span><strong>{filtered.length}</strong> résultat{filtered.length > 1 ? 's' : ''}</span>
+                        {hasFilters && (
+                            <button
+                                type="button"
+                                className="admin-link-btn"
+                                onClick={() => { setSearch(''); setCategory('ALL'); setKind('ALL'); setDateFilter(''); }}
+                            >
+                                Réinitialiser les filtres
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Chronologie */}

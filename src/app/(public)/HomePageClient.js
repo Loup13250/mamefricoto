@@ -110,7 +110,6 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
                             const badge = trans(s, 'badge');
                             return (
                                 <div key={s.id || s.num || idx} className="service-card">
-                                    <div className="service-num" aria-hidden="true">{s.num || `0${idx + 1}`}</div>
                                     <div className="service-body">
                                         {badge && <span className="service-badge">{badge}</span>}
                                         <h3>{trans(s, 'title')}</h3>
@@ -168,8 +167,7 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
             {/* ===== CTA FINAL ===== */}
             <section className="final-cta">
                 <div className="container text-center anim-up">
-                    <span className="label">{t('cta.badge')}</span>
-                    <h2 className="title-lg final-cta" style={{ marginTop: '1rem', marginBottom: '1rem', background: 'transparent', padding: '0 0 0.5rem 0', border: 'none' }}>
+                    <h2 className="title-lg final-cta" style={{ marginTop: '0', marginBottom: '1rem', background: 'transparent', padding: '0 0 0.5rem 0', border: 'none' }}>
                         {t('cta.title')}
                     </h2>
                     <p className="body-lg" style={{ maxWidth: '480px', margin: '0 auto' }}>

@@ -205,37 +205,17 @@
     border: none;
     border-bottom: 1px solid var(--border);
     border-radius: 0;
-    padding: 2.5rem 0;
+    padding: 2rem 0;
     position: relative;
     cursor: default;
     user-select: text;
     box-shadow: none;
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: 0 2.5rem;
-    align-items: start;
-}
-
-.service-num {
-    font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
-    font-size: 3.5rem;
-    font-weight: 400;
-    font-style: italic;
-    color: rgba(148, 104, 30, 0.3);
-    line-height: 1;
-    padding-top: 0.2rem;
-    margin-bottom: 0;
-    grid-row: 1 / 4;
-    grid-column: 1;
-    text-align: right;
-    padding-right: 2rem;
-    border-right: 1px solid var(--border);
-    min-width: 80px;
-    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .service-body {
-    grid-column: 2;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -264,34 +244,15 @@
     font-size: 0.9rem;
     line-height: 1.7;
     margin: 0;
-    max-width: 520px;
-}
-
-@media (max-width: 900px) {
-    .service-card {
-        grid-template-columns: 56px 1fr;
-        gap: 0 1.5rem;
-    }
-    .service-num {
-        font-size: 2.5rem;
-        min-width: 56px;
-        padding-right: 1.25rem;
-    }
+    max-width: 580px;
 }
 
 @media (max-width: 600px) {
     .service-card {
-        grid-template-columns: 44px 1fr;
-        gap: 0 1.25rem;
-        padding: 2rem 0;
-    }
-    .service-num {
-        font-size: 2rem;
-        min-width: 44px;
-        padding-right: 1rem;
+        padding: 1.6rem 0;
     }
     .service-card h3 {
-        font-size: 1.3rem;
+        font-size: 1.35rem;
     }
 }
 
@@ -436,7 +397,7 @@
 /* ===== APPEL À L'ACTION FINAL ===== */
 .final-cta {
     background: var(--bg-2);
-    padding: 8rem 0;
+    padding: 4.25rem 0;
     position: relative;
     overflow: hidden;
 }

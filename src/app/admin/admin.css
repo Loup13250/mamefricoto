@@ -10,6 +10,7 @@
 :root,
 [data-theme="light"],
 [data-theme="dark"] {
+  color-scheme: light !important;
   --admin-bg: #F4EFE6;
   --admin-bg-2: #26201B;            /* encre : barre latérale */
   --admin-card-bg: #FFFDF8;
@@ -812,18 +813,50 @@
 }
 
 .admin-input,
-.admin-textarea,
 .admin-select {
+  box-sizing: border-box;
   width: 100%;
-  padding: 0.7rem 0.9rem;
+  height: 42px;
+  padding: 0 0.9rem;
+  line-height: normal;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-sm);
   background-color: #FFFFFF;
   color: var(--admin-text);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   outline: none;
+  vertical-align: middle;
+}
+
+.admin-select {
+  padding-right: 2.2rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235C5147' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+.admin-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background-color: #FFFFFF;
+  color: var(--admin-text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.5;
+  min-height: 90px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .admin-input:hover,

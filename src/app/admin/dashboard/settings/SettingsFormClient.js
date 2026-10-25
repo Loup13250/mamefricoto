@@ -217,18 +217,23 @@ export default function SettingsFormClient({ info }) {
                     }}>
                         {/* Simulateur barre de navigation */}
                         <div>
-                            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--admin-text-subtle)', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Aperçu en conditions réelles (sur la barre de navigation du site) :
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-text-subtle)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    Aperçu en conditions réelles (sur la barre de navigation claire du site) :
+                                </span>
+                                <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: '600', background: 'rgba(22, 163, 74, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                                    ✓ Thème clair officiel
+                                </span>
+                            </div>
                             <div style={{
-                                background: 'rgba(14, 13, 12, 0.96)',
-                                border: '1px solid rgba(200, 169, 110, 0.25)',
-                                borderRadius: '6px',
+                                background: '#FAF6F0',
+                                border: '1px solid rgba(194, 87, 45, 0.22)',
+                                borderRadius: '8px',
                                 padding: '12px 24px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                                boxShadow: '0 4px 20px rgba(42, 30, 23, 0.08)'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', minHeight: '52px' }}>
                                     <Image
@@ -240,8 +245,8 @@ export default function SettingsFormClient({ info }) {
                                         unoptimized
                                     />
                                 </div>
-                                <div style={{ display: 'flex', gap: '1rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', fontWeight: '500' }}>
-                                    <span>Accueil</span>
+                                <div style={{ display: 'flex', gap: '1.25rem', color: '#2A1E17', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    <span style={{ color: '#C2572D' }}>Accueil</span>
                                     <span>Tarifs</span>
                                     <span>Galerie</span>
                                     <span>À Propos</span>
@@ -339,8 +344,8 @@ export default function SettingsFormClient({ info }) {
                                 Aperçu réel dans l&apos;onglet du navigateur web :
                             </span>
                             <div style={{
-                                background: '#1E1E1E',
-                                border: '1px solid #333333',
+                                background: '#EAE5DC',
+                                border: '1px solid rgba(42, 35, 29, 0.18)',
                                 borderRadius: '8px 8px 0 0',
                                 padding: '8px 12px 0 12px',
                                 display: 'inline-flex',
@@ -348,15 +353,16 @@ export default function SettingsFormClient({ info }) {
                                 maxWidth: '380px'
                             }}>
                                 <div style={{
-                                    background: '#2D2D2D',
+                                    background: '#FFFFFF',
                                     borderRadius: '8px 8px 0 0',
                                     padding: '8px 14px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px',
-                                    color: '#E0E0E0',
+                                    color: '#2A231D',
                                     fontSize: '0.82rem',
-                                    borderTop: '2px solid var(--admin-gold)'
+                                    borderTop: '2px solid #C2572D',
+                                    boxShadow: '0 -2px 6px rgba(42, 35, 29, 0.05)'
                                 }}>
                                     <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                         <Image
@@ -368,10 +374,10 @@ export default function SettingsFormClient({ info }) {
                                             unoptimized
                                         />
                                     </div>
-                                    <span style={{ fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+                                    <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
                                         Mamé Fricoto | Traiteur &amp; Cuisine...
                                     </span>
-                                    <X size={12} style={{ color: '#888', marginLeft: '6px' }} />
+                                    <X size={12} style={{ color: '#8A7E71', marginLeft: '6px' }} />
                                 </div>
                             </div>
                         </div>

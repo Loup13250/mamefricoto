@@ -11,8 +11,10 @@
 }
 
 :root,
+html,
 [data-theme="light"],
 [data-theme="dark"] {
+  color-scheme: light !important;
   /* Mamé Fricoto - couleurs du site */
   --bg:          #FAF6F0;
   --bg-2:        #F3ECE1;

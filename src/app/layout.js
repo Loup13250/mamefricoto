@@ -46,6 +46,7 @@ const momerkz = localFont({
 
 export const viewport = {
   themeColor: '#FAF7F2',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -144,8 +145,9 @@ export default async function RootLayout({ children }) {
   };
 
   return (
-    <html lang="fr" suppressHydrationWarning data-theme="light" data-scroll-behavior="smooth" className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
+    <html lang="fr" suppressHydrationWarning data-theme="light" data-scroll-behavior="smooth" style={{ colorScheme: 'light' }} className={`${dmSans.variable} ${cormorant.variable} ${momerkz.variable}`}>
       <head>
+        <meta name="color-scheme" content="light" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -161,6 +163,7 @@ export default async function RootLayout({ children }) {
                   localStorage.removeItem('mamefricoto-da');
                   document.documentElement.removeAttribute('data-da');
                   document.documentElement.setAttribute('data-theme', 'light');
+                  document.documentElement.style.colorScheme = 'light';
                 } catch (e) {}
               })();
             `,

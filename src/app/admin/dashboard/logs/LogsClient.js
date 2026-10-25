@@ -241,7 +241,7 @@ export default function LogsClient({ initialLogs = [] }) {
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Rechercher (menu, logo, adresse IP, identifiant…)"
                             className="admin-input"
-                            style={{ paddingLeft: '36px', height: '40px' }}
+                            style={{ paddingLeft: '36px' }}
                         />
                         {search && (
                             <button type="button" onClick={() => setSearch('')} aria-label="Effacer la recherche"
@@ -250,11 +250,11 @@ export default function LogsClient({ initialLogs = [] }) {
                             </button>
                         )}
                     </div>
-                    <select value={category} onChange={e => setCategory(e.target.value)} className="admin-select" style={{ height: '40px', minWidth: '180px' }}>
+                    <select value={category} onChange={e => setCategory(e.target.value)} className="admin-select" style={{ minWidth: '180px' }}>
                         <option value="ALL">Toutes les sections</option>
                         {categories.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <select value={kind} onChange={e => setKind(e.target.value)} className="admin-select" style={{ height: '40px', minWidth: '170px' }}>
+                    <select value={kind} onChange={e => setKind(e.target.value)} className="admin-select" style={{ minWidth: '170px' }}>
                         <option value="ALL">Tous les types</option>
                         <option value="add">Ajouts</option>
                         <option value="update">Modifications</option>

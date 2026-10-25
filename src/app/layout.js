@@ -107,7 +107,8 @@ export async function generateMetadata() {
     icons: {
       icon: [
         { url: iconUrl, type: isSvg ? 'image/svg+xml' : 'image/png' },
-        { url: "/favicon.ico", sizes: "any" },
+        { url: '/icon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', sizes: '32x32' },
       ],
       shortcut: iconUrl,
       apple: iconUrl,

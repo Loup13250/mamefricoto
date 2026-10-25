@@ -11,7 +11,7 @@ import {
 
 export default function SettingsFormClient({ info }) {
     // --- Logo Principal (Barre de navigation) ---
-    const initialLogo = info.logo || info.site_icon || '/icon.svg';
+    const initialLogo = info?.logo || info?.site_icon || '/icon.svg';
     const [logoPreview, setLogoPreview] = useState(initialLogo);
     const [logoFile, setLogoFile] = useState(null);
     const [logoDragging, setLogoDragging] = useState(false);
@@ -19,7 +19,7 @@ export default function SettingsFormClient({ info }) {
     const [logoSaved, setLogoSaved] = useState(false);
 
     // --- Favicon / Icône Onglet Navigateur ---
-    const initialSiteIcon = info.site_icon || info.logo || '/icon.svg';
+    const initialSiteIcon = info?.site_icon || info?.logo || '/icon.svg';
     const [siteIconPreview, setSiteIconPreview] = useState(initialSiteIcon);
     const [siteIconFile, setSiteIconFile] = useState(null);
     const [siteIconDragging, setSiteIconDragging] = useState(false);
@@ -177,19 +177,7 @@ export default function SettingsFormClient({ info }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                <input type="hidden" name="logo_bg" value={logoBg} />
-                <input type="hidden" name="site_icon_bg" value={siteIconBg} />
 
-                {colorSavingNotice && (
-                    <div style={{
-                        padding: '0.85rem 1rem', background: 'rgba(59,130,246,0.1)',
-                        border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px',
-                        color: '#2563EB', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        fontSize: '0.88rem', fontWeight: '600'
-                    }}>
-                        <CheckCircle2 size={18} /> {colorSavingNotice}
-                    </div>
-                )}
 
                 {saved && (
                     <div style={{

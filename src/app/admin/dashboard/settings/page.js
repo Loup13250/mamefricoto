@@ -4,7 +4,12 @@ import SettingsFormClient from './SettingsFormClient';
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-    const info = await getSiteInfo();
+    let info = {};
+    try {
+        info = (await getSiteInfo()) || {};
+    } catch (e) {
+        console.error('SettingsPage getSiteInfo error:', e);
+    }
 
     return (
         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>

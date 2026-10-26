@@ -131,7 +131,7 @@ export default function Header({ siteInfo }) {
                     className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}
                     role="dialog"
                     aria-modal="true"
-                    inert={!mobileMenuOpen ? '' : undefined}
+                    inert={!mobileMenuOpen ? true : undefined}
                 >
                     {/* En-tête du menu */}
                     <div className="mobile-drawer-header">

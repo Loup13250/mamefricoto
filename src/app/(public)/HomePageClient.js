@@ -124,39 +124,45 @@ export default function HomePageClient({ siteInfo, carousel, weeklyMenu, service
 
             {/* ===== À PROPOS ===== */}
             <section className="about-section">
-                <div className="about-grid">
-                    <div className="about-img-col">
-                        <Image
-                            src={siteInfo?.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
-                            alt={lang === 'en' ? "Homemade cuisine Mamé Fricoto" : "Cuisine maison Mamé Fricoto"}
-                            width={800}
-                            height={900}
-                            className="about-img"
-                            sizes="(max-width: 900px) 100vw, 50vw"
-                            loading="lazy"
-                            unoptimized
-                        />
-                    </div>
-                    <div className="about-text-col">
-                        <span className="label">{t('about.badge')}</span>
-                        <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
-                            {t('about.spirit')}<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>{t('about.spiritItalic')}</em>
-                        </h2>
-                        <p className="body-lg" style={{ whiteSpace: 'pre-line' }}>{aboutText}</p>
-                        <div className="about-facts">
-                            <div className="about-fact">
-                                <strong>{t('about.locationLabel')}</strong>
-                                <p>{address}</p>
+                <div className="container">
+                    <div className="about-grid">
+                        <div className="about-text-col">
+                            <span className="label">{t('about.badge')}</span>
+                            <h2 className="title-lg" style={{ marginTop: '0.75rem' }}>
+                                {t('about.spirit')}<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>{t('about.spiritItalic')}</em>
+                            </h2>
+                            <p className="body-lg" style={{ whiteSpace: 'pre-line' }}>{aboutText}</p>
+                            <div className="about-facts">
+                                <div className="about-fact">
+                                    <strong>{t('about.locationLabel')}</strong>
+                                    <p>{address}</p>
+                                </div>
+                                <div className="about-fact">
+                                    <strong>{t('about.contactLabel')}</strong>
+                                    <p><a href={`tel:${phoneTel}`} style={{ color: 'inherit' }}>{phone}</a></p>
+                                </div>
                             </div>
-                            <div className="about-fact">
-                                <strong>{t('about.contactLabel')}</strong>
-                                <p><a href={`tel:${phoneTel}`} style={{ color: 'inherit' }}>{phone}</a></p>
+                            <Link href="/a-propos" className="btn-outline" style={{ alignSelf: 'flex-start' }}>
+                                {t('about.learnMore')}
+                                <ArrowRight size={15} />
+                            </Link>
+                        </div>
+                        <div className="about-img-col">
+                            <div className="about-img-frame">
+                                <div className="about-img-wrapper">
+                                    <Image
+                                        src={siteInfo?.about_image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=800&auto=format&fit=crop"}
+                                        alt={lang === 'en' ? "Homemade cuisine Mamé Fricoto" : "Cuisine maison Mamé Fricoto"}
+                                        width={800}
+                                        height={900}
+                                        className="about-img"
+                                        sizes="(max-width: 900px) 100vw, 460px"
+                                        loading="lazy"
+                                        unoptimized
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <Link href="/a-propos" className="btn-outline" style={{ alignSelf: 'flex-start' }}>
-                            {t('about.learnMore')}
-                            <ArrowRight size={15} />
-                        </Link>
                     </div>
                 </div>
             </section>
